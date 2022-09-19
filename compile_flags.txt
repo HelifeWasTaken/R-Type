@@ -1,0 +1,4 @@
+-W
+-Wall
+-Wextra
+-std=c++20

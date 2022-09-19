@@ -1,4 +1,6 @@
 [requires]
+pkgconf/1.7.4
+libudev/system
 sfml/2.5.1
 
 [options]
@@ -8,8 +10,6 @@ sfml:window=True
 sfml:network=True
 sfml:audio=True
 
-[imports]
-sfml, * -> sfml/2.5.1@
 
 [generators]
 cmake

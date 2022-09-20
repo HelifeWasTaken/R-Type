@@ -1,22 +1,44 @@
 #include <iostream>
+#include <string>
 #include <boost/asio.hpp>
 #include <boost/asio/ts/buffer.hpp>
 #include <boost/asio/ts/internet.hpp>
 
 using namespace boost;
+using namespace boost::asio::ip;
+
+int connection_success(tcp::socket& socket,
+                        tcp::endpoint ep,
+                        system::error_code ec,
+                        asio::io_service& service)
+{
+    std::cout << "[Server] Accepted a connection from client with ip address: " << socket.remote_endpoint().address().to_string() << std::endl;
+    ec = socket.connect(ep, ec);
+    if (!ec) {
+        socket.send(boost::asio::buffer("hello world"));
+        service.run();
+    }
+    return ec.value();
+}
 
 int main()
 {
-    asio::io_context context;
+    asio::io_service service;
+    using namespace boost::asio::ip;
     system::error_code ec;
 
-    asio::ip::tcp::endpoint endpoint(asio::ip::make_address("93.184.216.34", ec), 80);
-    asio::ip::tcp::socket sckt(context);
+    tcp::endpoint ep(tcp::v4(), 4242);
+    tcp::acceptor acceptor(service, ep);
 
-    sckt.connect(endpoint, ec);
-    if (!ec)
-        std::cout << "Connected !" << std::endl;
-    else
-        std::cout << "Error: cannot connect : " << ec.message() << std::endl;
+    while (1) {
+        tcp::socket socket(service);
+        ec = acceptor.accept(socket, ec);
+        if (!ec) {
+            connection_success(socket, ep, ec, service);
+        } else {
+            std::cout << "[Server] cannot connect : " << ec.message() << std::endl;
+            return ec.value();
+        }
+    }
     return 0;
 }

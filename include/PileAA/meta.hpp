@@ -2,6 +2,7 @@
 
 #include <utility>
 #include <string>
+#include <mutex>
 
 #define HL_FACTORY_IMPL(T, name) \
 template<typename T> \
@@ -11,19 +12,18 @@ static T *create(Args&& ...args) { return new U(std::forward<Args>(args)...); } 
 };
 
 #define HL_SINGLETON_IMPL(T, name) \
-template<typename T> \
 class name { \
-private: \
-    T *_impl = nullptr; \
-    std::mutex _mut; \
+protected: \
+    static inline T *_impl = nullptr; \
+    static inline std::mutex _mut; \
 public: \
-    static T& get() { \
+    static inline T& get() { \
         std::lock_guard<std::mutex> _(_mut); \
         if (!_impl) \
             _impl = new T; \
         return *_impl; \
     } \
-    static void release() { \
+    static inline void release() { \
         std::lock_guard<std::mutex> _(_mut); \
         if (!_impl) \
             return; \

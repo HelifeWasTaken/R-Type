@@ -6,6 +6,7 @@
 
 static const std::unordered_map<std::string, std::function<void(void)>> POCS = {
     {"animated_sprite", poc_animated_sprite},
+    {"ecs_example", poc_ecs_example}
 };
 
 int main(int ac, char **av)

@@ -126,6 +126,12 @@ private:
     container_t _data;
 };
 
+template<class ...Components>
+class zipper;
+
+template<class ...Components>
+using view = zipper<Components...>;
+
 class registry
 {
 public:
@@ -283,6 +289,12 @@ public:
         return _entities_count;
     }
 
+    template<typename ...Components>
+    zipper<Components...> zip() { return zipper<Components...>(*this); }
+
+    template<typename ...Components>
+    view<Components...> view() { return zip<Components...>(); }
+
 private:
     component_index_t _last_component_index = 0;
     component_registry _components_types_index;
@@ -320,10 +332,6 @@ class zipper {
                     return *this;
                 }
 
-                zipper_iterator operator+(difference_type offset) {
-                    for (; offset; --offset) incr_all();
-                }
-
                 friend bool operator ==(zipper_iterator const &lhs,
                                         zipper_iterator const &rhs)
                 { return lhs._idx == rhs._idx; }
@@ -339,7 +347,9 @@ class zipper {
                     , _idx(index)
                     , _end(end)
                 {
-                    if (!all_set<Containers...>()) incr_all<Containers...>();
+                    if (!all_set<Containers...>() && index != end) {
+                        incr_all<Containers...>();
+                    }
                 }
 
             private:

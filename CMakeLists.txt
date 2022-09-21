@@ -17,6 +17,8 @@ include_directories(
     ${SFML_SOURCE_DIR}/include
     ${BOOST_ASIO_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/include
+    ${PROJECT_SOURCE_DIR}/include/PileAA
+    ${PROJECT_SOURCE_DIR}/include/PileAA/Network
 )
 
 add_subdirectory(server)

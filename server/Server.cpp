@@ -4,7 +4,8 @@ namespace PAA {
 
     Server::Server(asio::io_service& s, tcp::endpoint ep) : _endpoint(ep),
                                                             _service(s),
-                                                            _acceptor(s, ep)
+                                                            _acceptor(s, ep),
+                                                            _tcpSocket(s)
     {
         _rawIpAddrs =  ep.address().to_string();
         _port = ep.port();
@@ -23,7 +24,8 @@ namespace PAA {
     int Server::acceptClient(tcp::socket& clientSocket)
     {
         this->errorCode = _acceptor.accept(clientSocket, this->errorCode);
-
+        if (this->errorCode.value() == 0)
+            _clientList.push_back(Client(clientSocket));
         return this->errorCode.value();
     }
 
@@ -33,4 +35,6 @@ namespace PAA {
     }
 
     void Server::runService() { _service.run(); }
+
+    tcp::socket& Server::getTcpSocket() { return _tcpSocket; }
 }

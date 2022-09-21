@@ -21,5 +21,9 @@ include_directories(
     ${PROJECT_SOURCE_DIR}/include/PileAA/Network
 )
 
-add_subdirectory(server)
-add_subdirectory(client)
+add_subdirectory(
+    server
+)
+add_subdirectory(
+    client
+)

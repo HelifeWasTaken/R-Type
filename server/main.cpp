@@ -17,8 +17,8 @@ int main()
 
     while (1) {
         tcp::socket socket(server.getService());
-
         int value = server.acceptClient(socket);
+
         if (value >= 0) {
             connection_success(socket, server);
         } else {

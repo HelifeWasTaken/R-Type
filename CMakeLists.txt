@@ -5,6 +5,7 @@ add_compile_definitions(SILVA_STATE_DRAW)
 add_compile_definitions(SILVA_STATE_HANDLE_EVENT)
 
 set(CMAKE_CXX_STANDARD 20)
+set(BUILD_SHARED_LIBS OFF)
 
 include(FetchContent)
 

@@ -24,7 +24,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
-[Files]
+[Files]  
 Source: "..\build\client\{#BuildType}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\build\server\{#BuildType}\r-type_server.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\assets\*"; DestDir: "{app}\assets\"; Flags: ignoreversion recursesubdirs createallsubdirs

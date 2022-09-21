@@ -6,8 +6,8 @@ int connection_success(tcp::socket& socket, PAA::Server& server)
 {
     std::cout << "[Server] Accepted a connection from client with ip address: " << socket.remote_endpoint().address().to_string() << std::endl;
     server.errorCode = socket.connect(server.getEndpoint(), server.errorCode);
-    socket.send(boost::asio::buffer("hello world"));
-    server.getService().run();
+    server.sendMessage(socket, "hello world");
+    server.runService();
     return server.errorCode.value();
 }
 
@@ -19,7 +19,6 @@ int main()
         tcp::socket socket(server.getService());
 
         int value = server.acceptClient(socket);
-        std::cout << value << std::endl;
         if (value >= 0) {
             connection_success(socket, server);
         } else {

@@ -11,6 +11,10 @@ namespace PAA {
 class Server {
 
     //Functions
+
+    private:
+        Server() = default;
+
     public:
 
         /***
@@ -25,10 +29,6 @@ class Server {
          * @brief default destructor
          */
         ~Server() = default;
-
-    protected:
-
-    public:
 
         /***
          * @brief Convert the current address from the asio::endpoint to string
@@ -62,10 +62,24 @@ class Server {
 
         /**
          * @brief accept the socket pass as parameter
-         * @param  clientSocket: the socket which the cliet try to connect with
-         * @retval 0 on success, -1 otherwise
+         * @param  clientSocket: the socket which the client try to connect with
+         * @retval 0 on success, -1g otherwise
          */
         int acceptClient(tcp::socket& clientSocket);
+
+        /**
+         * @brief send a message to a client
+         * @param  clientSocket: the socket of the client you want to send the message
+         * @param  buffer: the current message
+         * @retval None
+         */
+        void sendMessage(tcp::socket& clientSocket, std::string const &buffer);
+
+        /**
+         * @brief run the current service the server is running to
+         * @retval None
+         */
+        void runService();
 
     //Variables
     public:

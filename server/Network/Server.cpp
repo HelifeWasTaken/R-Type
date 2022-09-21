@@ -26,4 +26,11 @@ namespace PAA {
 
         return this->errorCode.value();
     }
+
+    void Server::sendMessage(tcp::socket& clientSocket, std::string const &buffer)
+    {
+        clientSocket.send(boost::asio::buffer(buffer));
+    }
+
+    void Server::runService() { _service.run(); }
 }

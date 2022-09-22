@@ -10,7 +10,15 @@
 namespace PAA {
 
     Client::Client(tcp::socket &socket) : _tcpSocket(socket)
-    {}
+    {
+
+    }
 
     tcp::socket& Client::getTcpSocket() { return _tcpSocket; }
+
+    void Client::sendMessage(std::string const &msg, tcp::socket& receiver)
+    {
+        boost::asio::write(receiver, boost::asio::buffer(msg));
+    }
+
 }

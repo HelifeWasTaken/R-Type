@@ -39,6 +39,8 @@ namespace PAA {
              */
             tcp::socket& getTcpSocket();
 
+            void sendMessage(std::string const &msg, tcp::socket& receiver);
+
         //Variables
         private:
             tcp::socket& _tcpSocket;

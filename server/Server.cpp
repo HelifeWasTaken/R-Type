@@ -1,4 +1,5 @@
 #include "Network/Server.hpp"
+#include <iostream>
 
 namespace PAA {
 
@@ -37,4 +38,17 @@ namespace PAA {
     void Server::runService() { _service.run(); }
 
     tcp::socket& Server::getTcpSocket() { return _tcpSocket; }
+
+    void Server::read()
+    {
+        boost::asio::async_read(_tcpSocket, boost::asio::buffer(_msgBuffer),
+            [&] (system::error_code ec, std::size_t bytes_transferred) {
+            std::cout << _msgBuffer << std::endl;
+        });
+    }
+
+    std::vector<Client> Server::getClientsList()
+    {
+        return _clientList;
+    }
 }

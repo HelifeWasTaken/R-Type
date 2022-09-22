@@ -63,7 +63,7 @@ namespace PAA {
             /**
              * @brief accept the socket pass as parameter
              * @param  clientSocket: the socket which the client try to connect with
-             * @retval 0 on success, -1g otherwise
+             * @retval 0 on success, -1 otherwise
              */
             int acceptClient(tcp::socket& clientSocket);
 
@@ -83,12 +83,17 @@ namespace PAA {
 
             tcp::socket& getTcpSocket();
 
+            void read();
+
+            std::vector<Client> getClientsList();
+
         //Variables
         public:
             system::error_code errorCode;
 
         private:
             std::vector<Client> _clientList = std::vector<Client>();
+            std::string _msgBuffer = "";
             tcp::socket _tcpSocket;
             tcp::acceptor _acceptor;
             tcp::endpoint _endpoint;

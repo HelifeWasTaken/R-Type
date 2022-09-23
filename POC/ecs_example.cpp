@@ -36,7 +36,7 @@ void poc_ecs_example(void)
 
     int i = 0;
 
-    r.register_system(logging_system);
+    r.add_system(logging_system);
 
     while (i++ < 100) {
         r.emplace<cposition>(r.spawn_entity(), 5, 3)
@@ -44,3 +44,8 @@ void poc_ecs_example(void)
         r.update();
     }
 }
+
+#ifndef RTYPE_USING_POC_MAIN
+int main()
+{ poc_ecs_example(); }
+#endif

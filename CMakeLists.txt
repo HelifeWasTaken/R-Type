@@ -24,5 +24,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/include
 )
 
+add_subdirectory(POC)
 add_subdirectory(server)
 add_subdirectory(client)

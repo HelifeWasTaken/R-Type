@@ -132,7 +132,7 @@ public:
         }
     }
 
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const {
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
         states.transform *= getTransform();
         for (auto& layer : _layers) {
             states.texture = &layer->first;

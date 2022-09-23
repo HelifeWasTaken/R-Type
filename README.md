@@ -20,9 +20,13 @@ Documentation about the game engine can be found in the [wiki]()
     - Minimum C++ standard is C++17
     - The project is built with g++ on Linux and MSVC on Windows
 
-    - To build the project, run the following commands:
-        - mkdir build
-        - cd build
-        - conan install ..
-        - cmake ..
-        - cmake --build .
+## Build the project (Unix):
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+## Build the project (Windows):
+Generate the Visual Studio Solution with the provided CMAKE.

@@ -10,386 +10,622 @@
 
 #define ECS_ENTITY_PAGESIZE 1000
 
-namespace paa {
-
-class Entity {
-public:
-    using Id = std::size_t;
-
-private:
-    Id id;
-
-public:
-    explicit Entity(Id id) : id(id) {}
-    ~Entity() = default;
-
-    operator Id() const {
-        return id;
-    }
-
-    Id get_id() const { return (Id)*this; }
-};
-
-template <typename Component>
-class sparse_array {
-public:
-    using value_type = std::optional<Component> ;
-    using reference_type = value_type &;
-    using const_reference_type = value_type const &;
-    using container_t = std::vector<value_type>;
-    using size_type = std::size_t;
-    using iterator = typename container_t::iterator;
-    using const_iterator = typename container_t::const_iterator;
-
-    sparse_array()
-    {
-        _data.assign(ECS_ENTITY_PAGESIZE, std::nullopt);
-    }
-
-    ~sparse_array() = default;
-
-    reference_type operator[](size_type idx) {
-        return _data[idx];
-    }
-
-    const_reference_type operator[](size_type idx) const {
-        return _data[idx];
-    }
-
-    iterator begin() {
-        return _data.begin();
-    }
-
-    const_iterator begin() const {
-        return _data.begin();
-    }
-
-    const_iterator cbegin() const {
-        return _data.cbegin();
-    }
-
-    iterator end() {
-        return _data.end();
-    }
-
-    const_iterator end() const {
-        return _data.end();
-    }
-
-    const_iterator cend() const {
-        return _data.cend();
-    }
-
-    size_type size() const {
-        return _data.size();
-    }
-
-    // TODO: Memory alignment and memory pool
-    void ensure_space(size_type pos) {
-        for (; _data.size() <= pos; _data.push_back(std::nullopt));
-    }
-
-    reference_type insert(size_type pos, Component const &comp) {
-        ensure_space(pos);
-        return _data[pos] = comp;
-    }
-
-    reference_type insert(size_type pos, Component &&comp) {
-        ensure_space(pos);
-        return _data[pos] = std::move(comp);
-    }
-
-    template <class... Params>
-    reference_type emplace_at(size_type pos, Params &&...params) {
-        Component c = Component(std::forward<Params>(params)...);
-       return insert_at(pos, std::move(c));
-    }
-
-    void erase(size_type pos) {
-        if (pos >= _data.size())
-            return;
-        _data[pos] = std::nullopt;
-    }
-
-    size_type get_index(value_type const &val) const {
-        return (reinterpret_cast<char *>(&val) -
-               reinterpret_cast<char *>(_data.data())) / sizeof(value_type);
-    }
-
-    bool non_null(size_type pos) const {
-        if (pos >= _data.size())
-            return false;
-        return _data[pos] != std::nullopt;
-    }
-
-private:
-    container_t _data;
-};
-
-template<class ...Components>
-class zipper;
-
-template<class ...Components>
-using view = zipper<Components...>;
-
-class registry
+namespace paa
 {
-public:
-    using anonymous_t = std::any;
 
-    using entity_t = Entity;
-    using entity_id_t = Entity::Id;
-    using dead_entities_t = std::unordered_set<entity_id_t>;
-
-    using component_index_t = std::size_t;
-    using component_registry = std::unordered_map<std::type_index, component_index_t>;
-    template<typename Component>
-    using component_array = sparse_array<Component>;
-    using components_array = std::vector<anonymous_t>;
-    using component_removal_system_t = std::function<void(registry&, entity_t const&)>;
-    using component_removal_system_array = std::vector<component_removal_system_t>;
-
-    using system_t = std::function<void(registry&)>;
-    using system_array = std::vector<system_t>;
-
-    template<class Component>
-    component_array<Component> &component_cast(anonymous_t& anon)
+    class Entity
     {
-        return std::any_cast<component_array<Component>&>(anon);
-    }
-
-    template<class Component>
-    component_index_t type_index() const
-    {
-        return _components_types_index.at(std::type_index(typeid(Component)));
-    }
-
-    template <class Component, typename ...OtherComponents,
-        typename std::enable_if<sizeof...(OtherComponents) == 0>::type* = nullptr>
-    registry &register_component()
-    {
-        anonymous_t anonyme = component_array<Component>();
-
-        _components_types_index[std::type_index(typeid(Component))] = _last_component_index++;
-        _components.push_back(std::move(anonyme));
-        _remove_system_methods.push_back(
-            [](registry& r, const entity_t& e) {
-                r.remove_component<Component>(e);
-            });
-        return *this;
-    }
-
-
-    template <class Component, typename ...OtherComponents,
-        typename std::enable_if<sizeof...(OtherComponents) != 0>::type* = nullptr>
-    inline registry &register_component()
-    {
-        anonymous_t anonyme = component_array<Component>();
-
-        _components_types_index[std::type_index(typeid(Component))] = _last_component_index++;
-        _components.push_back(std::move(anonyme));
-        _remove_system_methods.push_back(
-            [](registry& r, const entity_t& e) {
-                r.remove_component<Component>(e);
-            });
-        return register_component<OtherComponents...>();
-    }
-
-    template <class Component>
-    component_array<Component> &get_components()
-    {
-        return component_cast<Component>(_components[type_index<Component>()]);
-    }
-
-    template <class Component>
-    component_array<Component> const &get_components() const
-    {
-        return component_cast<Component>(_components[type_index<Component>()]);
-    }
-
-    entity_t spawn_entity()
-    {
-        if (_killed_entities.empty())
-            return entity_t(_entities_count++);
-        const entity_id_t random_id = *_killed_entities.begin();
-        _killed_entities.erase(random_id);
-        return entity_t(random_id);
-    }
-
-    void kill_entity(entity_t const& e)
-    {
-        _to_kill_entities.insert(e.get_id());
-    }
-
-    template <typename Component>
-    registry& insert(entity_t const &to, Component &&c)
-    {
-        _last_entity_id = to.get_id();
-        return insert_r(std::move(c));
-    }
-
-    template <typename Component>
-    registry& insert_r(Component &&c)
-    {
-        get_components<Component>().insert(_last_entity_id, std::move(c));
-        return *this;
-    }
-
-    template <typename Component , typename ... Params >
-    registry& emplace(entity_t const &to, Params &&...p)
-    {
-        _last_entity_id = to.get_id();
-        return emplace_r<Component, Params...>(std::forward<Params>(p)...);
-    }
-
-    template <typename Component, typename ... Params >
-    registry& emplace_r(Params &&...p)
-    {
-        Component c = { std::forward<Params>(p)... };
-        get_components<Component>().insert(_last_entity_id, std::move(c));
-        return *this;
-    }
-
-    template <typename Component>
-    registry& remove_component(entity_t const &from)
-    {
-        get_components<Component>().erase(from.get_id());
-        return *this;
-    }
-
-    registry& add_system(const system_t& sys)
-    {
-        _systems.push_back(sys);
-        return *this;
-    }
-
-    registry& add_system(system_t&& sys)
-    {
-        _systems.push_back(sys);
-        return *this;
-    }
-
-    void update()
-    {
-        if (_to_kill_entities.empty() == false) {
-            for (const auto& e : _to_kill_entities) {
-                for (const auto& f : _remove_system_methods)
-                    f(*this, entity_t(e));
-                _killed_entities.insert(e);
-            }
-            _to_kill_entities.clear();
-        }
-        for (const system_t& system : _systems) {
-            system(*this);
-        }
-    }
-
-    entity_id_t entities_count() const
-    {
-        return _entities_count;
-    }
-
-    template<typename ...Components>
-    zipper<Components...> zip() { return zipper<Components...>(*this); }
-
-    template<typename ...Components>
-    view<Components...> view() { return zip<Components...>(); }
-
-private:
-    component_index_t _last_component_index = 0;
-    component_registry _components_types_index;
-    components_array _components;
-    component_removal_system_array _remove_system_methods;
-
-    entity_id_t _entities_count = 0;
-    dead_entities_t _to_kill_entities;
-    dead_entities_t _killed_entities;
-    entity_id_t _last_entity_id = -1;
-
-    system_array _systems;
-};
-
-template <class ...Containers>
-class zipper {
     public:
-        using value_type = std::tuple<sparse_array<Containers>&...>;
+        using Id = std::size_t;
+
+    private:
+        Id id;
+
+    public:
+        /**
+         * @brief Construct a new Entity object
+         * @param  id: The id of the entity
+         * @retval None
+         */
+        explicit Entity(Id id) : id(id) {}
+
+        ~Entity() = default;
+        /**
+         * @brief Get the Id of the entity
+         * @retval The id of the entity
+         */
+        operator Id() const
+        {
+            return id;
+        }
+        /**
+         * @brief Get the Id of the entity
+         * @retval The id of the entity
+         */
+        Id get_id() const { return (Id) * this; }
+    };
+
+    template <typename Component>
+    class sparse_array
+    {
+    public:
+        using value_type = std::optional<Component>;
+        using reference_type = value_type &;
+        using const_reference_type = value_type const &;
+        using container_t = std::vector<value_type>;
+        using size_type = std::size_t;
+        using iterator = typename container_t::iterator;
+        using const_iterator = typename container_t::const_iterator;
+        /**
+         * @brief Construct a new sparse array object
+         * @param  size: The size of the array
+         * @retval None
+         */
+        sparse_array()
+        {
+            _data.assign(ECS_ENTITY_PAGESIZE, std::nullopt);
+        }
+
+        ~sparse_array() = default;
+        /**
+         * @brief Get the index of the component
+         * @retval The index of the component
+         */
+        reference_type operator[](size_type idx)
+        {
+            return _data[idx];
+        }
+        /**
+         * @brief Get the index of the component
+         * @retval The index of the component
+         */
+        const_reference_type operator[](size_type idx) const
+        {
+            return _data[idx];
+        }
+        /**
+         * @brief Get the begin of the array
+         * @retval The begin of the array
+         */
+        iterator begin()
+        {
+            return _data.begin();
+        }
+        /**
+         * @brief Get the begin of the array
+         * @retval The begin of the array
+         */
+        const_iterator begin() const
+        {
+            return _data.begin();
+        }
+        /**
+         * @brief Get the begin of the array
+         * @retval The begin of the array
+         */
+        const_iterator cbegin() const
+        {
+            return _data.cbegin();
+        }
+        /**
+         * @brief Get the end of the array
+         * @retval The end of the array
+         */
+        iterator end()
+        {
+            return _data.end();
+        }
+        /**
+         * @brief Get the end of the array
+         * @retval The end of the array
+         */
+        const_iterator end() const
+        {
+            return _data.end();
+        }
+        /**
+         * @brief Get the end of the array
+         * @retval The end of the array
+         */
+        const_iterator cend() const
+        {
+            return _data.cend();
+        }
+        /**
+         * @brief Get the size of the array
+         * @retval The size of the array
+         */
+        size_type size() const
+        {
+            return _data.size();
+        }
+        /**
+         * @brief Add a new element to the array and put null in it
+         * @retval None
+         */
+        void ensure_space(size_type pos)
+        {
+            for (; _data.size() <= pos; _data.push_back(std::nullopt))
+                ;
+        }
+        /**
+         * @brief Add an element from the array
+         * @param  pos: The position of the element to remove
+         * @param comp: Reference to the component to add
+         * @retval reference to the component
+         */
+        reference_type insert(size_type pos, Component const &comp)
+        {
+            ensure_space(pos);
+            return _data[pos] = comp;
+        }
+        /**
+         * @brief Add an element from the array
+         * @param  pos: The position of the element to remove
+         * @param comp: Reference to the component to add
+         * @retval reference to the component
+         */
+        reference_type insert(size_type pos, Component &&comp)
+        {
+            ensure_space(pos);
+            return _data[pos] = std::move(comp);
+        }
+        /**
+         * @brief  Generate a component for the specified entity
+         * @param  pos: The position of the element to set
+         * @param  &&...params: optional
+         * @retval reference to the component
+         */
+        template <class... Params>
+        reference_type emplace_at(size_type pos, Params &&...params)
+        {
+            Component c = Component(std::forward<Params>(params)...);
+            return insert_at(pos, std::move(c));
+        }
+        /**
+         * @brief Remove an element from the array
+         * @param  pos: The position of the element to remove
+         * @retval None
+         */
+        void erase(size_type pos)
+        {
+            if (pos >= _data.size())
+                return;
+            _data[pos] = std::nullopt;
+        }
+        /**
+         * @brief Return the index of the value
+         * @param  &val: Reference to the value
+         * @retval The index of the value
+         */
+        size_type get_index(value_type const &val) const
+        {
+            return (reinterpret_cast<char *>(&val) -
+                    reinterpret_cast<char *>(_data.data())) /
+                   sizeof(value_type);
+        }
+        /**
+         * @brief  Return true if the array is empty
+         * @param  pos: position of the element
+         * @retval true if the array is empty
+         */
+        bool non_null(size_type pos) const
+        {
+            if (pos >= _data.size())
+                return false;
+            return _data[pos] != std::nullopt;
+        }
+
+    private:
+        container_t _data;
+    };
+    /**
+     * @brief  Template Component class
+     */
+    template <class... Components>
+    class zipper;
+    /**
+     * @brief  Template Component class
+     */
+    template <class... Components>
+    using view = zipper<Components...>;
+
+    class registry
+    {
+    public:
+        using anonymous_t = std::any;
+
+        using entity_t = Entity;
+        using entity_id_t = Entity::Id;
+        using dead_entities_t = std::unordered_set<entity_id_t>;
+
+        using component_index_t = std::size_t;
+        using component_registry = std::unordered_map<std::type_index, component_index_t>;
+        template <typename Component>
+        using component_array = sparse_array<Component>;
+        using components_array = std::vector<anonymous_t>;
+        using component_removal_system_t = std::function<void(registry &, entity_t const &)>;
+        using component_removal_system_array = std::vector<component_removal_system_t>;
+
+        using system_t = std::function<void(registry &)>;
+        using system_array = std::vector<system_t>;
+
+        /**
+         * @brief  Return casted component array
+         * @retval Casted component array
+         */
+        template <class Component>
+        component_array<Component> &component_cast(anonymous_t &anon)
+        {
+            return std::any_cast<component_array<Component> &>(anon);
+        }
+        /**
+         * @brief  Return the index of the component
+         * @retval The index of the component
+         */
+        template <class Component>
+        component_index_t type_index() const
+        {
+            return _components_types_index.at(std::type_index(typeid(Component)));
+        }
+        /**
+         * @brief  Register a new component
+         * @retval Reference of the class registry
+         */
+        template <class Component, typename... OtherComponents,
+                  typename std::enable_if<sizeof...(OtherComponents) == 0>::type * = nullptr>
+        registry &register_component()
+        {
+            anonymous_t anonyme = component_array<Component>();
+
+            _components_types_index[std::type_index(typeid(Component))] = _last_component_index++;
+            _components.push_back(std::move(anonyme));
+            _remove_system_methods.push_back(
+                [](registry &r, const entity_t &e)
+                {
+                    r.remove_component<Component>(e);
+                });
+            return *this;
+        }
+        /**
+         * @brief  Register a new component
+         * @retval Reference of the class registry
+         */
+        template <class Component, typename... OtherComponents,
+                  typename std::enable_if<sizeof...(OtherComponents) != 0>::type * = nullptr>
+        inline registry &register_component()
+        {
+            anonymous_t anonyme = component_array<Component>();
+
+            _components_types_index[std::type_index(typeid(Component))] = _last_component_index++;
+            _components.push_back(std::move(anonyme));
+            _remove_system_methods.push_back(
+                [](registry &r, const entity_t &e)
+                {
+                    r.remove_component<Component>(e);
+                });
+            return register_component<OtherComponents...>();
+        }
+        /**
+         * @brief  Return true if the entity has the component
+         * @retval true if the entity has the component
+         */
+        template <class Component>
+        component_array<Component> &get_components()
+        {
+            return component_cast<Component>(_components[type_index<Component>()]);
+        }
+        /**
+         * @brief  Return true if the entity has the component
+         * @retval true if the entity has the component
+         */
+        template <class Component>
+        component_array<Component> const &get_components() const
+        {
+            return component_cast<Component>(_components[type_index<Component>()]);
+        }
+        /**
+         * @brief  Create a new entity
+         * @retval New entity
+         */
+        entity_t spawn_entity()
+        {
+            if (_killed_entities.empty())
+                return entity_t(_entities_count++);
+            const entity_id_t random_id = *_killed_entities.begin();
+            _killed_entities.erase(random_id);
+            return entity_t(random_id);
+        }
+        /**
+         * @brief  Destroy an entity
+         * @param  entity: The entity to destroy
+         * @retval None
+         */
+        void kill_entity(entity_t const &e)
+        {
+            _to_kill_entities.insert(e.get_id());
+        }
+        /**
+         * @brief  Add a component to an entity
+         * @param  &to: The entity to add the component
+         * @param  &&c: The component to add
+         * @retval Entity with the component
+         */
+        template <typename Component>
+        registry &insert(entity_t const &to, Component &&c)
+        {
+            _last_entity_id = to.get_id();
+            return insert_r(std::move(c));
+        }
+        /**
+         * @brief  Add a component to an entity
+         * @param  &&to: The entity to add the component
+         * @param  &&c: The component to add
+         * @retval Entity with the component
+         */
+        template <typename Component>
+        registry &insert_r(Component &&c)
+        {
+            get_components<Component>().insert(_last_entity_id, std::move(c));
+            return *this;
+        }
+        /**
+         * @brief  Remove a component from an entity
+         * @param  &from: The entity to remove the component
+         * @retval Entity without the component
+         */
+        template <typename Component, typename... Params>
+        registry &emplace(entity_t const &to, Params &&...p)
+        {
+            _last_entity_id = to.get_id();
+            return emplace_r<Component, Params...>(std::forward<Params>(p)...);
+        }
+        /**
+         * @brief  Remove a component from an entity
+         * @param  &&from: The entity to remove the component
+         * @retval Entity without the component
+         */
+        template <typename Component, typename... Params>
+        registry &emplace_r(Params &&...p)
+        {
+            Component c = {std::forward<Params>(p)...};
+            get_components<Component>().insert(_last_entity_id, std::move(c));
+            return *this;
+        }
+        /**
+         * @brief  Remove a component from an entity
+         * @param  &from: The entity to remove the component
+         * @retval Entity without the component
+         */
+        template <typename Component>
+        registry &remove_component(entity_t const &from)
+        {
+            get_components<Component>().erase(from.get_id());
+            return *this;
+        }
+        /**
+         * @brief  Add a system to the registry
+         * @param  sys: The system to add
+         * @retval Reference of the class registry
+         */
+        registry &add_system(const system_t &sys)
+        {
+            _systems.push_back(sys);
+            return *this;
+        }
+        /**
+         * @brief  Add a system to the registry
+         * @param  sys: The system to add
+         * @retval Reference of the class registry
+         */
+        registry &add_system(system_t &&sys)
+        {
+            _systems.push_back(sys);
+            return *this;
+        }
+        /**
+         * @brief  Update all the systems and the components
+         * @retval None
+         */
+        void update()
+        {
+            if (_to_kill_entities.empty() == false)
+            {
+                for (const auto &e : _to_kill_entities)
+                {
+                    for (const auto &f : _remove_system_methods)
+                        f(*this, entity_t(e));
+                    _killed_entities.insert(e);
+                }
+                _to_kill_entities.clear();
+            }
+            for (const system_t &system : _systems)
+            {
+                system(*this);
+            }
+        }
+        /**
+         * @brief  Return the number of entities
+         * @retval Number of entities
+         */
+        entity_id_t entities_count() const
+        {
+            return _entities_count;
+        }
+        /**
+         * @brief  Return the number of killed entities
+         * @retval Number of killed entities
+         */
+        template <typename... Components>
+        zipper<Components...> zip() { return zipper<Components...>(*this); }
+        /**
+         * @brief  Return the number of killed entities
+         * @retval Number of killed entities
+         */
+        template <typename... Components>
+        view<Components...> view() { return zip<Components...>(); }
+
+    private:
+        component_index_t _last_component_index = 0;
+        component_registry _components_types_index;
+        components_array _components;
+        component_removal_system_array _remove_system_methods;
+
+        entity_id_t _entities_count = 0;
+        dead_entities_t _to_kill_entities;
+        dead_entities_t _killed_entities;
+        entity_id_t _last_entity_id = -1;
+
+        system_array _systems;
+    };
+
+    template <class... Containers>
+    class zipper
+    {
+    public:
+        using value_type = std::tuple<sparse_array<Containers> &...>;
         using reference = value_type;
         using pointer = void;
         using difference_type = std::size_t;
-        using iterator_result = std::tuple<registry::entity_id_t, Containers&...>;
+        using iterator_result = std::tuple<registry::entity_id_t, Containers &...>;
 
-        class zipper_iterator {
-            public:
-                iterator_result operator*() {
-                    return iterator_result(
-                        _idx,
-                        std::get<sparse_array<Containers>&>(_current)[_idx].value()...
-                    );
-                }
-
-                zipper_iterator &operator++() {
-                    incr_all<Containers...>();
-                    return *this;
-                }
-
-                friend bool operator ==(zipper_iterator const &lhs,
-                                        zipper_iterator const &rhs)
-                { return lhs._idx == rhs._idx; }
-
-                friend bool operator !=(zipper_iterator const &lhs,
-                                        zipper_iterator const &rhs)
-                { return !(lhs == rhs); }
-
-                zipper_iterator(zipper::value_type& vref,
-                                std::size_t index,
-                                std::size_t end)
-                    : _current(vref)
-                    , _idx(index)
-                    , _end(end)
+        class zipper_iterator
+        {
+        public:
+            /**
+             * @brief  Construct a new zipper iterator object
+             * @param  &z: The zipper to iterate
+             * @param  index: The index of the iterator
+             * @retval None
+             */
+            iterator_result operator*()
+            {
+                return iterator_result(
+                    _idx,
+                    std::get<sparse_array<Containers> &>(_current)[_idx].value()...);
+            }
+            /**
+             * @brief  Increment the iterator
+             * @retval Reference of the iterator
+             */
+            zipper_iterator &operator++()
+            {
+                incr_all<Containers...>();
+                return *this;
+            }
+            /**
+             * @brief  Return true if the two iterators are equal
+             * @param  &other: The other iterator
+             * @retval True if the two iterators are equal
+             */
+            friend bool operator==(zipper_iterator const &lhs,
+                                   zipper_iterator const &rhs)
+            {
+                return lhs._idx == rhs._idx;
+            }
+            /**
+             * @brief  Return true if the two iterators are different
+             * @param  &lhs: The first iterator
+             * @param  &rhs: The second iterator
+             * @retval True if the two iterators are different
+             */
+            friend bool operator!=(zipper_iterator const &lhs,
+                                   zipper_iterator const &rhs)
+            {
+                return !(lhs == rhs);
+            }
+            /**
+             * @brief  Construct a new zipper iterator object
+             * @param  idx: The index of the iterator
+             * @param  current: The current zipper
+             * @retval None
+             */
+            zipper_iterator(zipper::value_type &vref,
+                            std::size_t index,
+                            std::size_t end)
+                : _current(vref), _idx(index), _end(end)
+            {
+                if (!all_set<Containers...>() && index != end)
                 {
-                    if (!all_set<Containers...>() && index != end) {
-                        incr_all<Containers...>();
-                    }
+                    incr_all<Containers...>();
                 }
+            }
 
-            private:
+        private:
+            /**
+             * @brief Increment the index of the sparse array
+             * @param  &c: The sparse array to increment
+             * @retval None
+             */
+            template <typename... ContainersL>
+            /**
+             * @brief  Increment the index of the sparse array
+             * @retval None
+             */
+            void incr_all()
+            {
+                for (++_idx; !all_set<ContainersL...>() && _idx != _end; ++_idx)
+                    ;
+            }
+            /**
+             * @brief  Check if all the containers have a value at the current index
+             * @retval true if all the containers have a value at the current index
+             */
+            template <typename T1, typename... Others,
+                      typename std::enable_if<sizeof...(Others) == 0>::type * = nullptr>
+            /**
+             * @brief  Check if all the containers have the same index
+             * @retval True if all the containers have the same index
+             */
+            bool all_set() const
+            {
+                return std::get<sparse_array<T1> &>(_current).non_null(_idx);
+            }
+            /**
+             * @brief  Check if all the containers are set at the current index
+             * @param  T1: The first container
+             * @param  Others: The other containers
+             * @retval True if all the containers are set at the current index
+             */
+            template <typename T1, typename... Others,
+                      typename std::enable_if<sizeof...(Others) != 0>::type * = nullptr>
+            /** @brief  Check if all the containers are set at the current index
+             * @param  T1: The first container
+             * @param  Others: The other containers
+             * @retval True if all the containers are set at the current index
+             */
+            bool all_set() const
+            {
+                if (std::get<sparse_array<T1> &>(_current).non_null(_idx))
+                    return all_set<Others...>();
+                return false;
+            }
 
-                template<typename ...ContainersL>
-                void incr_all() {
-                    for (++_idx; !all_set<ContainersL...>() && _idx != _end; ++_idx);
-                }
-
-                template <typename T1, typename ...Others,
-                    typename std::enable_if<sizeof...(Others) == 0>::type* = nullptr>
-                bool all_set() const {
-                    return std::get<sparse_array<T1>&>(_current).non_null(_idx);
-                }
-
-                template <typename T1, typename ...Others,
-                    typename std::enable_if<sizeof...(Others) != 0>::type* = nullptr>
-                bool all_set() const {
-                    if (std::get<sparse_array<T1>&>(_current).non_null(_idx))
-                        return all_set<Others...>();
-                    return false;
-                }
-
-            private:
-                zipper::value_type& _current;
-                std::size_t _idx;
-                std::size_t _end;
-                static constexpr std::index_sequence_for<Containers ...> _seq {};
+        private:
+            zipper::value_type &_current;
+            std::size_t _idx;
+            std::size_t _end;
+            static constexpr std::index_sequence_for<Containers...> _seq{};
         };
-
-        zipper(registry& r)
-            : _values(r.get_components<Containers>()...)
-            , _end(_values, r.entities_count(), r.entities_count())
-            , _begin(_values, 0, r.entities_count())
-        {}
-
-
+        /**
+         * @brief  Construct a new zipper object
+         * @param  &reg: The registry to use
+         * @retval None
+         */
+        zipper(registry &r)
+            : _values(r.get_components<Containers>()...), _end(_values, r.entities_count(), r.entities_count()), _begin(_values, 0, r.entities_count())
+        {
+        }
+        /**
+         * @brief  Return the begin iterator
+         * @retval Begin iterator
+         */
         zipper_iterator begin() { return _begin; }
         const zipper_iterator begin() const { return _begin; }
-
+        /**
+         * @brief  Return the end iterator
+         * @retval End iterator
+         */
         zipper_iterator end() { return _end; }
         const zipper_iterator end() const { return _end; }
 
@@ -397,5 +633,5 @@ class zipper {
         value_type _values;
         const zipper_iterator _end;
         const zipper_iterator _begin;
-};
+    };
 }

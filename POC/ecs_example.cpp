@@ -36,9 +36,11 @@ void poc_ecs_example(void)
 
     int i = 0;
 
+    r.register_system(logging_system);
+
     while (i++ < 100) {
         r.emplace<cposition>(r.spawn_entity(), 5, 3)
             .emplace_r<cvelocity>(1, 2);
-        logging_system(r);
+        r.update();
     }
 }

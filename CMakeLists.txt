@@ -20,6 +20,8 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/include
 )
 
-add_subdirectory(POC)
 add_subdirectory(server)
+
+add_compile_definitions(RTYPE_BUILDING_CLIENT)
+add_subdirectory(POC)
 add_subdirectory(client)

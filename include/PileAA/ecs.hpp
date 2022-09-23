@@ -9,6 +9,7 @@
 #include <functional>
 
 #define ECS_ENTITY_PAGESIZE 1000
+#define ECS_BASIC_LAMBDA_UPDATE(T) [](registry& r) { for (auto& [_, c] : r.view<T>()) { c.update(); } }
 
 namespace paa {
 

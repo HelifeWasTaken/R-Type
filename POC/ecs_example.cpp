@@ -1,5 +1,5 @@
 #include <iostream>
-#include "PileAA/ecs.hpp"
+#include <hl/Silva/Silva>
 
 struct cposition {
     int x, y;
@@ -8,7 +8,7 @@ struct cvelocity {
     int vx, vy;
 };
 
-void logging_system(paa::registry &r)
+void logging_system(hl::silva::registry &r)
 {
     // deprecated version:
     // auto const &positions = r.get_components<cposition>();
@@ -30,7 +30,7 @@ void logging_system(paa::registry &r)
 
 void poc_ecs_example(void)
 {
-    paa::registry r;
+    hl::silva::registry r;
 
     r.register_component<cposition, cvelocity>();
 

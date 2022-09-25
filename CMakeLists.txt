@@ -10,19 +10,32 @@ set(BUILD_SHARED_LIBS OFF)
 include(FetchContent)
 
 FetchContent_Declare(SFML GIT_REPOSITORY https://github.com/SFML/SFML.git GIT_TAG 2.6.x)
-FetchContent_Declare(BOOST_ASIO GIT_REPOSITORY https://github.com/boostorg/asio.git)
-FetchContent_MakeAvailable(BOOST_ASIO)
 FetchContent_MakeAvailable(SFML)
 
+if (NOT hl_FOUND)
+	FetchContent_Declare(
+		hl
+		GIT_REPOSITORY https://github.com/HelifeWasTaken/hl
+	)
+	FetchContent_GetProperties(hl)
+	if (NOT hl_POPULATED)
+		FetchContent_Populate(hl)
+		set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+		set(hl_FOUND TRUE)
+	endif()
+endif()
+
 include_directories(
-    ${SFML_SOURCE_DIR}/include
-    ${BOOST_ASIO_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/include
+	${SFML_SOURCE_DIR}/include
+	${BOOST_ASIO_SOURCE_DIR}/include
+	${hl_SOURCE_DIR}/include
+	${CMAKE_SOURCE_DIR}/include
 )
 
-add_subdirectory(server)
+#add_subdirectory(server)
 
 add_compile_definitions(RTYPE_BUILDING_CLIENT)
 add_compile_definitions(RTYPE_USING_POC_MAIN)
+
 add_subdirectory(POC)
 add_subdirectory(client)

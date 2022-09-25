@@ -1,12 +1,15 @@
 #include <iostream>
+/*
 #include <boost/asio.hpp>
 #include <boost/asio/ts/buffer.hpp>
 #include <boost/asio/ts/internet.hpp>
 
 using namespace boost;
+*/
 
 int main()
 {
+/*
     asio::io_context context;
     system::error_code ec;
 
@@ -18,5 +21,6 @@ int main()
         std::cout << "Connected !" << std::endl;
     else
         std::cout << "Error: cannot connect : " << ec.message() << std::endl;
+	*/
     return 0;
 }

@@ -8,11 +8,12 @@
 #include <cstddef>
 #include <functional>
 
+#include <hl/sparse_array>
+
 #define ECS_ENTITY_PAGESIZE 1000
 
 namespace paa
 {
-
     class Entity
     {
     public:
@@ -45,185 +46,12 @@ namespace paa
         Id get_id() const { return (Id) * this; }
     };
 
-    template <typename Component>
-    class sparse_array
-    {
-    public:
-        using value_type = std::optional<Component>;
-        using reference_type = value_type &;
-        using const_reference_type = value_type const &;
-        using container_t = std::vector<value_type>;
-        using size_type = std::size_t;
-        using iterator = typename container_t::iterator;
-        using const_iterator = typename container_t::const_iterator;
-        /**
-         * @brief Construct a new sparse array object
-         * @param  size: The size of the array
-         * @retval None
-         */
-        sparse_array()
-        {
-            _data.assign(ECS_ENTITY_PAGESIZE, std::nullopt);
-        }
-
-        ~sparse_array() = default;
-        /**
-         * @brief Get the index of the component
-         * @retval The index of the component
-         */
-        reference_type operator[](size_type idx)
-        {
-            return _data[idx];
-        }
-        /**
-         * @brief Get the index of the component
-         * @retval The index of the component
-         */
-        const_reference_type operator[](size_type idx) const
-        {
-            return _data[idx];
-        }
-        /**
-         * @brief Get the begin of the array
-         * @retval The begin of the array
-         */
-        iterator begin()
-        {
-            return _data.begin();
-        }
-        /**
-         * @brief Get the begin of the array
-         * @retval The begin of the array
-         */
-        const_iterator begin() const
-        {
-            return _data.begin();
-        }
-        /**
-         * @brief Get the begin of the array
-         * @retval The begin of the array
-         */
-        const_iterator cbegin() const
-        {
-            return _data.cbegin();
-        }
-        /**
-         * @brief Get the end of the array
-         * @retval The end of the array
-         */
-        iterator end()
-        {
-            return _data.end();
-        }
-        /**
-         * @brief Get the end of the array
-         * @retval The end of the array
-         */
-        const_iterator end() const
-        {
-            return _data.end();
-        }
-        /**
-         * @brief Get the end of the array
-         * @retval The end of the array
-         */
-        const_iterator cend() const
-        {
-            return _data.cend();
-        }
-        /**
-         * @brief Get the size of the array
-         * @retval The size of the array
-         */
-        size_type size() const
-        {
-            return _data.size();
-        }
-        /**
-         * @brief Add a new element to the array and put null in it
-         * @retval None
-         */
-        void ensure_space(size_type pos)
-        {
-            for (; _data.size() <= pos; _data.push_back(std::nullopt))
-                ;
-        }
-        /**
-         * @brief Add an element from the array
-         * @param  pos: The position of the element to remove
-         * @param comp: Reference to the component to add
-         * @retval reference to the component
-         */
-        reference_type insert(size_type pos, Component const &comp)
-        {
-            ensure_space(pos);
-            return _data[pos] = comp;
-        }
-        /**
-         * @brief Add an element from the array
-         * @param  pos: The position of the element to remove
-         * @param comp: Reference to the component to add
-         * @retval reference to the component
-         */
-        reference_type insert(size_type pos, Component &&comp)
-        {
-            ensure_space(pos);
-            return _data[pos] = std::move(comp);
-        }
-        /**
-         * @brief  Generate a component for the specified entity
-         * @param  pos: The position of the element to set
-         * @param  &&...params: optional
-         * @retval reference to the component
-         */
-        template <class... Params>
-        reference_type emplace_at(size_type pos, Params &&...params)
-        {
-            Component c = Component(std::forward<Params>(params)...);
-            return insert_at(pos, std::move(c));
-        }
-        /**
-         * @brief Remove an element from the array
-         * @param  pos: The position of the element to remove
-         * @retval None
-         */
-        void erase(size_type pos)
-        {
-            if (pos >= _data.size())
-                return;
-            _data[pos] = std::nullopt;
-        }
-        /**
-         * @brief Return the index of the value
-         * @param  &val: Reference to the value
-         * @retval The index of the value
-         */
-        size_type get_index(value_type const &val) const
-        {
-            return (reinterpret_cast<char *>(&val) -
-                    reinterpret_cast<char *>(_data.data())) /
-                   sizeof(value_type);
-        }
-        /**
-         * @brief  Return true if the array is empty
-         * @param  pos: position of the element
-         * @retval true if the array is empty
-         */
-        bool non_null(size_type pos) const
-        {
-            if (pos >= _data.size())
-                return false;
-            return _data[pos] != std::nullopt;
-        }
-
-    private:
-        container_t _data;
-    };
     /**
      * @brief  Template Component class
      */
     template <class... Components>
     class zipper;
+
     /**
      * @brief  Template Component class
      */
@@ -242,7 +70,7 @@ namespace paa
         using component_index_t = std::size_t;
         using component_registry = std::unordered_map<std::type_index, component_index_t>;
         template <typename Component>
-        using component_array = sparse_array<Component>;
+        using component_array = hl::sparse_array<Component>;
         using components_array = std::vector<anonymous_t>;
         using component_removal_system_t = std::function<void(registry &, entity_t const &)>;
         using component_removal_system_array = std::vector<component_removal_system_t>;

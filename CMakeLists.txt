@@ -13,18 +13,32 @@ include(FetchContent)
 
 message("Declaring SFML...")
 FetchContent_Declare(SFML GIT_REPOSITORY https://github.com/SFML/SFML.git GIT_TAG 2.6.x)
-
-message("Fetching SFML...")
 FetchContent_MakeAvailable(SFML)
 
-message("Done fetching dependencies.")
+if (NOT hl_FOUND)
+	FetchContent_Declare(
+		hl
+		GIT_REPOSITORY https://github.com/HelifeWasTaken/hl
+	)
+	FetchContent_GetProperties(hl)
+	if (NOT hl_POPULATED)
+		FetchContent_Populate(hl)
+		set(BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+		set(hl_FOUND TRUE)
+	endif()
+endif()
 
 include_directories(
-    ${SFML_SOURCE_DIR}/include
-    ${CMAKE_SOURCE_DIR}/include
-    ${PROJECT_SOURCE_DIR}/include/PileAA
-    ${PROJECT_SOURCE_DIR}/include/PileAA/Network
+	${SFML_SOURCE_DIR}/include
+	${BOOST_ASIO_SOURCE_DIR}/include
+	${hl_SOURCE_DIR}/include
+	${CMAKE_SOURCE_DIR}/include
 )
+
+#add_subdirectory(server)
+
+add_compile_definitions(RTYPE_BUILDING_CLIENT)
+add_compile_definitions(RTYPE_USING_POC_MAIN)
 
 add_subdirectory(POC)
 add_subdirectory(server)

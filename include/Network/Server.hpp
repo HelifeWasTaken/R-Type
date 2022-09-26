@@ -1,3 +1,5 @@
+#pragma once
+
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
 #include <boost/container/vector.hpp>
@@ -9,9 +11,35 @@
 #include <boost/thread/lock_guard.hpp>
 #include <boost/move/unique_ptr.hpp>
 #include <boost/atomic.hpp>
+#include <boost/asio/buffer.hpp>
 #include <hl/Silva/sparse_array>
+#include <queue>
+#include <stack>
 
-class UDPClient {
+#ifndef RTYPE_SERVER_MAX_TCP_PACKET_SIZE
+	#define RTYPE_SERVER_MAX_TCP_PACKET_SIZE 512
+#endif
+
+#ifndef RTYPE_SERVER_MAX_UDP_PACKET_SIZE
+	#define RTYPE_SERVER_MAX_UDP_PACKET_SIZE 512
+#endif
+
+namespace rtype {
+namespace net {
+
+using tcp_buffer_t = boost::array<std::uint8_t, RTYPE_SERVER_MAX_TCP_PACKET_SIZE>;
+using udp_buffer_t = boost::array<std::uint8_t, RTYPE_SERVER_MAX_UDP_PACKET_SIZE>;
+
+class IClient {
+public:
+	IClient() = default;
+	virtual ~IClient() = default;
+
+	virtual size_t receive(void *, const size_t) = 0;
+	virtual size_t send(const void *, const size_t) = 0;
+};
+
+class UDPClient : public IClient {
 private:
 	boost::asio::ip::udp::resolver _resolver;
 	boost::asio::ip::udp::resolver::query _query;
@@ -29,18 +57,18 @@ public:
 		_socket.open(boost::asio::ip::udp::v4());
 	}
 
-	size_t receive_from(void *data, const size_t size)
+	size_t receive(void *data, const size_t size) override
 	{
 		return _socket.receive_from(boost::asio::buffer(data, size), _sender_endpoint);
 	}
 
-	size_t send_to(const void* data, const size_t size)
+	size_t send(const void* data, const size_t size) override
 	{
 		return _socket.send_to(boost::asio::buffer(data, size), _receiver_endpoint);
 	}
 };
 
-class TCPClient {
+class TCPClient : public IClient {
 private:
 	boost::asio::ip::tcp::resolver _resolver;
 	boost::asio::ip::tcp::resolver::query _query;
@@ -65,12 +93,12 @@ public:
 			throw boost::system::system_error(error);
 	}
 
-	size_t receive(void* data, const size_t size)
+	size_t receive(void* data, const size_t size) override
 	{
 		return _socket.receive(boost::asio::buffer(data, size));
 	}
 
-	size_t send(const void* data, const size_t size)
+	size_t send(const void* data, const size_t size) override
 	{
 		return _socket.send(boost::asio::buffer(data, size));
 	}
@@ -111,26 +139,48 @@ public:
 		TCP_MESSAGE,
 		INVALID
 	};
-	
+
+	struct ServerMessageTCP {
+		size_t id;
+		size_t used;
+		tcp_buffer_t buffer;
+	};
+
+	struct ServerMessageUDP {
+		size_t id;
+		size_t used;
+		udp_buffer_t buffer;
+	};
+
 	using ServerEventContainer = boost::variant<
 		size_t,
-		boost::container::vector<char>,
+		ServerMessageTCP,
+		ServerMessageUDP,
 		void *
 	>;
 
 private:
-	const ServerEventType _type;
+	ServerEventType _type;
 	ServerEventContainer _event;
 
 public:
 	ServerEvent(ServerEventType type, ServerEventContainer&& event)
-		: _type(type), _event(boost::move(event))
+		: _type(type), _event(std::move(event))
 	{}
 
 	ServerEvent()
 		: _type(ServerEventType::INVALID)
 		, _event(ServerEventContainer(nullptr))
 	{}
+
+	~ServerEvent() = default;
+
+	ServerEvent(const ServerEvent& e) = default;
+
+	ServerEvent& operator=(const ServerEvent& e) = default;
+
+	ServerEvent(ServerEvent&&) = default;
+	ServerEvent& operator=(ServerEvent&&) = default;
 
 	ServerEventType get_type() const { return _type; }
 	ServerEventContainer &get_raw_event() { return _event;  }
@@ -139,44 +189,79 @@ public:
 };
 
 class Server {
-private:
+public:
 	template<typename Socket>
-	using socket_sparse_array_t = hl::silva::sparse_array<boost::movelib::unique_ptr<Socket>>;
+	using socket_sparse_array_t = hl::silva::sparse_array<Socket>;
 
+	struct ClientContext {
+		boost::asio::ip::tcp::socket socket;
+		tcp_buffer_t buffer;
+		boost::atomic_bool is_reading;
+
+		ClientContext(boost::asio::io_service& service)
+			: socket(service)
+		{is_reading = false;}
+
+		~ClientContext() = default;
+		ClientContext(const ClientContext&) = default;
+		ClientContext(ClientContext&&) = default;
+	};
+ 
+	using shared_client_context_t = std::shared_ptr<ClientContext>;
+
+private:
 	// IO services
 	boost::asio::io_service _tcp_io_service;
 	boost::asio::ip::tcp::acceptor _tcp_acceptor;
+
 	boost::asio::io_service _udp_io_service;
+	boost::asio::ip::udp::socket _server_udp_socket;
 
 	// Sockets
-	socket_sparse_array_t<boost::asio::ip::tcp::socket> _tcp_sockets;
-	boost::lockfree::stack<size_t> _unused_tcp_sockets_indexes;
+	socket_sparse_array_t<shared_client_context_t> _tcp_sockets;
+	std::stack<size_t> _unused_tcp_sockets_indexes;
+	std::mutex _unused_tcp_sockets_indexes_mut;
+
 	boost::atomic_size_t _last_tcp_index;
-	boost::mutex _tcp_sockets_mut;
+	std::mutex _tcp_sockets_mut;
 
 	// Events
-	boost::lockfree::queue<ServerEvent> _event;
+	std::queue<ServerEvent> _event;
+	std::mutex _event_mut;
+
 	boost::atomic_bool _server_running;
 
 	// Threads
-	boost::movelib::unique_ptr<boost::thread> _thread_tcp_acceptor;
-	boost::movelib::unique_ptr<boost::thread> _thread_udp_reader;
-	boost::movelib::unique_ptr<boost::thread> _thread_tcp_reader;
+	std::unique_ptr<boost::thread> _thread_udp_reader;
+	std::unique_ptr<boost::thread> _thread_tcp_reader;
+	std::unique_ptr<boost::thread> _thread_tcp_acceptor;
 
+public:
+	void add_event(ServerEvent&& event)
+	{
+		std::lock_guard<std::mutex> lock(_event_mut);
+		_event.push(std::move(event));
+	}
+
+private:
 	//
 	// Utitlity verbose function for sync_disconnection
 	// Is thread safe as long as the good mutex and socket_sparse_array is passed
 	//
 	template<typename SocketSparseArray>
-	void disconnect_any_socket_sync(const size_t index, SocketSparseArray& s, boost::mutex &mut, ServerEvent::ServerEventType event_type)
+	void disconnect_any_socket_sync(const size_t index, SocketSparseArray& s, std::mutex &mut, ServerEvent::ServerEventType event_type)
 	{
-		boost::lock_guard<boost::mutex> lock(mut);
+		std::lock_guard<std::mutex> lock(mut);
 
 		// Maybe handle disconnection failure send event
 		if (s.non_null(index)) {
 			s.erase(index);
-			_event.push(ServerEvent(event_type boost::move(ServerEvent::ServerEventContainer(index))));
-                        _unused_tcp_sockets_indexes.push(index);
+
+			std::lock_guard<std::mutex> lock_(_unused_tcp_sockets_indexes_mut);
+			add_event(std::move(ServerEvent(event_type, std::move(ServerEvent::ServerEventContainer(index)))));
+			_unused_tcp_sockets_indexes.push(index);
+			if (index == _last_tcp_index - 1)
+				--_last_tcp_index;
 		}
 	}
 
@@ -185,18 +270,21 @@ private:
 	// Is thread safe as long as the good mutex and socket_sparse_array is passed
 	//
 	template<typename SocketSparseArray>
-	void connect_any_socket_sync(SocketSparseArray& s, boost::mutex& mut, ServerEvent::ServerEventType event_type,
-		boost::movelib::unique_ptr<boost::asio::ip::tcp::socket>&& socket)
+	void connect_any_socket_sync(SocketSparseArray& s, std::mutex& mut, ServerEvent::ServerEventType event_type,
+		shared_client_context_t&& client_context)
 	{
-		boost::lock_guard<boost::mutex> lock(mut);
+		std::lock_guard<std::mutex> lock(mut);
+		std::lock_guard<std::mutex> lock_(_unused_tcp_sockets_indexes_mut);
 		size_t optional_index;
 
-		if (_unused_tcp_sockets.pop(optional_index)) {
-			s.insert(optional_index, boost::move(socket));
-			_event.push(ServerEvent(event_type boost::move(ServerEvent::ServerEventContainer(optional_index))));
+		if (!_unused_tcp_sockets_indexes.empty()) {
+			optional_index = _unused_tcp_sockets_indexes.top();
+			_unused_tcp_sockets_indexes.pop();
+			s.insert(optional_index, std::move(client_context));
+			add_event(std::move(ServerEvent(event_type, std::move(ServerEvent::ServerEventContainer(optional_index)))));
 		} else {
-			s.insert(_last_tcp_index, boost::move(socket));
-			_event.push(ServerEvent(event_type boost::move(ServerEvent::ServerEventContainer(_last_tcp_index)))));
+			s.insert(_last_tcp_index, std::move(client_context));
+			add_event(std::move(ServerEvent(event_type, std::move(ServerEvent::ServerEventContainer(_last_tcp_index)))));
 			++_last_tcp_index;
 		}
 	}
@@ -212,11 +300,48 @@ private:
 	{
 		do {
 			try {
-				boost::movelib::unique_ptr<boost::asio::ip::tcp::socket> socket(new boost::asio::ip::tcp::socket(_tcp_io_service));
-				_tcp_acceptor.accept(*socket);
+				ClientContext *context = new ClientContext(_tcp_io_service);
+				shared_client_context_t socket(context);
+
+				_tcp_acceptor.accept(socket->socket);
 				connect_any_socket_sync(_tcp_sockets, _tcp_sockets_mut, ServerEvent::ServerEventType::TCP_CONNECTION, std::move(socket));
 			} catch (...) {}
 		} while (_server_running);
+	}
+
+	void read_single_client_tcp_socket(size_t i)
+	{
+		{
+			std::lock_guard<std::mutex> lock(_tcp_sockets_mut);
+			if (!_tcp_sockets.non_null(i))
+				return;
+			auto& ctx = *_tcp_sockets[i].value();
+			if (ctx.is_reading)
+				return;
+		}
+
+		auto& ctx = *_tcp_sockets[i].value();
+		ctx.is_reading = true;
+
+		boost::asio::async_read(ctx.socket,
+			boost::asio::buffer(ctx.buffer),
+			//boost::asio::transfer_at_least(1),
+			[&self=*this, i, &ctx]
+			(boost::system::error_code ec, size_t readed_bytes) {
+				std::cout << "Callback!" << std::endl;
+				if (ec) {
+					self.disconnect_tcp_socket_sync(i);
+					return;
+				}
+				if (!readed_bytes)
+					return;
+				auto container = ServerEvent::ServerMessageTCP { .id = i, .used = readed_bytes, .buffer = ctx.buffer };
+				ServerEvent sevent(ServerEvent::ServerEventType::TCP_MESSAGE,
+					std::move(ServerEvent::ServerEventContainer(container)));
+				self.add_event(std::move(sevent));
+				ctx.is_reading = false;
+			}
+		);
 	}
 
 	//
@@ -228,11 +353,11 @@ private:
 	//
 	void read_tcp_sockets()
 	{
-		// TODO: Unimplemented
-		// Determine which socket to read on
-		// Then add the event in the queue
 		do {
-
+			for (size_t i = 0; i < _last_tcp_index; ++i) {
+				read_single_client_tcp_socket(i);
+				_tcp_io_service.run_one();
+			}
 		} while (_server_running);
 	}
 
@@ -245,12 +370,11 @@ private:
 	//
 	void read_udp_sockets()
 	{
-		// TODO: Unimplemented
-		// Read the trame of the message if any
-		// Determine if it belongs to any of the tcp socket
-		// If not ignore else add the message to the event queue
 		do {
-			
+      		boost::array<char, 1> recv_buf;
+      		boost::asio::ip::udp::endpoint remote_endpoint;
+      		_server_udp_socket.receive_from(boost::asio::buffer(recv_buf), remote_endpoint);
+			// TODO: Parse trame
 		} while (_server_running);
 	}
 public:
@@ -265,16 +389,16 @@ public:
 		if (_server_running)
 			return true;
 		try {
-			_thread_tcp_acceptor = boost::movelib::unique_ptr<boost::thread>(
-				new boost::thread(std::bind(&Server::accept_tcp_clients_sync, *this))
+			_thread_tcp_acceptor = std::unique_ptr<boost::thread>(
+				new boost::thread(std::bind(&Server::accept_tcp_clients_sync, this))
 				);
 
-			_thread_tcp_reader = boost::movelib::unique_ptr<boost::thread>(
-				new boost::thread(std::bind(&Server::read_tcp_sockets, *this))
+			_thread_tcp_reader = std::unique_ptr<boost::thread>(
+				new boost::thread(std::bind(&Server::read_tcp_sockets, this))
 				);
 
-			_thread_udp_reader = boost::movelib::unique_ptr<boost::thread>(
-				new boost::thread(std::bind(&Server::read_udp_sockets, *this))
+			_thread_udp_reader = std::unique_ptr<boost::thread>(
+				new boost::thread(std::bind(&Server::read_udp_sockets, this))
 				);
 		} catch (...) {
 			_server_running = false;
@@ -303,8 +427,10 @@ public:
 
 	Server(const int tcp_port, const int udp_port)
 		: _tcp_acceptor(_tcp_io_service, boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), tcp_port))
+		, _server_udp_socket(_udp_io_service, boost::asio::ip::udp::endpoint(boost::asio::ip::udp::v4(), udp_port))
 	{
 		_last_tcp_index = 0;
+		_server_running = false;
 	}
 
 	~Server() { stop(); }
@@ -327,7 +453,12 @@ public:
 	//
 	bool poll(ServerEvent& event)
 	{
-		return _event.pop(event);
+		std::lock_guard<std::mutex> lock(_event_mut);
+		if (_event.empty())
+			return false;
+		event = std::move(_event.front());
+		_event.pop();
+		return true;
 	}
 
 	//
@@ -338,3 +469,6 @@ public:
 		return _server_running;
 	}
 };
+
+}
+}

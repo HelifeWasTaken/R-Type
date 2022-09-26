@@ -17,7 +17,7 @@ HL_SUB_ERROR_IMPL(ResourceManagerError, AABaseError);
  */
 class ResourceManager {
 private:
-    using LoadableResource = std::variant<sf::Texture, sf::Font, sf::SoundBuffer>;
+    using LoadableResource = std::variant<sf::Texture, sf::Font, sf::SoundBuffer, sf::Image>;
     using ResourceHolder    = std::unordered_map<std::string,
                             std::unique_ptr<LoadableResource>>;
 
@@ -79,4 +79,3 @@ public:
 };
 
 }
-

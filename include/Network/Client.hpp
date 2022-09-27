@@ -15,35 +15,33 @@ using namespace boost::asio::ip;
 
 namespace PAA {
 
-    class Client {
+class Client {
 
-        //Functions
-        public:
+    // Functions
+public:
+    /**
+     * @brief default constructor
+     * @param  service: the current service the server is running with
+     * @retval None
+     */
+    Client(tcp::socket& socket);
 
-            /**
-             * @brief default constructor
-             * @param  service: the current service the server is running with
-             * @retval None
-             */
-            Client(tcp::socket &socket);
+    /**
+     * @brief  default destructor
+     * @retval None
+     */
+    ~Client() = default;
 
-            /**
-             * @brief  default destructor
-             * @retval None
-             */
-            ~Client() = default;
+    /**
+     * @brief return the tcpSocket used by the client
+     * @retval the tcp socket
+     */
+    tcp::socket& getTcpSocket();
 
-            /**
-             * @brief return the tcpSocket used by the client
-             * @retval the tcp socket
-             */
-            tcp::socket& getTcpSocket();
+    void sendMessage(std::string const& msg, tcp::socket& receiver);
 
-            void sendMessage(std::string const &msg, tcp::socket& receiver);
-
-        //Variables
-        private:
-            tcp::socket& _tcpSocket;
-
-    };
+    // Variables
+private:
+    tcp::socket& _tcpSocket;
+};
 }

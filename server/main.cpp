@@ -11,7 +11,7 @@ using namespace boost;
 
 void display_event(rtype::net::ServerEvent& event)
 {
-    std::cout << "event coucuoo" << std::endl;
+    std::cout << "event coucou" << std::endl;
     if (event.get_type() == rtype::net::ServerEvent::ServerEventType::TCP_CONNECTION) {
         std::cout << "Connection: " << event.get_event<size_t>() << std::endl;
     } else if (event.get_type() == rtype::net::ServerEvent::ServerEventType::TCP_DISCONNECTION) {
@@ -22,9 +22,12 @@ void display_event(rtype::net::ServerEvent& event)
     }
 }
 
-int main()
+#include <assert.h>
+
+int main(int ac, char **av)
 {
-    rtype::net::Server s(42, 43);
+    assert(ac == 3);
+    rtype::net::Server s(atoi(av[1]), atoi(av[2]));
 
     s.start();
     while (s.is_running()) {

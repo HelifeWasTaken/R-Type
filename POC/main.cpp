@@ -3,10 +3,12 @@
 #include <functional>
 #include <iostream>
 #include "poc.hpp"
+
 static const std::unordered_map<std::string, std::function<void(void)>> POCS = {
     {"animated_sprite", poc_animated_sprite},
     {"ecs_example", poc_ecs_example},
-    {"server_example", poc_server_example}
+    {"server_example", poc_server_example},
+    {"server_write_udp", poc_server_write_tcp_example}
 };
 
 int main(int ac, char **av)

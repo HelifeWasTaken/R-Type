@@ -21,7 +21,7 @@
 #endif
 
 #ifndef RTYPE_SERVER_MAX_UDP_PACKET_SIZE
-#define RTYPE_SERVER_MAX_UDP_PACKET_SIZE 1000
+#define RTYPE_SERVER_MAX_UDP_PACKET_SIZE 500
 #endif
 
 namespace rtype {
@@ -200,7 +200,9 @@ namespace net {
             boost::asio::ip::tcp::socket socket;
             tcp_buffer_t buffer;
             std::unique_ptr<std::thread> reader_thread;
+            std::unique_ptr<std::thread> writer_thread;
             std::atomic_bool is_reading;
+            std::atomic_bool is_writing;
             std::atomic_bool should_close;
 
             ClientContext(boost::asio::io_context& service)
@@ -266,8 +268,12 @@ namespace net {
 
             // Maybe handle disconnection failure send event
             if (s.non_null(index)) {
-                if (s[index].value()->reader_thread) {
-                    s[index].value()->reader_thread->join();
+                auto& socket = *s[index].value();
+                if (socket.reader_thread && socket.is_reading) {
+                    socket.reader_thread->join();
+                }
+                if (socket.writer_thread && socket.is_writing) {
+                    socket.writer_thread->join();
                 }
                 s.erase(index);
 
@@ -454,7 +460,6 @@ namespace net {
             } while (_server_running);
         }
 
-    public:
         //
         // Can be runnned in a separate thread
         // Starts the server if not already running
@@ -503,6 +508,7 @@ namespace net {
             return true;
         }
 
+    public:
         Server(const int tcp_port, const int udp_port)
             : _tcp_acceptor(_tcp_io_context, boost::asio::ip::tcp::endpoint(
                                boost::asio::ip::tcp::v4(), tcp_port))
@@ -512,13 +518,14 @@ namespace net {
         {
             _last_tcp_index = 0;
             _server_running = false;
+            start();
             // _tcp_acceptor.listen(RTYPE_SERVER_MAX_CLIENT);
-            std::cout << "[Server Connected]: 127.0.0.1 - UDP(" << udp_port << ") TCP("
-                      << tcp_port << ")" << std::endl;
+            std::printf("[Server Connected]:\n\t- TCP 127.0.0.1:%d\n\t- UDP 127.0.0.1:%d\n", tcp_port, udp_port);
         }
 
         ~Server() { stop(); }
 
+    private:
         //
         // can be runned in a separate thread
         // Will add in the event queue the disconnection if the tcp_socket
@@ -531,6 +538,7 @@ namespace net {
                 ServerEvent::TCP_DISCONNECTION);
         }
 
+    public:
         //
         // Polls the server for any event that might have occured
         // If no event occured returns false
@@ -550,6 +558,42 @@ namespace net {
         // Tells whether the server is running
         //
         bool is_running() const { return _server_running; }
+
+        //
+        // Write asynchronously to a specific client
+        //
+        void write_tcp_socket(const size_t index, tcp_buffer_t& tcp_buffer, const size_t size)
+        {
+            std::lock_guard<std::mutex> lock(_tcp_sockets_mut);
+
+            if (_tcp_sockets.non_null(index)) {
+                auto& ctx = *_tcp_sockets[index].value();
+                if (ctx.is_writing) {
+                    ctx.writer_thread->join();
+                }
+
+                tcp_buffer_t *buffer = new tcp_buffer_t(tcp_buffer);
+
+                ctx.is_writing = true;
+                ctx.writer_thread = std::unique_ptr<std::thread>(
+                    new std::thread([&ctx, &buffer, size]() {
+                        ctx.socket.write_some(boost::asio::buffer(buffer, size));
+                        delete buffer;
+                        ctx.is_writing = false;
+                    })
+                );
+            }
+        }
+
+        bool can_write_directly_on_tcp_socket(const size_t index, const void *data)
+        {
+            std::lock_guard<std::mutex> lock(_tcp_sockets_mut);
+
+            if (_tcp_sockets.non_null(index)) {
+                return !_tcp_sockets[index].value()->is_writing;
+            }
+            return false;
+        }
     };
 
 }

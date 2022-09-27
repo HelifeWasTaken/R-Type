@@ -18,7 +18,12 @@ void display_event(rtype::net::ServerEvent& event)
         std::cout << "Disconnection: " << event.get_event<size_t>() << std::endl;
     } else if (event.get_type() == rtype::net::ServerEvent::ServerEventType::TCP_MESSAGE) {
         auto& ref = event.get_event<rtype::net::ServerEvent::ServerMessageTCP>();
-        std::cout << "TCP Message: " << ref.id << " -> " << ref.buffer.c_array() << std::endl;
+        std::cout << "TCP Message: " << ref.id << " -> "
+                << std::string(ref.buffer.c_array(), ref.buffer.c_array() + ref.used) << std::endl;
+    } else if (event.get_type() == rtype::net::ServerEvent::ServerEventType::UDP_MESSAGE) {
+        auto& ref = event.get_event<rtype::net::ServerEvent::ServerMessageUDP>();
+        std::cout << "UDP Message: " << ref.id << " -> "
+                << std::string(ref.buffer.c_array(), ref.buffer.c_array() + ref.used) << std::endl;
     }
 }
 

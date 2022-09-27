@@ -366,6 +366,12 @@ namespace net {
                 std::move(event_container))));
         }
 
+        void send_udp_message_event(ServerEvent::ServerEventContainer&& event_container)
+        {
+            add_event(std::move(ServerEvent(ServerEvent::ServerEventType::UDP_MESSAGE,
+                std::move(event_container))));
+        }
+
         void read_single_client_tcp_socket(size_t i)
         {
             if (!read_single_client_tcp_socket_check_index_and_update_client_context(i))
@@ -436,11 +442,15 @@ namespace net {
             size_t readed_bytes;
 
             do {
-
                 boost::asio::ip::udp::endpoint remote_endpoint;
                 readed_bytes = _server_udp_socket.receive_from(
                     boost::asio::buffer(udp_buffer), remote_endpoint);
-                // TODO: Parse trame
+
+                // TODO: Verify packet integrity and send the good ID (Maybe change ServerMessageUDP struct)
+                send_udp_message_event(
+                    std::move(ServerEvent::ServerEventContainer(
+                        ServerEvent::ServerMessageUDP { 0, readed_bytes, udp_buffer }
+                )));
             } while (_server_running);
         }
 

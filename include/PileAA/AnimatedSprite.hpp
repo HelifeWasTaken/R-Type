@@ -1,12 +1,15 @@
 #pragma once
 
-#include <PileAA/Timer.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <unordered_map>
+#include "Timer.hpp"
 
 namespace paa {
 
+    /**
+     * @brief Animation base presentation
+     */
     struct Animation {
         std::vector<sf::IntRect> rects;
         double speed;
@@ -32,6 +35,11 @@ namespace paa {
         AnimatedSprite() = default;
         ~AnimatedSprite() = default;
 
+        /**
+         * @brief Register an animation
+         * @param animationName Animation name
+         * @param animation Animation data
+         */
         void registerAnimation(const std::string& animationName, const Animation& animation)
         {
             _reg[animationName] = animation;
@@ -39,6 +47,10 @@ namespace paa {
                 _currentAnimation = &_reg[animationName];
         }
 
+        /**
+         * @brief Set the current animation
+         * @param animationName Animation name
+         */
         void useAnimation(const std::string& animationName)
         {
             _currentAnimation = &_reg.at(animationName);
@@ -46,6 +58,9 @@ namespace paa {
             _setRect(0);
         }
 
+        /**
+         * @brief Update the animation
+         */
         void update()
         {
             if (_timer.isFinished()) {
@@ -53,6 +68,15 @@ namespace paa {
             }
         }
 
+        /**
+         * @brief Determines logically the frames on a well formed sprite sheet
+         * @param frameSize Size of a frame
+         * @param texture Texture of the sprite sheet
+         * @param frames Number of frames
+         * @param startPos Starting position of the first frame (Optional)
+         * @param spacing Spacing between frames (Optional)
+         * @return std::vector<sf::IntRect>
+         */
         static inline std::vector<sf::IntRect> determineRects(
             const sf::Vector2u &frameSize, const sf::Texture &texture,
             const unsigned int &frames, const sf::Vector2u &startPos = sf::Vector2u(0, 0),

@@ -34,10 +34,29 @@ namespace net {
 
     class IClient {
     public:
+        /**
+         * @brief Creates a new client
+         */
         IClient() = default;
+        /**
+         * @brief Destroys the client
+         */
         virtual ~IClient() = default;
 
+        /**
+         * @brief Receive data from the server (Blocking)
+         * @param void * The buffer
+         * @param size_t The size of the buffer
+         * @return size_t Number of bytes received
+         */
         virtual size_t receive(void*, const size_t) = 0;
+
+        /**
+         * @brief Send data to the client (Blocking)
+         * @param void * The buffer
+         * @param size_t The size of the buffer
+         * @return size_t Number of bytes sent
+         */
         virtual size_t send(const void*, const size_t) = 0;
     };
 
@@ -50,6 +69,11 @@ namespace net {
         boost::asio::ip::udp::endpoint _sender_endpoint;
 
     public:
+        /**
+         * @brief Creates a new UDP client
+         * @param boost::asio::io_service & The io_service
+         * @param const char * The host
+         */
         UDPClient(boost::asio::io_context& io_context, const char* host)
             : _resolver(io_context)
             , _query(boost::asio::ip::udp::v4(), host, "daytime")
@@ -80,6 +104,11 @@ namespace net {
         boost::asio::ip::tcp::socket _socket;
 
     public:
+        /**
+         * @brief Creates a new TCP client
+         * @param boost::asio::io_service & The io_service
+         * @param const char * The host
+         */
         TCPClient(boost::asio::io_context& io_context, const char* host)
             : _resolver(io_context)
             , _query(host, "daytime")
@@ -118,15 +147,29 @@ namespace net {
         TCPClient _tcp_client;
 
     public:
-        UDP_TCP_Client(const char* host)
+        /**
+         * @brief Creates a new UDP_TCP_Client
+         * @param const char * The tcp host
+         * @param const char * The udp host
+         */
+        UDP_TCP_Client(const char* host_tcp, const char* host_udp)
             : _tcp_io_context(boost::asio::io_context())
             , _udp_io_context(boost::asio::io_context())
-            , _udp_client(_udp_io_context, host)
-            , _tcp_client(_tcp_io_context, host)
+            , _udp_client(_udp_io_context, host_udp)
+            , _tcp_client(_tcp_io_context, host_tcp)
         {
         }
 
+        /**
+         * @brief Gets the UDP client
+         * @return UDPClient & The UDP client
+         */
         UDPClient& udp() { return _udp_client; }
+
+        /**
+         * @brief Gets the TCP client
+         * @return TCPClient & The TCP client
+         */
         TCPClient& tcp() { return _tcp_client; }
     };
 
@@ -166,37 +209,74 @@ namespace net {
         ServerEventContainer _event;
 
     public:
+        /**
+         * @brief Creates a new ServerEvent
+         * @param ServerEventType The type of the event
+         * @param ServerEventContainer The event
+         */
         ServerEvent(ServerEventType type, ServerEventContainer&& event)
             : _type(type)
             , _event(std::move(event))
         {
         }
 
+        /**
+         * @brief Creates an invalid ServerEvent
+         */
         ServerEvent()
             : _type(ServerEventType::INVALID)
             , _event(ServerEventContainer(nullptr))
         {}
 
+        /**
+         * @brief Destroys the server event
+         */
         ~ServerEvent() = default;
 
+        /**
+         * @brief Copies the server event
+         */
         ServerEvent(const ServerEvent& e) = default;
 
+        /**
+         * @brief Copies the server event
+         */
         ServerEvent& operator=(const ServerEvent& e) = default;
 
+        /**
+         * @brief Moves the server event
+         */
         ServerEvent(ServerEvent&&) = default;
+        /**
+         * @brief Moves the server event
+         */
         ServerEvent& operator=(ServerEvent&&) = default;
 
+        /**
+         * @brief Gets the type of the event
+         * @return ServerEventType The type of the event
+         */
         ServerEventType get_type() const { return _type; }
+
+        /**
+         * @brief Gets the raw event
+         * @return ServerEventContainer The event
+         */
         ServerEventContainer& get_raw_event() { return _event; }
+
+        /**
+         * @brief Gets the raw event and cast it to the given type
+         * @return ServerEventContainer The event
+         */
         template <typename T> T& get_event() { return boost::get<T&>(_event); }
     };
 
     class Server {
     public:
         template <typename Socket>
-        using socket_sparse_array_t = hl::silva::sparse_array<Socket>;
+        using client_context_sparse_array_t = hl::silva::sparse_array<Socket>;
 
-        struct ClientContext {
+        struct TCPClientContext {
             boost::asio::ip::tcp::socket socket;
             tcp_buffer_t buffer;
             std::unique_ptr<std::thread> reader_thread;
@@ -205,19 +285,25 @@ namespace net {
             std::atomic_bool is_writing;
             std::atomic_bool should_close;
 
-            ClientContext(boost::asio::io_context& service)
+            /**
+             * @brief Creates a new TCPClientContext for a TCP Client
+             */
+            TCPClientContext(boost::asio::io_context& service)
                 : socket(service)
             {
                 is_reading = false;
                 should_close = false;
             }
 
-            ~ClientContext() = default;
-            ClientContext(const ClientContext&) = default;
-            ClientContext(ClientContext&&) = default;
+            /*
+            TCPClientContext(const ClientContext&) = default;
+            TCPClientContext(ClientContext&&) = default;
+            */
+
+            ~TCPClientContext() = default;
         };
 
-        using shared_client_context_t = std::shared_ptr<ClientContext>;
+        using shared_tcp_client_context_t = std::shared_ptr<TCPClientContext>;
 
     private:
         // IO services
@@ -228,12 +314,12 @@ namespace net {
         boost::asio::ip::udp::socket _server_udp_socket;
 
         // Sockets
-        socket_sparse_array_t<shared_client_context_t> _tcp_sockets;
-        std::stack<size_t> _unused_tcp_sockets_indexes;
-        std::mutex _unused_tcp_sockets_indexes_mut;
+        client_context_sparse_array_t<shared_tcp_client_context_t> _tcp_client_contexts;
+        std::stack<size_t> _unused_tcp_client_contexts_indexes;
+        std::mutex _unused_tcp_client_contexts_indexes_mut;
 
         std::atomic_size_t _last_tcp_index;
-        std::mutex _tcp_sockets_mut;
+        std::mutex _tcp_client_contexts_mut;
 
         // Events
         std::queue<ServerEvent> _event;
@@ -256,12 +342,12 @@ namespace net {
     private:
         //
         // Utitlity verbose function for sync_disconnection
-        // Is thread safe as long as the good mutex and socket_sparse_array is
+        // Is thread safe as long as the good mutex and client_context_sparse_array is
         // passed
         //
-        template <typename SocketSparseArray>
+        template <typename ClientContextSparseArray>
         void disconnect_any_socket_sync(const size_t index,
-            SocketSparseArray& s, std::mutex& mut,
+            ClientContextSparseArray& s, std::mutex& mut,
             ServerEvent::ServerEventType event_type)
         {
             std::lock_guard<std::mutex> lock(mut);
@@ -278,10 +364,10 @@ namespace net {
                 s.erase(index);
 
                 std::lock_guard<std::mutex> lock_(
-                    _unused_tcp_sockets_indexes_mut);
+                    _unused_tcp_client_contexts_indexes_mut);
                 add_event(std::move(ServerEvent(event_type,
                     std::move(ServerEvent::ServerEventContainer(index)))));
-                _unused_tcp_sockets_indexes.push(index);
+                _unused_tcp_client_contexts_indexes.push(index);
                 if (index == _last_tcp_index - 1)
                     --_last_tcp_index;
             }
@@ -289,27 +375,27 @@ namespace net {
 
         //
         // Utitlity verbose function for sync_connection
-        // Is thread safe as long as the good mutex and socket_sparse_array is
+        // Is thread safe as long as the good mutex and client_context_sparse_array is
         // passed
         //
-        template <typename SocketSparseArray>
-        void connect_any_socket_sync(SocketSparseArray& s, std::mutex& mut,
+        template <typename ClientContextSparseArray>
+        void connect_any_socket_sync(ClientContextSparseArray& s, std::mutex& mut,
             ServerEvent::ServerEventType event_type,
-            shared_client_context_t&& client_context)
+            shared_tcp_client_context_t&& tcp_client_context)
         {
             std::lock_guard<std::mutex> lock(mut);
-            std::lock_guard<std::mutex> lock_(_unused_tcp_sockets_indexes_mut);
+            std::lock_guard<std::mutex> lock_(_unused_tcp_client_contexts_indexes_mut);
             size_t optional_index;
 
-            if (!_unused_tcp_sockets_indexes.empty()) {
-                optional_index = _unused_tcp_sockets_indexes.top();
-                _unused_tcp_sockets_indexes.pop();
-                s.insert(optional_index, std::move(client_context));
+            if (!_unused_tcp_client_contexts_indexes.empty()) {
+                optional_index = _unused_tcp_client_contexts_indexes.top();
+                _unused_tcp_client_contexts_indexes.pop();
+                s.insert(optional_index, std::move(tcp_client_context));
                 add_event(std::move(ServerEvent(event_type,
                     std::move(
                         ServerEvent::ServerEventContainer(optional_index)))));
             } else {
-                s.insert(_last_tcp_index, std::move(client_context));
+                s.insert(_last_tcp_index, std::move(tcp_client_context));
                 add_event(std::move(ServerEvent(event_type,
                     std::move(
                         ServerEvent::ServerEventContainer(_last_tcp_index)))));
@@ -328,14 +414,14 @@ namespace net {
         {
             do {
                 try {
-                    ClientContext* context = new ClientContext(_tcp_io_context);
-                    shared_client_context_t socket(context);
+                    TCPClientContext* context = new TCPClientContext(_tcp_io_context);
+                    shared_tcp_client_context_t socket(context);
 
                     _tcp_acceptor.accept(socket->socket);
 
                     // socket->socket.non_blocking(true);
 
-                    connect_any_socket_sync(_tcp_sockets, _tcp_sockets_mut,
+                    connect_any_socket_sync(_tcp_client_contexts, _tcp_client_contexts_mut,
                         ServerEvent::ServerEventType::TCP_CONNECTION,
                         std::move(socket));
                 } catch (...) {
@@ -343,47 +429,73 @@ namespace net {
             } while (_server_running);
         }
 
-        bool read_single_client_tcp_socket_check_index_and_update_client_context(size_t i)
+        //
+        // This function is thread safe and is used to know if the given client is connected
+        // This function is only called by the reader_thread of the tcp sockets
+        // If the client is detected as should close the server reader thread will be blocked until the client is disconnected
+        // This function is automatically called by the reader_thread of the tcp sockets
+        // If the client is valid and is already reading the function will return false
+        // Otherwise it will return true
+        //
+        bool read_single_client_tcp_socket_check_index_and_update_tcp_client_context(size_t i)
         {
-            _tcp_sockets_mut.lock();
-            if (!_tcp_sockets.non_null(i)) {
-                _tcp_sockets_mut.unlock();
+            _tcp_client_contexts_mut.lock();
+            if (!_tcp_client_contexts.non_null(i)) {
+                _tcp_client_contexts_mut.unlock();
                 return false;
             }
-            auto& ctx = *_tcp_sockets[i].value();
+            auto& ctx = *_tcp_client_contexts[i].value();
 
             if (ctx.should_close) {
-                _tcp_sockets_mut.unlock();
+                _tcp_client_contexts_mut.unlock();
                 disconnect_tcp_socket_sync(i);
                 return false;
             }
 
             if (ctx.is_reading) {
-                _tcp_sockets_mut.unlock();
+                _tcp_client_contexts_mut.unlock();
                 return false;
             }
-            _tcp_sockets_mut.unlock();
+            _tcp_client_contexts_mut.unlock();
             return true;
         }
 
+        //
+        // This function is thread safe and is used to add to the event queue a new tcp message
+        // received by any client
+        //
         void send_tcp_message_event(ServerEvent::ServerEventContainer&& event_container)
         {
             add_event(std::move(ServerEvent(ServerEvent::ServerEventType::TCP_MESSAGE,
                 std::move(event_container))));
         }
 
+        //
+        // This function is thread safe and is used to add to the event queue a new udp message
+        // received by any client
+        //
         void send_udp_message_event(ServerEvent::ServerEventContainer&& event_container)
         {
             add_event(std::move(ServerEvent(ServerEvent::ServerEventType::UDP_MESSAGE,
                 std::move(event_container))));
         }
 
+        //
+        // This function is thread safe and is used to launch a thread that will read
+        // that will call the read function of the given client
+        //
+        // The launched thread of the client will be stored in the client context
+        // This thread will trigger the is_reading member of the context to false when it is done
+        //
+        // This function must only called by the reader_thread of the tcp sockets
+        // This function is automatically called by the reader_thread of the tcp sockets
+        //
         void read_single_client_tcp_socket(size_t i)
         {
-            if (!read_single_client_tcp_socket_check_index_and_update_client_context(i))
+            if (!read_single_client_tcp_socket_check_index_and_update_tcp_client_context(i))
                 return;
 
-            auto& ctx = *_tcp_sockets[i].value();
+            auto& ctx = *_tcp_client_contexts[i].value();
             ctx.is_reading = true;
 
             if (ctx.reader_thread.get())
@@ -391,7 +503,7 @@ namespace net {
 
             ctx.reader_thread = std::unique_ptr<std::thread>(
                 new std::thread([this, i]() {
-                    auto& ctx = *_tcp_sockets[i].value();
+                    auto& ctx = *_tcp_client_contexts[i].value();
                     try {
                         size_t readed_bytes = ctx.socket.read_some(boost::asio::buffer(ctx.buffer));
 
@@ -415,7 +527,7 @@ namespace net {
         // - Will be used to read indefinitely on tcp sockets
         // - Is automatically called on start() call
         //
-        void read_tcp_sockets()
+        void read_tcp_client_contexts()
         {
             do {
                 for (size_t i = 0; i < _last_tcp_index; ++i) {
@@ -423,11 +535,11 @@ namespace net {
                 }
             } while (_server_running);
 
-            std::lock_guard<std::mutex> lock(_tcp_sockets_mut);
+            std::lock_guard<std::mutex> lock(_tcp_client_contexts_mut);
 
-            for (size_t i = 0; i < _tcp_sockets.size(); i++) {
-                if (_tcp_sockets.non_null(i)) {
-                    auto& ctx = *_tcp_sockets[i].value();
+            for (size_t i = 0; i < _tcp_client_contexts.size(); i++) {
+                if (_tcp_client_contexts.non_null(i)) {
+                    auto& ctx = *_tcp_client_contexts[i].value();
                     if (ctx.reader_thread && ctx.is_reading) {
                         ctx.reader_thread->join();
                     }
@@ -479,7 +591,7 @@ namespace net {
 
                 _thread_tcp_reader
                     = std::unique_ptr<boost::thread>(new boost::thread(
-                        std::bind(&Server::read_tcp_sockets, this)));
+                        std::bind(&Server::read_tcp_client_contexts, this)));
 
                 _thread_udp_reader
                     = std::unique_ptr<boost::thread>(new boost::thread(
@@ -509,6 +621,12 @@ namespace net {
         }
 
     public:
+
+        //
+        // Constructor
+        // - port: the port on which the server will listen
+        // - max_tcp_clients: the maximum number of tcp clients that can be connected
+        //
         Server(const int tcp_port, const int udp_port)
             : _tcp_acceptor(_tcp_io_context, boost::asio::ip::tcp::endpoint(
                                boost::asio::ip::tcp::v4(), tcp_port))
@@ -534,7 +652,7 @@ namespace net {
         //
         void disconnect_tcp_socket_sync(const size_t index)
         {
-            disconnect_any_socket_sync(index, _tcp_sockets, _tcp_sockets_mut,
+            disconnect_any_socket_sync(index, _tcp_client_contexts, _tcp_sockets_mut,
                 ServerEvent::TCP_DISCONNECTION);
         }
 
@@ -564,10 +682,10 @@ namespace net {
         //
         void write_tcp_socket(const size_t index, tcp_buffer_t& tcp_buffer, const size_t size)
         {
-            std::lock_guard<std::mutex> lock(_tcp_sockets_mut);
+            std::lock_guard<std::mutex> lock(_tcp_client_contexts_mut);
 
-            if (_tcp_sockets.non_null(index)) {
-                auto& ctx = *_tcp_sockets[index].value();
+            if (_tcp_client_contexts.non_null(index)) {
+                auto& ctx = *_tcp_client_contexts[index].value();
                 if (ctx.writer_thread) {
                     ctx.writer_thread->join();
                 }
@@ -586,14 +704,30 @@ namespace net {
             }
         }
 
-        bool can_write_directly_on_tcp_socket(const size_t index, const void *data)
+        //
+        // Tells you whether a tcp socket might block for a "long time"
+        // if you try to write to it
+        //
+        // False might means that the client is either not connected
+        // or that it is not currently writing
+        //
+        bool client_is_busy_writing(const size_t index)
         {
-            std::lock_guard<std::mutex> lock(_tcp_sockets_mut);
+            std::lock_guard<std::mutex> lock(_tcp_client_contexts_mut);
 
-            if (_tcp_sockets.non_null(index)) {
-                return !_tcp_sockets[index].value()->is_writing;
+            if (_tcp_client_contexts.non_null(index)) {
+                return !_tcp_client_contexts[index].value()->is_writing;
             }
             return false;
+        }
+
+        //
+        // Tells you wheter a tcp socket is currently connected
+        //
+        bool client_is_connected(const size_t index)
+        {
+            std::lock_guard<std::mutex> lock(_tcp_client_contexts_mut);
+            return _tcp_client_contexts.non_null(index));
         }
     };
 }

@@ -596,6 +596,5 @@ namespace net {
             return false;
         }
     };
-
 }
 }

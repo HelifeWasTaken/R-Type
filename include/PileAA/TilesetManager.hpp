@@ -1,10 +1,11 @@
 #pragma once
 
-#include "json.hpp"
 #include <string>
 #include <SFML/Graphics.hpp>
 #include <filesystem>
 #include <fstream>
+
+#include "./external/nlohmann/json.hpp"
 
 namespace paa {
 

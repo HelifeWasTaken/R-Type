@@ -3,6 +3,16 @@
 #include <unordered_map>
 #include <SFML/Window.hpp>
 
+namespace galbar
+{
+    template <class T>
+    inline void hash_combine(std::size_t & seed, const T & v)
+    {
+        std::hash<T> hasher;
+        seed ^= hasher(v) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    }
+}
+
 namespace std
 {
     template<typename S, typename T> struct hash<pair<S, T>>
@@ -10,9 +20,8 @@ namespace std
         inline size_t operator()(const pair<S, T> & v) const
         {
             size_t seed = 0;
-
-            seed ^= std::hash<T>(v.first) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-            seed ^= std::hash<T>(v.second) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+            galbar::hash_combine(seed, v.first);
+            galbar::hash_combine(seed, v.second);
             return seed;
         }
     };
@@ -25,10 +34,12 @@ class InputHandler
     public:
         struct MousePosition
         {
-            MousePosition():
-                x(0),y(0){}
-            int x;
-            int y;
+            MousePosition(int x=0, int y=0)
+                : x(x), y(y)
+            {}
+
+            int x = 0;
+            int y = 0;
         };
 
         InputHandler()
@@ -39,7 +50,7 @@ class InputHandler
             p_previous_mouse_info = p_current_mouse_info;
         }
 
-        ~InputHandler(){}
+        ~InputHandler() = default;
 
         void update()
         {

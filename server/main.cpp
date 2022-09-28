@@ -8,7 +8,6 @@
 using namespace boost;
 */
 
-
 void display_event(rtype::net::ServerEvent& event)
 {
     std::cout << "event coucou" << std::endl;

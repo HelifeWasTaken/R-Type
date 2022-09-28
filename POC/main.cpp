@@ -8,7 +8,7 @@ static const std::unordered_map<std::string, std::function<void(void)>> POCS = {
     {"animated_sprite", poc_animated_sprite},
     {"ecs_example", poc_ecs_example},
     {"server_example", poc_server_example},
-    {"server_write_udp", poc_server_write_tcp_example}
+    {"server_write_tcp", poc_server_write_tcp_example}
 };
 
 int main(int ac, char **av)
@@ -25,4 +25,5 @@ int main(int ac, char **av)
     } else {
         std::cout << "Please specify one option" << std::endl;
     }
+    return 0;
 }

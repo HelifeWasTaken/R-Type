@@ -269,10 +269,10 @@ namespace net {
             // Maybe handle disconnection failure send event
             if (s.non_null(index)) {
                 auto& socket = *s[index].value();
-                if (socket.reader_thread && socket.is_reading) {
+                if (socket.reader_thread) {
                     socket.reader_thread->join();
                 }
-                if (socket.writer_thread && socket.is_writing) {
+                if (socket.writer_thread) {
                     socket.writer_thread->join();
                 }
                 s.erase(index);
@@ -386,7 +386,7 @@ namespace net {
             auto& ctx = *_tcp_sockets[i].value();
             ctx.is_reading = true;
 
-            if (ctx.reader_thread)
+            if (ctx.reader_thread.get())
                 ctx.reader_thread->join();
 
             ctx.reader_thread = std::unique_ptr<std::thread>(
@@ -568,16 +568,17 @@ namespace net {
 
             if (_tcp_sockets.non_null(index)) {
                 auto& ctx = *_tcp_sockets[index].value();
-                if (ctx.is_writing) {
+                if (ctx.writer_thread) {
                     ctx.writer_thread->join();
                 }
-
                 tcp_buffer_t *buffer = new tcp_buffer_t(tcp_buffer);
-
                 ctx.is_writing = true;
                 ctx.writer_thread = std::unique_ptr<std::thread>(
-                    new std::thread([&ctx, &buffer, size]() {
-                        ctx.socket.write_some(boost::asio::buffer(buffer, size));
+                    new std::thread([&ctx, buffer, size]() {
+                        try {
+                            ctx.socket.write_some(boost::asio::buffer(buffer, size));
+                        } catch (...) {
+                        }
                         delete buffer;
                         ctx.is_writing = false;
                     })

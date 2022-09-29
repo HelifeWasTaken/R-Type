@@ -99,7 +99,7 @@ namespace net {
             , _sender_endpoint()
         {
             _socket.open(boost::asio::ip::udp::v4());
-            send("hello world", 12);
+            //send("hello world", 12);
         }
 
         size_t receive(void* data, const size_t size) override

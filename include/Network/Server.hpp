@@ -88,6 +88,7 @@ namespace net {
          * @brief Creates a new UDP client
          * @param boost::asio::io_service & The io_service
          * @param const char * The host
+         * @param const char * The port the client is listening to
          */
         UDPClient(boost::asio::io_context& io_context, const char* host,
                                                     const char* port)
@@ -97,6 +98,7 @@ namespace net {
             , _socket(io_context)
         {
             _socket.open(boost::asio::ip::udp::v4());
+            send("hello world", 12);
         }
 
         size_t receive(void* data, const size_t size) override
@@ -124,6 +126,7 @@ namespace net {
          * @brief Creates a new TCP client
          * @param boost::asio::io_service & The io_service
          * @param const char * The host
+         * @param const char * The port the client is listening to
          */
         TCPClient(boost::asio::io_context& io_context, const char* host,
                                                         const char *port)
@@ -174,6 +177,8 @@ namespace net {
          * @brief Creates a new UDP_TCP_Client
          * @param const char * The tcp host
          * @param const char * The udp host
+         * @param const char * The TCP port the socket is listening to
+         * @param const char * The UDP port the socket is listening to
          */
         UDP_TCP_Client(const char* host_tcp, const char* host_udp,
                         const char* tcp_port, const char* udp_port)
@@ -349,10 +354,12 @@ namespace net {
         std::queue<ServerEvent> _event;
         std::mutex _event_mut;
 
-        boost::atomic_bool _server_running;
+        std::atomic_bool _finish_writing_udp;
+        std::atomic_bool _server_running;
 
         // Threads
         std::unique_ptr<boost::thread> _thread_udp_reader;
+        std::unique_ptr<std::thread> _thread_udp_writer;
         std::unique_ptr<boost::thread> _thread_tcp_reader;
         std::unique_ptr<boost::thread> _thread_tcp_acceptor;
 
@@ -728,6 +735,23 @@ namespace net {
             }
         }
 
+        void write_udp_socket(udp_buffer_t& udp_buffer, const size_t size)
+        {
+            if (_thread_udp_writer)
+                _thread_udp_writer->join();
+            udp_buffer_t *buffer = new udp_buffer_t(udp_buffer);
+            // _thread_udp_writer = std::unique_ptr<std::thread>(
+                // new std::thread([buffer, size, &udp_socket=_server_udp_socket]() {
+                    try {
+                        boost::asio::ip::udp::endpoint ed;
+                        boost::system::error_code ec;
+                        _server_udp_socket.send_to(boost::asio::buffer(buffer, size), ed, 0, ec);
+                    } catch (...) {
+                    }
+                    delete buffer;
+                // })
+            // );
+        }
         //
         // Tells you whether a tcp socket might block for a "long time"
         // if you try to write to it

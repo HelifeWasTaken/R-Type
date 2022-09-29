@@ -24,6 +24,11 @@ void display_event(rtype::net::ServerEvent& event, rtype::net::Server& s)
                 << std::string(ref.buffer.c_array(), ref.buffer.c_array() + ref.used) << std::endl;
     } else if (event.get_type() == rtype::net::ServerEvent::ServerEventType::UDP_MESSAGE) {
         auto& ref = event.get_event<rtype::net::ServerEvent::ServerMessageUDP>();
+        rtype::net::udp_buffer_t toto("coucou");
+        while(true) {
+            std::cout << "hello" << std::endl;
+            s.write_udp_socket(toto, 6);
+        }
         std::cout << "UDP Message: " << ref.id << " -> "
                 << std::string(ref.buffer.c_array(), ref.buffer.c_array() + ref.used) << std::endl;
     }

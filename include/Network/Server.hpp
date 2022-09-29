@@ -96,6 +96,7 @@ namespace net {
             , _query(boost::asio::ip::udp::v4(), host, "daytime")
             , _receiver_endpoint(*_resolver.resolve({host, port}))
             , _socket(io_context)
+            , _sender_endpoint()
         {
             _socket.open(boost::asio::ip::udp::v4());
             send("hello world", 12);

@@ -24,6 +24,8 @@
 #define RTYPE_SERVER_MAX_UDP_PACKET_SIZE 500
 #endif
 
+#define MAGIC_NUMBER 0x0fficecoffeedefec
+
 namespace rtype {
 namespace net {
 
@@ -31,6 +33,19 @@ namespace net {
         = boost::array<std::uint8_t, RTYPE_SERVER_MAX_TCP_PACKET_SIZE>;
     using udp_buffer_t
         = boost::array<std::uint8_t, RTYPE_SERVER_MAX_UDP_PACKET_SIZE>;
+
+    class RFCMessage_TCP {
+
+        public:
+            RFCMessage_TCP() = default;
+            ~RFCMessage_TCP() = default;
+
+            enum SIGNAL_MARKER {
+                CONN_INIT,
+                CONN_OK,
+                CONN_FAILED,
+            };
+    };
 
     class IClient {
     public:
@@ -50,10 +65,11 @@ namespace net {
         boost::asio::ip::udp::endpoint _sender_endpoint;
 
     public:
-        UDPClient(boost::asio::io_context& io_context, const char* host)
+        UDPClient(boost::asio::io_context& io_context, const char* host,
+                                                        const char* port)
             : _resolver(io_context)
             , _query(boost::asio::ip::udp::v4(), host, "daytime")
-            , _receiver_endpoint(*_resolver.resolve(_query))
+            , _receiver_endpoint(*_resolver.resolve({host, port}))
             , _socket(io_context)
         {
             _socket.open(boost::asio::ip::udp::v4());
@@ -80,10 +96,11 @@ namespace net {
         boost::asio::ip::tcp::socket _socket;
 
     public:
-        TCPClient(boost::asio::io_context& io_context, const char* host)
+        TCPClient(boost::asio::io_context& io_context, const char* host,
+                                                    const char* port)
             : _resolver(io_context)
             , _query(host, "daytime")
-            , _endpoint_iterator(_resolver.resolve(_query))
+            , _endpoint_iterator(_resolver.resolve({host, port}))
             , _socket(io_context)
         {
             boost::system::error_code error
@@ -94,8 +111,14 @@ namespace net {
                 _socket.close();
                 _socket.connect(*_endpoint_iterator++, error);
             }
-            if (error)
+
+            if (_socket.is_open()) {
+                char c = RFCMessage_TCP::CONN_INIT;
+                send(&c, 1);
+            }
+            if (error) {
                 throw boost::system::system_error(error);
+            }
         }
 
         size_t receive(void* data, const size_t size) override
@@ -118,11 +141,11 @@ namespace net {
         TCPClient _tcp_client;
 
     public:
-        UDP_TCP_Client(const char* host)
+        UDP_TCP_Client(const char* host, const char *port)
             : _tcp_io_context(boost::asio::io_context())
             , _udp_io_context(boost::asio::io_context())
-            , _udp_client(_udp_io_context, host)
-            , _tcp_client(_tcp_io_context, host)
+            , _udp_client(_udp_io_context, host, port)
+            , _tcp_client(_tcp_io_context, host, port)
         {
         }
 

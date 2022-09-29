@@ -84,17 +84,13 @@ namespace net {
         boost::asio::ip::udp::endpoint _sender_endpoint;
 
     public:
-<<<<<<< HEAD
-        UDPClient(boost::asio::io_context& io_context, const char* host,
-                                                        const char* port)
-=======
         /**
          * @brief Creates a new UDP client
          * @param boost::asio::io_service & The io_service
          * @param const char * The host
          */
-        UDPClient(boost::asio::io_context& io_context, const char* host)
->>>>>>> 623900f1afbf74bdb400eefeda7f286067ffbc83
+        UDPClient(boost::asio::io_context& io_context, const char* host,
+                                                    const char* port)
             : _resolver(io_context)
             , _query(boost::asio::ip::udp::v4(), host, "daytime")
             , _receiver_endpoint(*_resolver.resolve({host, port}))
@@ -179,11 +175,12 @@ namespace net {
          * @param const char * The tcp host
          * @param const char * The udp host
          */
-        UDP_TCP_Client(const char* host_tcp, const char* host_udp, const char* port)
+        UDP_TCP_Client(const char* host_tcp, const char* host_udp,
+                        const char* tcp_port, const char* udp_port)
             : _tcp_io_context(boost::asio::io_context())
             , _udp_io_context(boost::asio::io_context())
-            , _udp_client(_udp_io_context, host_udp, port)
-            , _tcp_client(_tcp_io_context, host_tcp, port)
+            , _udp_client(_udp_io_context, host_udp, udp_port)
+            , _tcp_client(_tcp_io_context, host_tcp, tcp_port)
         {
         }
 
@@ -679,7 +676,7 @@ namespace net {
         //
         void disconnect_tcp_socket_sync(const size_t index)
         {
-            disconnect_any_socket_sync(index, _tcp_client_contexts, _tcp_sockets_mut,
+            disconnect_any_socket_sync(index, _tcp_client_contexts, _tcp_client_contexts_mut,
                 ServerEvent::TCP_DISCONNECTION);
         }
 
@@ -754,7 +751,7 @@ namespace net {
         bool client_is_connected(const size_t index)
         {
             std::lock_guard<std::mutex> lock(_tcp_client_contexts_mut);
-            return _tcp_client_contexts.non_null(index));
+            return _tcp_client_contexts.non_null(index);
         }
     };
 }

@@ -24,6 +24,8 @@
 #define RTYPE_SERVER_MAX_UDP_PACKET_SIZE 500
 #endif
 
+#define MAGIC_NUMBER 0x0fficecoffeedefec
+
 namespace rtype {
 namespace net {
 
@@ -31,6 +33,19 @@ namespace net {
         = boost::array<std::uint8_t, RTYPE_SERVER_MAX_TCP_PACKET_SIZE>;
     using udp_buffer_t
         = boost::array<std::uint8_t, RTYPE_SERVER_MAX_UDP_PACKET_SIZE>;
+
+    class RFCMessage_TCP {
+
+        public:
+            RFCMessage_TCP() = default;
+            ~RFCMessage_TCP() = default;
+
+            enum SIGNAL_MARKER {
+                CONN_INIT,
+                CONN_OK,
+                CONN_FAILED,
+            };
+    };
 
     class IClient {
     public:
@@ -74,10 +89,11 @@ namespace net {
          * @param boost::asio::io_service & The io_service
          * @param const char * The host
          */
-        UDPClient(boost::asio::io_context& io_context, const char* host)
+        UDPClient(boost::asio::io_context& io_context, const char* host,
+                                                    const char* port)
             : _resolver(io_context)
             , _query(boost::asio::ip::udp::v4(), host, "daytime")
-            , _receiver_endpoint(*_resolver.resolve(_query))
+            , _receiver_endpoint(*_resolver.resolve({host, port}))
             , _socket(io_context)
         {
             _socket.open(boost::asio::ip::udp::v4());
@@ -109,10 +125,11 @@ namespace net {
          * @param boost::asio::io_service & The io_service
          * @param const char * The host
          */
-        TCPClient(boost::asio::io_context& io_context, const char* host)
+        TCPClient(boost::asio::io_context& io_context, const char* host,
+                                                        const char *port)
             : _resolver(io_context)
             , _query(host, "daytime")
-            , _endpoint_iterator(_resolver.resolve(_query))
+            , _endpoint_iterator(_resolver.resolve({host, port}))
             , _socket(io_context)
         {
             boost::system::error_code error
@@ -123,8 +140,14 @@ namespace net {
                 _socket.close();
                 _socket.connect(*_endpoint_iterator++, error);
             }
-            if (error)
+
+            if (_socket.is_open()) {
+                char c = RFCMessage_TCP::CONN_INIT;
+                send(&c, 1);
+            }
+            if (error) {
                 throw boost::system::system_error(error);
+            }
         }
 
         size_t receive(void* data, const size_t size) override
@@ -152,11 +175,12 @@ namespace net {
          * @param const char * The tcp host
          * @param const char * The udp host
          */
-        UDP_TCP_Client(const char* host_tcp, const char* host_udp)
+        UDP_TCP_Client(const char* host_tcp, const char* host_udp,
+                        const char* tcp_port, const char* udp_port)
             : _tcp_io_context(boost::asio::io_context())
             , _udp_io_context(boost::asio::io_context())
-            , _udp_client(_udp_io_context, host_udp)
-            , _tcp_client(_tcp_io_context, host_tcp)
+            , _udp_client(_udp_io_context, host_udp, udp_port)
+            , _tcp_client(_tcp_io_context, host_tcp, tcp_port)
         {
         }
 
@@ -652,7 +676,7 @@ namespace net {
         //
         void disconnect_tcp_socket_sync(const size_t index)
         {
-            disconnect_any_socket_sync(index, _tcp_client_contexts, _tcp_sockets_mut,
+            disconnect_any_socket_sync(index, _tcp_client_contexts, _tcp_client_contexts_mut,
                 ServerEvent::TCP_DISCONNECTION);
         }
 
@@ -727,7 +751,7 @@ namespace net {
         bool client_is_connected(const size_t index)
         {
             std::lock_guard<std::mutex> lock(_tcp_client_contexts_mut);
-            return _tcp_client_contexts.non_null(index));
+            return _tcp_client_contexts.non_null(index);
         }
     };
 }

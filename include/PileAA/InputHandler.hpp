@@ -113,7 +113,7 @@ public:
 };
 }
 
-inline std::ostream& operator<<(std::ostream& os, paa::IController& controller)
+inline std::ostream& operator<<(std::ostream& os, const paa::IController& controller)
 {
     os << "IController(" << controller.id() << "):" << std::endl;
     os << "\t- isConnected: " << controller.isConnected() << std::endl;

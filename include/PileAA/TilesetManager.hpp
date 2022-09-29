@@ -1,10 +1,11 @@
 #pragma once
 
-#include "json.hpp"
 #include <string>
 #include <SFML/Graphics.hpp>
 #include <filesystem>
 #include <fstream>
+
+#include "./external/nlohmann/json.hpp"
 
 namespace paa {
 
@@ -27,6 +28,10 @@ public:
     static inline const uint64_t FLIP_D_FLAG = 0x20000000;
 
 public:
+    /**
+     * @brief Construct a TilesetManager from a json file using Tiled
+     * @param filename The path to the json file
+     */
     TilesetManager(const std::string& filename)
     {
         std::string filenameNoEnding = filename.substr(0, filename.find_last_of('/'));
@@ -132,6 +137,11 @@ public:
         }
     }
 
+    /**
+     * @brief Draws the map
+     * @param target The target to draw to
+     * @param states The render states
+     */
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
         states.transform *= getTransform();
         for (auto& layer : _layers) {
@@ -140,14 +150,25 @@ public:
         }
     }
 
+    /**
+     * @brief Draw one of the layers
+     * @param window The window to draw to
+     * @param layerIndex The nth Layer
+     */
     void drawLayer(sf::RenderWindow& window, size_t layerIndex) const {
         window.draw(_layers[layerIndex]->second, sf::RenderStates(sf::BlendAlpha, sf::Transform::Identity, &_layers[layerIndex]->first, nullptr));
     }
 
+    /**
+     * @brief Get the number of layers in the map
+     */
     size_t layerCount() const {
         return _layers.size();
     }
 
+    /**
+     * @brief Destroy the TilesetManager
+     */
     ~TilesetManager() = default;
 };
 

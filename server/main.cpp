@@ -8,8 +8,7 @@
 using namespace boost;
 */
 
-
-void display_event(rtype::net::ServerEvent& event, rtype::net::Server& s)
+void display_event(rtype::net::ServerEvent& event)
 {
     std::cout << "event coucou" << std::endl;
     if (event.get_type() == rtype::net::ServerEvent::ServerEventType::TCP_CONNECTION) {

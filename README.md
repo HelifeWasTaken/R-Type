@@ -1,5 +1,5 @@
-# R-TYPE
-
+R-TYPE
+==========
 ## Contributing Guidelines
 
     - Documentation is mandatory for all new features and bug fixes.

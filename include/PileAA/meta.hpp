@@ -48,3 +48,11 @@ struct name : public base { \
     name(const std::string& msg) \
         : base(msg) {} \
 };
+
+#define HL_AUTO_COMPLETE_CANONICAL_FORM(tname) \
+    tname() = default; \
+    tname(const tname&) = default; \
+    tname(tname&&) = default; \
+    tname& operator=(const tname&) = default; \
+    tname& operator=(tname&&) = default; \
+    ~tname() = default;

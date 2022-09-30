@@ -92,7 +92,7 @@ include_directories(
 	${CMAKE_SOURCE_DIR}/include
 )
 
-message(    ${boost_fusion_SOURCE_DIR}/include
+message(${boost_fusion_SOURCE_DIR}/include
 ${boost_unordered_SOURCE_DIR}/include
 ${boost_regex_SOURCE_DIR}/include
 ${boost_tokenizer_SOURCE_DIR}/include

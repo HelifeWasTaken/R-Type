@@ -152,7 +152,7 @@ namespace rtype {
 
                 static shared_message_info_t new_message(const void *data, size_t size)
                 {
-                    // assert(size < tcp_buffer_t::size);
+                    assert(size < tcp_buffer_t::size());
                     message_info *mesg = new message_info;
                     std::memcpy(mesg->buffer.c_array(), data, size);
                     mesg->size = size;
@@ -181,52 +181,54 @@ namespace rtype {
 
                 void send(shared_message_info_t message)
                 {
-                    spdlog::info("Starting to send a message!");
-                    size_t index = _send_message_list.async_set(message);
+                    spdlog::info("tcp_connection({}): Starting to send a message!", _id);
+                    size_t index = _send_message_list->async_set(message);
                     _socket.async_send(boost::asio::buffer(message->buffer, message->size),
-                            [this, index](boost::system::error_code ec, std::size_t sended_bytes) {
+                            [should_exit=_should_exit, send_message_list=_send_message_list, index, id=_id]
+                            (boost::system::error_code ec, std::size_t sended_bytes) {
                                 // TODO: Maybe check sended bytes
                                 (void)sended_bytes;
                                 if (ec) {
                                     // TODO: Maybe check error type
-                                    spdlog::error("Error while sending message({}): {}", index, ec.message());
-                                    _should_exit = true;
+                                    spdlog::error("tcp_connection({}): Error while sending message({}): {}", id, index, ec.message());
                                 } else {
-                                    spdlog::info("Sucessfully sended message({})", index);
-                                    _send_message_list.async_remove(index);
+                                    spdlog::info("tcp_connection({}): Sucessfully sended message({})", id, index);
+                                    send_message_list->async_remove(index);
                                 }
                             });
                 }
 
                 bool poll(shared_message_info_t& message)
                 {
-                    return _readed_messages_queue.async_pop(message);
+                    return _readed_messages_queue->async_pop(message);
                 }
 
-                bool should_exit() const { return _should_exit; }
+                bool should_exit() const { return *_should_exit; }
 
             private:
                 void handle_read()
                 {
-                    spdlog::info("Starting to read a message!");
+                    spdlog::info("tcp_connection({}): Starting to read a message!", _id);
+
                     _socket.async_receive(
-                        boost::asio::buffer(this->_buffer_reader),
-                        _buffer_reader.size(),
+                        boost::asio::buffer(*_buffer_reader),
+                        _buffer_reader->size(),
                         [this](const boost::system::error_code& error, size_t bytes_transferred) {
                             if (error) {
                                 // TODO: Maybe check error type
-                                spdlog::error("Error while reading from socket: {}", error.message());
-                                _should_exit = true;
+                                spdlog::error("tcp_connection({}): Error while reading from socket: {}", _id, error.message());
+                                *_should_exit = true;
                             } else {
                                 if (bytes_transferred) {
-                                    _readed_messages_queue.async_push(
+                                    _readed_messages_queue->async_push(
                                             shared_message_info_t(
-                                                new message_info(std::move(_buffer_reader), bytes_transferred)
+                                                new message_info(std::move(*_buffer_reader), bytes_transferred)
                                             )
                                         );
-                                    spdlog::info("Added to message queue a new message");
+                                    spdlog::info("tcp_connection({}): Added to message queue a new message", _id);
                                 }
-                                handle_read();
+                                if (!(*_should_exit))
+                                    handle_read();
                             }
                         }
                     );
@@ -234,19 +236,27 @@ namespace rtype {
 
                 tcp_connection(boost::asio::io_context& io_context)
                     : _socket(io_context)
+                    , _send_message_list(new async_automated_sparse_array<message_info>)
+                    , _should_exit(new std::atomic_bool)
+                    , _buffer_reader(new tcp_buffer_t)
+                    , _readed_messages_queue(new async_queue<shared_message_info_t>)
                 {
-                    _should_exit = false;
+                    *_should_exit = false;
                 }
 
             public:
                 ~tcp_connection() = default;
+                void set_id(size_t id) { _id = id; }
 
             private:
                 tcp::socket _socket;
-                async_automated_sparse_array<message_info> _send_message_list;
-                tcp_buffer_t _buffer_reader;
-                async_queue<shared_message_info_t> _readed_messages_queue;
-                std::atomic_bool _should_exit;
+
+                boost::shared_ptr<async_automated_sparse_array<message_info>> _send_message_list;
+                boost::shared_ptr<std::atomic_bool> _should_exit;
+                boost::shared_ptr<tcp_buffer_t> _buffer_reader;
+                boost::shared_ptr<async_queue<shared_message_info_t>> _readed_messages_queue;
+
+                size_t _id = -1;
         };
 
         class tcp_event_connexion {
@@ -292,7 +302,10 @@ namespace rtype {
             Message
         };
 
-        using tcp_event_container = std::variant<void*, tcp_event_connexion, tcp_event_disconnexion, tcp_event_message>;
+        using tcp_event_container = std::variant<void*,
+                                                tcp_event_connexion,
+                                                tcp_event_disconnexion,
+                                                tcp_event_message>;
 
         class tcp_event {
         private:
@@ -322,10 +335,9 @@ namespace rtype {
                     : _io_context(io_context)
                     , _acceptor(io_context, tcp::endpoint(tcp::v4(), port))
                 {
-                    spdlog::info("TCP server launched: 127.0.0.1:{}\n", port);
+                    spdlog::info("tcp_server: launched: 127.0.0.1:{}", port);
                     start_accept();
                     poll_tcp_connections();
-                    spdlog::info("Server fully ready");
                 }
 
                 bool poll(tcp_event& event) {
@@ -334,11 +346,11 @@ namespace rtype {
 
                 void send(size_t id, tcp_connection::shared_message_info_t message) {
                     auto it = _connections.async_get(id);
-                    spdlog::info("Trying to send a message to {}", id);
+                    spdlog::info("tcp_server: Trying to send a message to {}", id);
                     if (it)
                         it->send(message);
                     else
-                        spdlog::error("Error while sending message: connection {} not found", id);
+                        spdlog::error("tcp_server: Error while sending message: connection {} not found", id);
                 }
 
             private:
@@ -347,7 +359,7 @@ namespace rtype {
                     tcp_connection::pointer new_connection =
                         tcp_connection::create(_io_context);
 
-                    spdlog::info("Starting to accept a new connection");
+                    spdlog::info("tcp_server: Starting to accept a new connection");
 
                     _acceptor.async_accept(new_connection->socket(),
                             boost::bind(&tcp_server::handle_accept, this, new_connection,
@@ -358,12 +370,13 @@ namespace rtype {
                         const boost::system::error_code& error)
                 {
                     if (!error) {
-                        new_connection->start();
                         size_t id = _connections.async_set(new_connection);
+                        new_connection->set_id(id);
+                        new_connection->start();
                         _events.async_push(tcp_event_connexion(id));
-                        spdlog::info("New connection accepted: {}", id);
+                        spdlog::info("tcp_server: New connection accepted: {}", id);
                     } else {
-                        spdlog::error("Error: {}\n", error.message());
+                        spdlog::error("tcp_server: Accept Error: {}", error.message());
                         return;
                     }
                     start_accept();
@@ -371,7 +384,7 @@ namespace rtype {
 
                 void poll_tcp_connections()
                 {
-                    spdlog::info("Starting to poll tcp connections");
+                    spdlog::info("tcp_server: Starting to poll tcp connections");
                     _tcp_connection_polling_thread = std::unique_ptr<boost::thread>(
                         new boost::thread([this]() {
                             tcp_connection::shared_message_info_t message;
@@ -384,11 +397,11 @@ namespace rtype {
                                     if (connection->should_exit()) {
                                         _events.async_push(std::move(tcp_event_disconnexion(i)));
                                         _connections.async_remove(i);
-                                        spdlog::info("Disconnection from {}", i);
+                                        spdlog::info("tcp_server: Disconnection from {}", i);
                                     } else {
                                         while (connection->poll(message)) {
                                             _events.async_push(std::move(tcp_event_message(i, message)));
-                                            spdlog::info("Polled a message from {}", i);
+                                            spdlog::info("tcp_server: Polled a message from {}", i);
                                         }
                                     }
                                 }
@@ -440,7 +453,7 @@ namespace rtype {
                                     );
                                 start_receive();
                             } else {
-                                std::fprintf(stderr, "Error while receiving UDP packet\n");
+                                std::fprintf(stderr, "Error while receiving UDP packet");
                             }
                         }
                     );
@@ -463,7 +476,7 @@ namespace rtype {
                             if (!error) {
                                 _messages.async_remove(index);
                             } else {
-                                std::fprintf(stderr, "Error while sending UDP packet\n");
+                                std::fprintf(stderr, "Error while sending UDP packet");
                             }
                         }
                     );

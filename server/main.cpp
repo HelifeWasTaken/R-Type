@@ -58,15 +58,15 @@ int main(int ac, char **av)
 int main()
 {
     boost::asio::io_context context;
-    rtype::net::tcp_udp_server server(context, 4242, 4243);
+    rtype::net::udp_server server(context, 4243);
 
     while (true) {
         rtype::net::udp_server::shared_message_info_t event;
 
-        while (server.udp_poll(event)) {
-            std::cout << "hello world" << std::endl;
-            std::cout << event.get()->buffer.data() << std::endl;
+        while (server.poll(event)) {
+            std::cout << event.get()->size << std::endl;
         }
+        context.run_one();
     }
     return 0;
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include "Server.hpp"
 
 #define MAGIC_NUMBER 0x0fficecoffeedefec
@@ -65,8 +66,7 @@ namespace net {
             , _sender_endpoint()
         {
             _socket.open(boost::asio::ip::udp::v4());
-            char data = RFCMesssage_TCP::CONN_INIT;
-            send(&data, 1);
+            std::cout << "creating udp client" << std::endl;
         }
 
         size_t receive(void* data, const size_t size) override

@@ -57,16 +57,12 @@ int main(int ac, char **av)
 
 int main()
 {
-    boost::asio::io_context context;
-    rtype::net::udp_server server(context, 4243);
+    rtype::net::tcp_udp_server server(4242, 4243);
 
     while (true) {
         rtype::net::udp_server::shared_message_info_t event;
 
-        while (server.poll(event)) {
-            std::cout << event.get()->size << std::endl;
-        }
-        context.run_one();
+        // std::cout << "buffer: " << event.get()->buffer.data() << std::endl;
     }
     return 0;
 }

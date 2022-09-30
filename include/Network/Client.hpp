@@ -7,11 +7,33 @@
 
 namespace rtype {
 namespace net {
+namespace message {
+
+    class IMessage {
+        public:
+            IMessage() = default;
+            ~IMessage() = default;
+
+        virtual IMessage& add_value(char byte) = 0;
+    };
+
+    class Message : public IMessage, public std::vector<char> {
+        public:
+            Message() = default;
+            ~Message() = default;
+
+        IMessage& add_value(char byte) override
+        {
+            push_back(byte);
+            return *this;
+        }
+    };
 
     enum RFCMesssage_TCP {
         CONN_INIT,
         CONN_OK,
     };
+};
 
 
     class IClient {
@@ -66,7 +88,7 @@ namespace net {
             , _sender_endpoint()
         {
             _socket.open(boost::asio::ip::udp::v4());
-            std::cout << "creating udp client" << std::endl;
+            send("good world", 11);
         }
 
         size_t receive(void* data, const size_t size) override
@@ -112,10 +134,6 @@ namespace net {
                 _socket.connect(*_endpoint_iterator++, error);
             }
 
-            if (_socket.is_open()) {
-                char c = RFCMesssage_TCP::CONN_INIT;
-                send(&c, 1);
-            }
             if (error) {
                 throw boost::system::system_error(error);
             }

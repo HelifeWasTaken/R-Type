@@ -8,9 +8,9 @@
 #include <queue>
 #include <variant>
 #include <spdlog/spdlog.h>
-#include "PileAA/meta.hpp"
 #include <assert.h>
-
+#include "PileAA/meta.hpp"
+#include <iostream>
 // TODO: Use proper logging library vs std::fprintf stderr
 
 // using namespace boost::placeholders;
@@ -443,13 +443,15 @@ namespace rtype {
                             boost::asio::buffer(*_recv_buffer),
                         [this, recv_queue=_recv_queue, recv_buffer=_recv_buffer]
                         (const boost::system::error_code& error, std::size_t bytes_transferred) {
-                            if (!error) {
-                                if (bytes_transferred)
+                            if (error.value() >= 0) {
+                                if (bytes_transferred) {
                                     recv_queue->async_push(
                                         shared_message_info_t(new message_info(std::move(*recv_buffer), bytes_transferred))
                                     );
+                                }
                                 start_receive();
                             } else {
+                                std::cout << error.value() << std::endl;
                                 std::fprintf(stderr, "Error while receiving UDP packet");
                             }
                         }

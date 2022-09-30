@@ -36,16 +36,8 @@ int main()
 int main()
 {
     try {
-        boost::asio::io_service service;
-        rtype::net::UDPClient client(service, "127.0.0.1", "4243");
-        rtype::net::udp_buffer_t buff;
+        rtype::net::UDP_TCP_Client client("127.0.0.1", "127.0.0.1", "4242", "4243");
 
-        while (true) {
-            size_t readed_bytes = client.receive(buff.data(), buff.size());
-
-            if (readed_bytes > 0)
-                std::cout << buff.data() << std::endl;
-        }
     } catch(...) {
         std::cout << "RIP" << std::endl;
     }

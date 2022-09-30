@@ -1,39 +1,31 @@
 #include <iostream>
 #include "poc.hpp"
 #include <Network/Server.hpp>
-/*
-#include <boost/asio.hpp>
-#include <boost/asio/ts/buffer.hpp>
-#include <boost/asio/ts/internet.hpp>
 
-using namespace boost;
-*/
+static rtype::net::tcp_server *ref_s;
 
-
-static void display_event(rtype::net::ServerEvent& event)
+static void display_event(rtype::net::tcp_event & event)
 {
-    std::cout << "event coucou" << std::endl;
-    if (event.get_type() == rtype::net::ServerEvent::ServerEventType::TCP_CONNECTION) {
-        std::cout << "Connection: " << event.get_event<size_t>() << std::endl;
-    } else if (event.get_type() == rtype::net::ServerEvent::ServerEventType::TCP_DISCONNECTION) {
-        std::cout << "Disconnection: " << event.get_event<size_t>() << std::endl;
-    } else if (event.get_type() == rtype::net::ServerEvent::ServerEventType::TCP_MESSAGE) {
-        auto& ref = event.get_event<rtype::net::ServerEvent::ServerMessageTCP>();
-        std::cout << "TCP Message: " << ref.id << " -> "
-                << std::string(ref.buffer.c_array(), ref.buffer.c_array() + ref.used) << std::endl;
-    } else if (event.get_type() == rtype::net::ServerEvent::ServerEventType::UDP_MESSAGE) {
-        auto& ref = event.get_event<rtype::net::ServerEvent::ServerMessageUDP>();
-        std::cout << "UDP Message: " << ref.id << " -> "
-                << std::string(ref.buffer.c_array(), ref.buffer.c_array() + ref.used) << std::endl;
+    if (event.get_type() == rtype::net::tcp_event_type::Connexion) {
+        std::cout << "Connexion: " << event.get<rtype::net::tcp_event_connexion>().get_id() << std::endl;
+    } else if (event.get_type() == rtype::net::tcp_event_type::Disconnexion) {
+        std::cout << "Disconnection: " << event.get<rtype::net::tcp_event_disconnexion>().get_id() << std::endl;
+    } else if (event.get_type() == rtype::net::tcp_event_type::Message) {
+        auto& ref = event.get<rtype::net::tcp_event_message>();
+        std::cout << "TCP Message: " << ref.get_id() << " -> " << ref.get_message()->to_string() << std::endl;
+        ref_s->send(ref.get_id(), rtype::net::tcp_connection::new_message("pong\n"));
     }
 }
 
-void poc_server_example()
+void poc_tcp_server_example()
 {
-    rtype::net::Server s(5050, 5051);
+    boost::asio::io_context context;
+    rtype::net::tcp_server s(context, 4242);
 
-    while (s.is_running()) {
-        rtype::net::ServerEvent event;
+    ref_s = &s;
+    while (true) {
+        context.run_one();
+        rtype::net::tcp_event event;
         while (s.poll(event)) {
             display_event(event);
         }

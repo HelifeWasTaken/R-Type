@@ -23,10 +23,14 @@ FetchContent_MakeAvailable(hl)
 
 message("Declaring Boost...")
 FetchContent_Declare(Boost GIT_REPOSITORY https://github.com/boostorg/boost.git GIT_TAG boost-1.80.0)
-
 message("Fetching Boost...")
 set(Boost_USE_STATIC_LIBS ON)
 FetchContent_MakeAvailable(Boost)
+
+message("Declaring spdlog")
+FetchContent_Declare(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog.git GIT_TAG v1.10.0)
+message("Fetching spdlog")
+FetchContent_MakeAvailable(spdlog)
 
 include_directories(
 	${SFML_SOURCE_DIR}/include
@@ -81,6 +85,7 @@ include_directories(
     ${boost_system_SOURCE_DIR}/include
     ${boost_thread_SOURCE_DIR}/include
     ${boost_asio_SOURCE_DIR}/include
+    ${spdlog_SOURCE_DIR}/include
 	${CMAKE_SOURCE_DIR}/include
 )
 

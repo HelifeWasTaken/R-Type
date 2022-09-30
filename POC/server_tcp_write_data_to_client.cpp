@@ -1,27 +1,28 @@
+//#include "Network/Server.hpp"
 #include "poc.hpp"
-#include "Network/Server.hpp"
 #include <iostream>
 #include <unordered_set>
 #include <thread>
+#include <Network/Server.hpp>
 
 using namespace rtype::net;
 
 static std::unordered_set<size_t> VALID_INDEXES;
 static std::mutex mut;
-static rtype::net::Server *s;
+static tcp_server *s;
 
 static void __event_check()
 {
-    while (s->is_running()) {
-        rtype::net::ServerEvent event;
+    while (true) {
+        tcp_event event;
         while (s->poll(event)) {
             std::lock_guard<std::mutex> lock(mut);
-            if (event.get_type() == rtype::net::ServerEvent::ServerEventType::TCP_CONNECTION) {
-                std::cout << "Connection: " << event.get_event<size_t>() << std::endl;
-                VALID_INDEXES.insert(event.get_event<size_t>());
-            } else if (event.get_type() == rtype::net::ServerEvent::ServerEventType::TCP_DISCONNECTION) {
-                std::cout << "Disconnection: " << event.get_event<size_t>() << std::endl;
-                VALID_INDEXES.erase(event.get_event<size_t>());
+            if (event.get_type() == tcp_event_type::Connexion) {
+                std::cout << "Connection: " << event.get<tcp_event_connexion>().get_id() << std::endl;
+                VALID_INDEXES.insert(event.get<tcp_event_connexion>().get_id());
+            } else if (event.get_type() == tcp_event_type::Disconnexion) {
+                std::cout << "Disconnection: " << event.get<tcp_event_disconnexion>().get_id() << std::endl;
+                VALID_INDEXES.erase(event.get<tcp_event_disconnexion>().get_id());
             } else {
                 std::cout << "Idc about messages bro" << std::endl;
             }
@@ -31,21 +32,23 @@ static void __event_check()
 
 static void __write_async()
 {
-    tcp_buffer_t buffer("hello world\n");
-
-    while (s->is_running()) {
+    while (true) {
         std::lock_guard<std::mutex> lock(mut);
         for (const auto& index : VALID_INDEXES)
-            s->write_tcp_socket(index, buffer, 12);
+            s->send(index, tcp_connection::new_message("ferocious ping\n"));
     }
 }
 
+
 void poc_server_write_tcp_example(void)
 {
-    s = new rtype::net::Server(4242, 4243);
+    boost::asio::io_context ctx;
+    s = new rtype::net::tcp_server(ctx, 4242);
 
     std::thread t1(__event_check);
     std::thread t2(__write_async);
+
+    ctx.run();
 
     t1.join();
     t2.join();

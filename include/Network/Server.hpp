@@ -1,783 +1,505 @@
 #pragma once
 
 #include <boost/asio.hpp>
-#include <boost/asio/buffer.hpp>
-#include <boost/atomic.hpp>
-#include <boost/container/vector.hpp>
-#include <boost/lockfree/queue.hpp>
-#include <boost/lockfree/stack.hpp>
-#include <boost/move/unique_ptr.hpp>
-#include <boost/optional.hpp>
+#include <boost/enable_shared_from_this.hpp>
+#include <boost/bind/bind.hpp>
+#include <boost/array.hpp>
 #include <boost/thread.hpp>
-#include <boost/thread/lock_guard.hpp>
-#include <boost/thread/mutex.hpp>
-#include <boost/variant.hpp>
-#include <hl/Silva/sparse_array>
 #include <queue>
-#include <stack>
+#include <variant>
+#include <spdlog/spdlog.h>
+#include "PileAA/meta.hpp"
+#include <assert.h>
 
-#ifndef RTYPE_SERVER_MAX_TCP_PACKET_SIZE
-#define RTYPE_SERVER_MAX_TCP_PACKET_SIZE 4096
-#endif
+// TODO: Use proper logging library vs std::fprintf stderr
 
-#ifndef RTYPE_SERVER_MAX_UDP_PACKET_SIZE
-#define RTYPE_SERVER_MAX_UDP_PACKET_SIZE 500
-#endif
-
-#define MAGIC_NUMBER 0x0fficecoffeedefec
+// using namespace boost::placeholders;
 
 namespace rtype {
-namespace net {
+    namespace net {
 
-    using tcp_buffer_t
-        = boost::array<std::uint8_t, RTYPE_SERVER_MAX_TCP_PACKET_SIZE>;
-    using udp_buffer_t
-        = boost::array<std::uint8_t, RTYPE_SERVER_MAX_UDP_PACKET_SIZE>;
+        template<typename T>
+        class async_queue : public std::queue<T> {
+        public:
+            HL_AUTO_COMPLETE_CANONICAL_FORM(async_queue);
 
-    class RFCMessage_TCP {
+            bool async_empty() {
+                std::lock_guard<std::mutex> lock(_mutex);
+                return this->empty();
+            }
+
+            bool async_pop(T& value) {
+                std::lock_guard<std::mutex> lock(_mutex);
+                if (this->empty())
+                    return false;
+                value = std::move(this->front());
+                this->pop();
+                return true;
+            }
+
+            void async_push(const T& value) {
+                std::lock_guard<std::mutex> lock(_mutex);
+                this->push(value);
+            }
+
+            void async_push(T&& value) {
+                std::lock_guard<std::mutex> lock(_mutex);
+                this->push(std::move(value));
+            }
+
+            template<typename ...Args>
+            void async_emplace(Args&&... args) {
+                std::lock_guard<std::mutex> lock(_mutex);
+                this->emplace(std::forward<Args>(args)...);
+            }
+
+        private:
+            std::mutex _mutex;
+        };
+
+        template<typename T>
+        class async_automated_sparse_array {
+        private:
+            std::mutex _mut;
+            async_queue<size_t> _unused_indexes;
+            std::vector<boost::shared_ptr<T>> _array;
 
         public:
-            RFCMessage_TCP() = default;
-            ~RFCMessage_TCP() = default;
+            HL_AUTO_COMPLETE_CANONICAL_FORM(async_automated_sparse_array);
 
-            enum SIGNAL_MARKER {
-                CONN_INIT,
-                CONN_OK,
-                CONN_FAILED,
-            };
-    };
-
-    class IClient {
-    public:
-        /**
-         * @brief Creates a new client
-         */
-        IClient() = default;
-        /**
-         * @brief Destroys the client
-         */
-        virtual ~IClient() = default;
-
-        /**
-         * @brief Receive data from the server (Blocking)
-         * @param void * The buffer
-         * @param size_t The size of the buffer
-         * @return size_t Number of bytes received
-         */
-        virtual size_t receive(void*, const size_t) = 0;
-
-        /**
-         * @brief Send data to the client (Blocking)
-         * @param void * The buffer
-         * @param size_t The size of the buffer
-         * @return size_t Number of bytes sent
-         */
-        virtual size_t send(const void*, const size_t) = 0;
-    };
-
-    class UDPClient : public IClient {
-    private:
-        boost::asio::ip::udp::resolver _resolver;
-        boost::asio::ip::udp::resolver::query _query;
-        boost::asio::ip::udp::endpoint _receiver_endpoint;
-        boost::asio::ip::udp::socket _socket;
-        boost::asio::ip::udp::endpoint _sender_endpoint;
-
-    public:
-        /**
-         * @brief Creates a new UDP client
-         * @param boost::asio::io_service & The io_service
-         * @param const char * The host
-         * @param const char * The port the client is listening to
-         */
-        UDPClient(boost::asio::io_context& io_context, const char* host,
-                                                    const char* port)
-            : _resolver(io_context)
-            , _query(boost::asio::ip::udp::v4(), host, "daytime")
-            , _receiver_endpoint(*_resolver.resolve({host, port}))
-            , _socket(io_context)
-            , _sender_endpoint()
-        {
-            _socket.open(boost::asio::ip::udp::v4());
-            //send("hello world", 12);
-        }
-
-        size_t receive(void* data, const size_t size) override
-        {
-            return _socket.receive_from(
-                boost::asio::buffer(data, size), _sender_endpoint);
-        }
-
-        size_t send(const void* data, const size_t size) override
-        {
-            return _socket.send_to(
-                boost::asio::buffer(data, size), _receiver_endpoint);
-        }
-    };
-
-    class TCPClient : public IClient {
-    private:
-        boost::asio::ip::tcp::resolver _resolver;
-        boost::asio::ip::tcp::resolver::query _query;
-        boost::asio::ip::tcp::resolver::iterator _endpoint_iterator;
-        boost::asio::ip::tcp::socket _socket;
-
-    public:
-        /**
-         * @brief Creates a new TCP client
-         * @param boost::asio::io_service & The io_service
-         * @param const char * The host
-         * @param const char * The port the client is listening to
-         */
-        TCPClient(boost::asio::io_context& io_context, const char* host,
-                                                        const char *port)
-            : _resolver(io_context)
-            , _query(host, "daytime")
-            , _endpoint_iterator(_resolver.resolve({host, port}))
-            , _socket(io_context)
-        {
-            boost::system::error_code error
-                = boost::asio::error::host_not_found;
-            boost::asio::ip::tcp::resolver::iterator end;
-
-            while (error && _endpoint_iterator != end) {
-                _socket.close();
-                _socket.connect(*_endpoint_iterator++, error);
+            boost::shared_ptr<T> async_get(size_t index) {
+                std::lock_guard<std::mutex> lock(this->_mut);
+                if (index >= this->_array.size())
+                    return nullptr;
+                return this->_array.at(index);
             }
 
-            if (_socket.is_open()) {
-                char c = RFCMessage_TCP::CONN_INIT;
-                send(&c, 1);
+            size_t async_set(boost::shared_ptr<T> value) {
+                std::lock_guard<std::mutex> lock(this->_mut);
+                size_t index;
+
+                if (this->_unused_indexes.async_pop(index)) {
+                    this->_array.at(index) = value;
+                    return index;
+                }
+                this->_array.push_back(value);
+                return this->_array.size() - 1;
             }
-            if (error) {
-                throw boost::system::system_error(error);
+
+            void async_remove(size_t index) {
+                std::lock_guard<std::mutex> lock(_mut);
+                if (index >= this->_array.size())
+                    return;
+                this->_array.at(index) = nullptr;
+                this->_unused_indexes.async_push(index);
             }
-        }
 
-        size_t receive(void* data, const size_t size) override
-        {
-            return _socket.receive(boost::asio::buffer(data, size));
-        }
-
-        size_t send(const void* data, const size_t size) override
-        {
-            return _socket.send(boost::asio::buffer(data, size));
-        }
-    };
-
-    class UDP_TCP_Client {
-    private:
-        boost::asio::io_context _tcp_io_context;
-        boost::asio::io_context _udp_io_context;
-
-        UDPClient _udp_client;
-        TCPClient _tcp_client;
-
-    public:
-        /**
-         * @brief Creates a new UDP_TCP_Client
-         * @param const char * The tcp host
-         * @param const char * The udp host
-         * @param const char * The TCP port the socket is listening to
-         * @param const char * The UDP port the socket is listening to
-         */
-        UDP_TCP_Client(const char* host_tcp, const char* host_udp,
-                        const char* tcp_port, const char* udp_port)
-            : _tcp_io_context(boost::asio::io_context())
-            , _udp_io_context(boost::asio::io_context())
-            , _udp_client(_udp_io_context, host_udp, udp_port)
-            , _tcp_client(_tcp_io_context, host_tcp, tcp_port)
-        {
-        }
-
-        /**
-         * @brief Gets the UDP client
-         * @return UDPClient & The UDP client
-         */
-        UDPClient& udp() { return _udp_client; }
-
-        /**
-         * @brief Gets the TCP client
-         * @return TCPClient & The TCP client
-         */
-        TCPClient& tcp() { return _tcp_client; }
-    };
-
-    ///////////////////////////////////////////////////////////////////
-    ////////////////////////// Server Side ////////////////////////////
-    ///////////////////////////////////////////////////////////////////
-
-    class ServerEvent {
-    public:
-        enum ServerEventType {
-            // UDP_DISCONNECTION,
-            // UDP_CONNECTION,
-            TCP_DISCONNECTION,
-            TCP_CONNECTION,
-            UDP_MESSAGE,
-            TCP_MESSAGE,
-            INVALID
+            // TODO: Optimize size by avoiding unused indexes
+            size_t async_size() {
+                std::lock_guard<std::mutex> lock(this->_mut);
+                return this->_array.size();
+            }
         };
 
-        struct ServerMessageTCP {
-            size_t id;
-            size_t used;
-            tcp_buffer_t buffer;
+#ifndef RTYPE_TCP_BUFFER_SIZE
+#define RTYPE_TCP_BUFFER_SIZE 1024
+#endif
+
+#ifndef RTYPE_UDP_BUFFER_SIZE
+#define RTYPE_UDP_BUFFER_SIZE 1024
+#endif
+
+        using tcp = boost::asio::ip::tcp;
+        using udp = boost::asio::ip::tcp;
+
+        using tcp_buffer_t = boost::array<char, RTYPE_TCP_BUFFER_SIZE>;
+        using udp_buffer_t = boost::array<char, RTYPE_UDP_BUFFER_SIZE>;
+
+        template<typename BufferType>
+        struct base_message_info {
+            BufferType buffer;
+            size_t size = 0;
+
+            HL_AUTO_COMPLETE_CANONICAL_FORM(base_message_info);
+
+            base_message_info(BufferType&& buffer, size_t size)
+                : buffer(std::move(buffer))
+                , size(size)
+            {}
+
+            template<typename To>
+            To to() { return To(this->buffer.c_array(), this->buffer.c_array() + this->size); }
+
+            std::string to_string() { return to<std::string>(); }
+            std::vector<char> to_vec() { return to<std::vector<char>>(); }
         };
 
-        struct ServerMessageUDP {
-            size_t id;
-            size_t used;
-            udp_buffer_t buffer;
-        };
-
-        using ServerEventContainer
-            = boost::variant<size_t, ServerMessageTCP, ServerMessageUDP, void*>;
-
-    private:
-        ServerEventType _type;
-        ServerEventContainer _event;
-
-    public:
-        /**
-         * @brief Creates a new ServerEvent
-         * @param ServerEventType The type of the event
-         * @param ServerEventContainer The event
-         */
-        ServerEvent(ServerEventType type, ServerEventContainer&& event)
-            : _type(type)
-            , _event(std::move(event))
+        class tcp_connection
+            : public boost::enable_shared_from_this<tcp_connection>
         {
-        }
+            public:
+                using pointer = boost::shared_ptr<tcp_connection>;
 
-        /**
-         * @brief Creates an invalid ServerEvent
-         */
-        ServerEvent()
-            : _type(ServerEventType::INVALID)
-            , _event(ServerEventContainer(nullptr))
-        {}
+                struct message_info : public base_message_info<tcp_buffer_t> {
+                    HL_AUTO_COMPLETE_CANONICAL_FORM(message_info);
 
-        /**
-         * @brief Destroys the server event
-         */
-        ~ServerEvent() = default;
+                    message_info(tcp_buffer_t&& buffer, size_t size)
+                        : base_message_info(std::move(buffer), size)
+                    {}
+                };
 
-        /**
-         * @brief Copies the server event
-         */
-        ServerEvent(const ServerEvent& e) = default;
+                using shared_message_info_t = boost::shared_ptr<message_info>;
 
-        /**
-         * @brief Copies the server event
-         */
-        ServerEvent& operator=(const ServerEvent& e) = default;
-
-        /**
-         * @brief Moves the server event
-         */
-        ServerEvent(ServerEvent&&) = default;
-        /**
-         * @brief Moves the server event
-         */
-        ServerEvent& operator=(ServerEvent&&) = default;
-
-        /**
-         * @brief Gets the type of the event
-         * @return ServerEventType The type of the event
-         */
-        ServerEventType get_type() const { return _type; }
-
-        /**
-         * @brief Gets the raw event
-         * @return ServerEventContainer The event
-         */
-        ServerEventContainer& get_raw_event() { return _event; }
-
-        /**
-         * @brief Gets the raw event and cast it to the given type
-         * @return ServerEventContainer The event
-         */
-        template <typename T> T& get_event() { return boost::get<T&>(_event); }
-    };
-
-    class Server {
-    public:
-        template <typename Socket>
-        using client_context_sparse_array_t = hl::silva::sparse_array<Socket>;
-
-        struct TCPClientContext {
-            boost::asio::ip::tcp::socket socket;
-            tcp_buffer_t buffer;
-            std::unique_ptr<std::thread> reader_thread;
-            std::unique_ptr<std::thread> writer_thread;
-            std::atomic_bool is_reading;
-            std::atomic_bool is_writing;
-            std::atomic_bool should_close;
-
-            /**
-             * @brief Creates a new TCPClientContext for a TCP Client
-             */
-            TCPClientContext(boost::asio::io_context& service)
-                : socket(service)
-            {
-                is_reading = false;
-                should_close = false;
-            }
-
-            /*
-            TCPClientContext(const ClientContext&) = default;
-            TCPClientContext(ClientContext&&) = default;
-            */
-
-            ~TCPClientContext() = default;
-        };
-
-        using shared_tcp_client_context_t = std::shared_ptr<TCPClientContext>;
-
-    private:
-        // IO services
-        boost::asio::io_context _tcp_io_context;
-        boost::asio::ip::tcp::acceptor _tcp_acceptor;
-
-        boost::asio::io_context _udp_io_context;
-        boost::asio::ip::udp::socket _server_udp_socket;
-
-        // Sockets
-        client_context_sparse_array_t<shared_tcp_client_context_t> _tcp_client_contexts;
-        std::stack<size_t> _unused_tcp_client_contexts_indexes;
-        std::mutex _unused_tcp_client_contexts_indexes_mut;
-
-        std::atomic_size_t _last_tcp_index;
-        std::mutex _tcp_client_contexts_mut;
-
-        // Events
-        std::queue<ServerEvent> _event;
-        std::mutex _event_mut;
-
-        std::atomic_bool _finish_writing_udp;
-        std::atomic_bool _server_running;
-
-        // Threads
-        std::unique_ptr<boost::thread> _thread_udp_reader;
-        std::unique_ptr<std::thread> _thread_udp_writer;
-        std::unique_ptr<boost::thread> _thread_tcp_reader;
-        std::unique_ptr<boost::thread> _thread_tcp_acceptor;
-
-    public:
-        void add_event(ServerEvent&& event)
-        {
-            std::lock_guard<std::mutex> lock(_event_mut);
-            _event.push(std::move(event));
-        }
-
-    private:
-        //
-        // Utitlity verbose function for sync_disconnection
-        // Is thread safe as long as the good mutex and client_context_sparse_array is
-        // passed
-        //
-        template <typename ClientContextSparseArray>
-        void disconnect_any_socket_sync(const size_t index,
-            ClientContextSparseArray& s, std::mutex& mut,
-            ServerEvent::ServerEventType event_type)
-        {
-            std::lock_guard<std::mutex> lock(mut);
-
-            // Maybe handle disconnection failure send event
-            if (s.non_null(index)) {
-                auto& socket = *s[index].value();
-                if (socket.reader_thread) {
-                    socket.reader_thread->join();
+                static shared_message_info_t new_message(const void *data, size_t size)
+                {
+                    assert(size < tcp_buffer_t::size);
+                    message_info *mesg = new message_info;
+                    std::memcpy(mesg->buffer.c_array(), data, size);
+                    mesg->size = size;
+                    return shared_message_info_t(mesg);
                 }
-                if (socket.writer_thread) {
-                    socket.writer_thread->join();
+
+                static shared_message_info_t new_message(const std::string& s)
+                {
+                    return new_message(reinterpret_cast<const void *>(s.c_str()), s.size());
                 }
-                s.erase(index);
 
-                std::lock_guard<std::mutex> lock_(
-                    _unused_tcp_client_contexts_indexes_mut);
-                add_event(std::move(ServerEvent(event_type,
-                    std::move(ServerEvent::ServerEventContainer(index)))));
-                _unused_tcp_client_contexts_indexes.push(index);
-                if (index == _last_tcp_index - 1)
-                    --_last_tcp_index;
-            }
-        }
-
-        //
-        // Utitlity verbose function for sync_connection
-        // Is thread safe as long as the good mutex and client_context_sparse_array is
-        // passed
-        //
-        template <typename ClientContextSparseArray>
-        void connect_any_socket_sync(ClientContextSparseArray& s, std::mutex& mut,
-            ServerEvent::ServerEventType event_type,
-            shared_tcp_client_context_t&& tcp_client_context)
-        {
-            std::lock_guard<std::mutex> lock(mut);
-            std::lock_guard<std::mutex> lock_(_unused_tcp_client_contexts_indexes_mut);
-            size_t optional_index;
-
-            if (!_unused_tcp_client_contexts_indexes.empty()) {
-                optional_index = _unused_tcp_client_contexts_indexes.top();
-                _unused_tcp_client_contexts_indexes.pop();
-                s.insert(optional_index, std::move(tcp_client_context));
-                add_event(std::move(ServerEvent(event_type,
-                    std::move(
-                        ServerEvent::ServerEventContainer(optional_index)))));
-            } else {
-                s.insert(_last_tcp_index, std::move(tcp_client_context));
-                add_event(std::move(ServerEvent(event_type,
-                    std::move(
-                        ServerEvent::ServerEventContainer(_last_tcp_index)))));
-                ++_last_tcp_index;
-            }
-        }
-
-        //
-        // This function should never return
-        //	- is thread safe
-        //  - must be called in a separate thread (never returns)
-        //  - Will be used to accept indefinitely tcp_clients
-        //  - Is automatically called on start() call
-        //
-        void accept_tcp_clients_sync()
-        {
-            do {
-                try {
-                    TCPClientContext* context = new TCPClientContext(_tcp_io_context);
-                    shared_tcp_client_context_t socket(context);
-
-                    _tcp_acceptor.accept(socket->socket);
-
-                    // socket->socket.non_blocking(true);
-
-                    connect_any_socket_sync(_tcp_client_contexts, _tcp_client_contexts_mut,
-                        ServerEvent::ServerEventType::TCP_CONNECTION,
-                        std::move(socket));
-                } catch (...) {
+                void start()
+                {
+                    handle_read();
                 }
-            } while (_server_running);
-        }
 
-        //
-        // This function is thread safe and is used to know if the given client is connected
-        // This function is only called by the reader_thread of the tcp sockets
-        // If the client is detected as should close the server reader thread will be blocked until the client is disconnected
-        // This function is automatically called by the reader_thread of the tcp sockets
-        // If the client is valid and is already reading the function will return false
-        // Otherwise it will return true
-        //
-        bool read_single_client_tcp_socket_check_index_and_update_tcp_client_context(size_t i)
-        {
-            _tcp_client_contexts_mut.lock();
-            if (!_tcp_client_contexts.non_null(i)) {
-                _tcp_client_contexts_mut.unlock();
-                return false;
-            }
-            auto& ctx = *_tcp_client_contexts[i].value();
-
-            if (ctx.should_close) {
-                _tcp_client_contexts_mut.unlock();
-                disconnect_tcp_socket_sync(i);
-                return false;
-            }
-
-            if (ctx.is_reading) {
-                _tcp_client_contexts_mut.unlock();
-                return false;
-            }
-            _tcp_client_contexts_mut.unlock();
-            return true;
-        }
-
-        //
-        // This function is thread safe and is used to add to the event queue a new tcp message
-        // received by any client
-        //
-        void send_tcp_message_event(ServerEvent::ServerEventContainer&& event_container)
-        {
-            add_event(std::move(ServerEvent(ServerEvent::ServerEventType::TCP_MESSAGE,
-                std::move(event_container))));
-        }
-
-        //
-        // This function is thread safe and is used to add to the event queue a new udp message
-        // received by any client
-        //
-        void send_udp_message_event(ServerEvent::ServerEventContainer&& event_container)
-        {
-            add_event(std::move(ServerEvent(ServerEvent::ServerEventType::UDP_MESSAGE,
-                std::move(event_container))));
-        }
-
-        //
-        // This function is thread safe and is used to launch a thread that will read
-        // that will call the read function of the given client
-        //
-        // The launched thread of the client will be stored in the client context
-        // This thread will trigger the is_reading member of the context to false when it is done
-        //
-        // This function must only called by the reader_thread of the tcp sockets
-        // This function is automatically called by the reader_thread of the tcp sockets
-        //
-        void read_single_client_tcp_socket(size_t i)
-        {
-            if (!read_single_client_tcp_socket_check_index_and_update_tcp_client_context(i))
-                return;
-
-            auto& ctx = *_tcp_client_contexts[i].value();
-            ctx.is_reading = true;
-
-            if (ctx.reader_thread.get())
-                ctx.reader_thread->join();
-
-            ctx.reader_thread = std::unique_ptr<std::thread>(
-                new std::thread([this, i]() {
-                    auto& ctx = *_tcp_client_contexts[i].value();
-                    try {
-                        size_t readed_bytes = ctx.socket.read_some(boost::asio::buffer(ctx.buffer));
-
-                        if (!readed_bytes)
-                            return;
-                        send_tcp_message_event(
-                            std::move(ServerEvent::ServerEventContainer(
-                                ServerEvent::ServerMessageTCP { i, readed_bytes, ctx.buffer }
-                        )));
-                        ctx.is_reading = false;
-                    } catch (...) {
-                        ctx.should_close = true;
-                    }
-                }));
-        }
-
-        //
-        // This function should never return
-        // - is thread safe
-        // - must be called in a separate thread (never returns)
-        // - Will be used to read indefinitely on tcp sockets
-        // - Is automatically called on start() call
-        //
-        void read_tcp_client_contexts()
-        {
-            do {
-                for (size_t i = 0; i < _last_tcp_index; ++i) {
-                    read_single_client_tcp_socket(i);
+                static pointer create(boost::asio::io_context& io_context)
+                {
+                    return pointer(new tcp_connection(io_context));
                 }
-            } while (_server_running);
 
-            std::lock_guard<std::mutex> lock(_tcp_client_contexts_mut);
-
-            for (size_t i = 0; i < _tcp_client_contexts.size(); i++) {
-                if (_tcp_client_contexts.non_null(i)) {
-                    auto& ctx = *_tcp_client_contexts[i].value();
-                    if (ctx.reader_thread && ctx.is_reading) {
-                        ctx.reader_thread->join();
-                    }
+                tcp::socket& socket()
+                {
+                    return _socket;
                 }
-            }
-        }
 
-        //
-        // This function should never return
-        // - is thread safe
-        // - must be called in a separate thread (never returns)
-        // - Will be used to read indefinitely on udp sockets
-        // - Is automatically called on start() call
-        //
-        void read_udp_sockets()
-        {
-            udp_buffer_t udp_buffer;
-            size_t readed_bytes;
-
-            do {
-                boost::asio::ip::udp::endpoint remote_endpoint;
-                readed_bytes = _server_udp_socket.receive_from(
-                    boost::asio::buffer(udp_buffer), remote_endpoint);
-
-                // TODO: Verify packet integrity and send the good ID (Maybe change ServerMessageUDP struct)
-                send_udp_message_event(
-                    std::move(ServerEvent::ServerEventContainer(
-                        ServerEvent::ServerMessageUDP { 0, readed_bytes, udp_buffer }
-                )));
-            } while (_server_running);
-        }
-
-        //
-        // Can be runnned in a separate thread
-        // Starts the server if not already running
-        // If any problem occured (notably thread problems) returns false
-        // If the server is_running() member returns true this function has
-        // already been finished (or was already called)
-        //
-        bool start()
-        {
-            if (_server_running)
-                return true;
-            try {
-                _server_running = true;
-                _thread_tcp_acceptor
-                    = std::unique_ptr<boost::thread>(new boost::thread(
-                        std::bind(&Server::accept_tcp_clients_sync, this)));
-
-                _thread_tcp_reader
-                    = std::unique_ptr<boost::thread>(new boost::thread(
-                        std::bind(&Server::read_tcp_client_contexts, this)));
-
-                _thread_udp_reader
-                    = std::unique_ptr<boost::thread>(new boost::thread(
-                        std::bind(&Server::read_udp_sockets, this)));
-            } catch (...) {
-                _server_running = false;
-                return false;
-            }
-            return true;
-        }
-
-        //
-        // Stops the server if running
-        // Should always return true
-        // Might throw if failing to join the threads
-        // Is automatically called when the Server is destroyed
-        //
-        bool stop()
-        {
-            if (!_server_running)
-                return true;
-            _server_running = false;
-            _thread_tcp_acceptor->join();
-            _thread_tcp_reader->join();
-            _thread_udp_reader->join();
-            return true;
-        }
-
-    public:
-
-        //
-        // Constructor
-        // - port: the port on which the server will listen
-        // - max_tcp_clients: the maximum number of tcp clients that can be connected
-        //
-        Server(const int tcp_port, const int udp_port)
-            : _tcp_acceptor(_tcp_io_context, boost::asio::ip::tcp::endpoint(
-                               boost::asio::ip::tcp::v4(), tcp_port))
-            , _server_udp_socket(_udp_io_context,
-                  boost::asio::ip::udp::endpoint(
-                      boost::asio::ip::udp::v4(), udp_port))
-        {
-            _last_tcp_index = 0;
-            _server_running = false;
-            start();
-            // _tcp_acceptor.listen(RTYPE_SERVER_MAX_CLIENT);
-            std::printf("[Server Connected]:\n\t- TCP 127.0.0.1:%d\n\t- UDP 127.0.0.1:%d\n", tcp_port, udp_port);
-        }
-
-        ~Server() { stop(); }
-
-    private:
-        //
-        // can be runned in a separate thread
-        // Will add in the event queue the disconnection if the tcp_socket
-        // was currently used and will destroy the given socket
-        // Only used to disconnect manually a tcp socket for whatever reason
-        //
-        void disconnect_tcp_socket_sync(const size_t index)
-        {
-            disconnect_any_socket_sync(index, _tcp_client_contexts, _tcp_client_contexts_mut,
-                ServerEvent::TCP_DISCONNECTION);
-        }
-
-    public:
-        //
-        // Polls the server for any event that might have occured
-        // If no event occured returns false
-        // Otherwise it copies the event in the parameter and returns true
-        //
-        bool poll(ServerEvent& event)
-        {
-            std::lock_guard<std::mutex> lock(_event_mut);
-            if (_event.empty())
-                return false;
-            event = std::move(_event.front());
-            _event.pop();
-            return true;
-        }
-
-        //
-        // Tells whether the server is running
-        //
-        bool is_running() const { return _server_running; }
-
-        //
-        // Write asynchronously to a specific client
-        //
-        void write_tcp_socket(const size_t index, tcp_buffer_t& tcp_buffer, const size_t size)
-        {
-            std::lock_guard<std::mutex> lock(_tcp_client_contexts_mut);
-
-            if (_tcp_client_contexts.non_null(index)) {
-                auto& ctx = *_tcp_client_contexts[index].value();
-                if (ctx.writer_thread) {
-                    ctx.writer_thread->join();
+                void send(shared_message_info_t message)
+                {
+                    spdlog::info("Starting to send a message!");
+                    size_t index = _send_message_list.async_set(message);
+                    _socket.async_send(boost::asio::buffer(message->buffer, message->size),
+                            [this, index](boost::system::error_code ec, std::size_t sended_bytes) {
+                                // TODO: Maybe check sended bytes
+                                (void)sended_bytes;
+                                if (ec) {
+                                    // TODO: Maybe check error type
+                                    spdlog::error("Error while sending message({}): {}", index, ec.message());
+                                    _should_exit = true;
+                                } else {
+                                    spdlog::info("Sucessfully sended message({})", index);
+                                    _send_message_list.async_remove(index);
+                                }
+                            });
                 }
-                tcp_buffer_t *buffer = new tcp_buffer_t(tcp_buffer);
-                ctx.is_writing = true;
-                ctx.writer_thread = std::unique_ptr<std::thread>(
-                    new std::thread([&ctx, buffer, size]() {
-                        try {
-                            ctx.socket.write_some(boost::asio::buffer(buffer, size));
-                        } catch (...) {
+
+                bool poll(shared_message_info_t& message)
+                {
+                    return _readed_messages_queue.async_pop(message);
+                }
+
+                bool should_exit() const { return _should_exit; }
+
+            private:
+                void handle_read()
+                {
+                    spdlog::info("Starting to read a message!");
+                    _socket.async_receive(
+                        boost::asio::buffer(this->_buffer_reader),
+                        _buffer_reader.size(),
+                        [this](const boost::system::error_code& error, size_t bytes_transferred) {
+                            if (error) {
+                                // TODO: Maybe check error type
+                                spdlog::error("Error while reading from socket: {}", error.message());
+                                _should_exit = true;
+                            } else {
+                                if (bytes_transferred) {
+                                    _readed_messages_queue.async_push(
+                                            shared_message_info_t(
+                                                new message_info(std::move(_buffer_reader), bytes_transferred)
+                                            )
+                                        );
+                                    spdlog::info("Added to message queue a new message");
+                                }
+                                handle_read();
+                            }
                         }
-                        delete buffer;
-                        ctx.is_writing = false;
-                    })
-                );
-            }
-        }
+                    );
+                }
 
-        void write_udp_socket(udp_buffer_t& udp_buffer, const size_t size)
+                tcp_connection(boost::asio::io_context& io_context)
+                    : _socket(io_context)
+                {
+                    _should_exit = false;
+                }
+
+            public:
+                ~tcp_connection() = default;
+
+            private:
+                tcp::socket _socket;
+                async_automated_sparse_array<message_info> _send_message_list;
+                tcp_buffer_t _buffer_reader;
+                async_queue<shared_message_info_t> _readed_messages_queue;
+                std::atomic_bool _should_exit;
+        };
+
+        class tcp_event_connexion {
+        private:
+            size_t _id = -1;
+
+        public:
+            tcp_event_connexion(size_t id) : _id(id) {}
+            size_t get_id() const { return _id; }
+
+            HL_AUTO_COMPLETE_CANONICAL_FORM(tcp_event_connexion);
+        };
+
+        class tcp_event_disconnexion {
+        private:
+            size_t _id = -1;
+        public:
+            tcp_event_disconnexion(size_t id) : _id(id) {}
+            size_t get_id() const { return _id; }
+
+            HL_AUTO_COMPLETE_CANONICAL_FORM(tcp_event_disconnexion);
+        };
+
+        class tcp_event_message {
+        private:
+            size_t _id = -1;
+            tcp_connection::shared_message_info_t _message;
+
+        public:
+            tcp_event_message(size_t id, tcp_connection::shared_message_info_t message)
+                : _id(id), _message(message) {}
+
+            size_t get_id() const { return _id; }
+            tcp_connection::shared_message_info_t get_message() { return _message; }
+
+            HL_AUTO_COMPLETE_CANONICAL_FORM(tcp_event_message);
+        };
+
+        enum tcp_event_type {
+            Invalid,
+            Connexion,
+            Disconnexion,
+            Message
+        };
+
+        using tcp_event_container = std::variant<void*, tcp_event_connexion, tcp_event_disconnexion, tcp_event_message>;
+
+        class tcp_event {
+        private:
+            tcp_event_container _container;
+
+        public:
+            tcp_event() : _container(nullptr) {}
+            tcp_event(tcp_event_connexion event) : _container(event) {}
+            tcp_event(tcp_event_disconnexion event) : _container(event) {}
+            tcp_event(tcp_event_message event) : _container(event) {}
+
+            ~tcp_event() = default;
+
+            template<typename T>
+            const T& get() const { return std::get<T>(_container); }
+
+            template<typename T>
+            T& get() { return std::get<T>(_container); }
+
+            int get_type() const { return _container.index(); }
+        };
+
+        class tcp_server
         {
-            if (_thread_udp_writer)
-                _thread_udp_writer->join();
-            udp_buffer_t *buffer = new udp_buffer_t(udp_buffer);
-            // _thread_udp_writer = std::unique_ptr<std::thread>(
-                // new std::thread([buffer, size, &udp_socket=_server_udp_socket]() {
-                    try {
-                        boost::asio::ip::udp::endpoint ed;
-                        boost::system::error_code ec;
-                        _server_udp_socket.send_to(boost::asio::buffer(buffer, size), ed, 0, ec);
-                    } catch (...) {
+            public:
+                tcp_server(boost::asio::io_context& io_context, int port)
+                    : _io_context(io_context)
+                    , _acceptor(io_context, tcp::endpoint(tcp::v4(), port))
+                {
+                    spdlog::info("TCP server launched: 127.0.0.1:{}\n", port);
+                    start_accept();
+                    poll_tcp_connections();
+                    spdlog::info("Server fully ready");
+                }
+
+                bool poll(tcp_event& event) {
+                    return _events.async_pop(event);
+                }
+
+                void send(size_t id, tcp_connection::shared_message_info_t message) {
+                    auto it = _connections.async_get(id);
+                    spdlog::info("Trying to send a message to {}", id);
+                    if (it)
+                        it->send(message);
+                    else
+                        spdlog::error("Error while sending message: connection {} not found", id);
+                }
+
+            private:
+                void start_accept()
+                {
+                    tcp_connection::pointer new_connection =
+                        tcp_connection::create(_io_context);
+
+                    spdlog::info("Starting to accept a new connection");
+
+                    _acceptor.async_accept(new_connection->socket(),
+                            boost::bind(&tcp_server::handle_accept, this, new_connection,
+                                boost::asio::placeholders::error));
+                }
+
+                void handle_accept(tcp_connection::pointer new_connection,
+                        const boost::system::error_code& error)
+                {
+                    if (!error) {
+                        new_connection->start();
+                        size_t id = _connections.async_set(new_connection);
+                        _events.async_push(tcp_event_connexion(id));
+                        spdlog::info("New connection accepted: {}", id);
+                    } else {
+                        spdlog::error("Error: {}\n", error.message());
+                        return;
                     }
-                    delete buffer;
-                // })
-            // );
-        }
-        //
-        // Tells you whether a tcp socket might block for a "long time"
-        // if you try to write to it
-        //
-        // False might means that the client is either not connected
-        // or that it is not currently writing
-        //
-        bool client_is_busy_writing(const size_t index)
-        {
-            std::lock_guard<std::mutex> lock(_tcp_client_contexts_mut);
+                    start_accept();
+                }
 
-            if (_tcp_client_contexts.non_null(index)) {
-                return !_tcp_client_contexts[index].value()->is_writing;
-            }
-            return false;
-        }
+                void poll_tcp_connections()
+                {
+                    spdlog::info("Starting to poll tcp connections");
+                    _tcp_connection_polling_thread = std::unique_ptr<boost::thread>(
+                        new boost::thread([this]() {
+                            tcp_connection::shared_message_info_t message;
+                            while (true) {
+                                for (size_t i = 0; i < _connections.async_size(); ++i) {
+                                    auto connection = _connections.async_get(i);
+                                    if (!connection) {
+                                        continue;
+                                    }
+                                    if (connection->should_exit()) {
+                                        _events.async_push(std::move(tcp_event_disconnexion(i)));
+                                        _connections.async_remove(i);
+                                        spdlog::info("Disconnection from {}", i);
+                                    } else {
+                                        while (connection->poll(message)) {
+                                            _events.async_push(std::move(tcp_event_message(i, message)));
+                                            spdlog::info("Polled a message from {}", i);
+                                        }
+                                    }
+                                }
+                            }
+                        })
+                    );
+                }
 
-        //
-        // Tells you wheter a tcp socket is currently connected
-        //
-        bool client_is_connected(const size_t index)
+                boost::asio::io_context& _io_context;
+                tcp::acceptor _acceptor;
+                async_automated_sparse_array<tcp_connection> _connections;
+
+                std::unique_ptr<boost::thread> _tcp_connection_polling_thread;
+
+                async_queue<tcp_event> _events;
+        };
+
+
+        class udp_server
         {
-            std::lock_guard<std::mutex> lock(_tcp_client_contexts_mut);
-            return _tcp_client_contexts.non_null(index);
-        }
-    };
-}
+            public:
+                class message_info : public base_message_info<udp_buffer_t> {
+                public:
+                    message_info(udp_buffer_t&& buffer, size_t size)
+                        : base_message_info(std::move(buffer), size)
+                    {}
+
+                    HL_AUTO_COMPLETE_CANONICAL_FORM(message_info);
+                };
+
+                using shared_message_info_t = boost::shared_ptr<message_info>;
+
+                udp_server(boost::asio::io_context& io_context, int port)
+                    : _socket(io_context, udp::endpoint(udp::v4(), port))
+                {
+                    start_receive();
+                }
+
+            private:
+                void start_receive()
+                {
+                    _socket.async_read_some(
+                            boost::asio::buffer(_recv_buffer),
+                        [this](const boost::system::error_code& error, std::size_t bytes_transferred) {
+                            if (!error) {
+                                if (bytes_transferred)
+                                    _recv_queue.async_push(
+                                        shared_message_info_t(new message_info(std::move(_recv_buffer), bytes_transferred))
+                                    );
+                                start_receive();
+                            } else {
+                                std::fprintf(stderr, "Error while receiving UDP packet\n");
+                            }
+                        }
+                    );
+                }
+
+            public:
+                bool poll(shared_message_info_t& info)
+                {
+                    return _recv_queue.async_pop(info);
+                }
+
+                void send(shared_message_info_t message)
+                {
+                    size_t index = _messages.async_set(message);
+
+                    _socket.async_send(boost::asio::buffer(message->buffer, message->size),
+                        [this, index](const boost::system::error_code& error, std::size_t bytes_transferred) {
+                            // Might need to check bytes_transferred
+                            (void)bytes_transferred;
+                            if (!error) {
+                                _messages.async_remove(index);
+                            } else {
+                                std::fprintf(stderr, "Error while sending UDP packet\n");
+                            }
+                        }
+                    );
+                }
+
+                udp::socket _socket;
+                udp::endpoint _remote_endpoint;
+                udp_buffer_t _recv_buffer;
+
+                async_automated_sparse_array<message_info> _messages;
+
+                async_queue<shared_message_info_t> _recv_queue;
+        };
+
+        class tcp_udp_server {
+        public:
+            tcp_udp_server(boost::asio::io_context& io_context, int tcp_port, int udp_port)
+                : _io_context(io_context)
+                , _tcp_server(io_context, tcp_port)
+                , _udp_server(io_context, udp_port)
+            {}
+
+            bool tcp_poll(tcp_event& event) { return _tcp_server.poll(event); }
+
+            bool udp_poll(udp_server::shared_message_info_t& message) { return _udp_server.poll(message); }
+
+            void tcp_send(tcp_connection::shared_message_info_t message, size_t index) { _tcp_server.send(index, message); }
+
+            void udp_send(udp_server::shared_message_info_t message) { _udp_server.send(message); }
+
+            boost::asio::io_context& io_context() { return _io_context; }
+
+        private:
+            boost::asio::io_context& _io_context;
+            tcp_server _tcp_server;
+            udp_server _udp_server;
+        };
+    }
 }

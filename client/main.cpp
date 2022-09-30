@@ -1,3 +1,4 @@
+/*
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <exception>
@@ -28,3 +29,6 @@ int main()
     }
     return 0;
 }
+*/
+
+int main() {}

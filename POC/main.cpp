@@ -7,7 +7,7 @@
 static const std::unordered_map<std::string, std::function<void(void)>> POCS = {
     {"animated_sprite", poc_animated_sprite},
     {"ecs_example", poc_ecs_example},
-    {"server_example", poc_server_example},
+    {"server_tcp_example", poc_tcp_server_example},
     {"server_write_tcp", poc_server_write_tcp_example},
     {"joystick_example", poc_joystick_example}
 };
@@ -22,6 +22,11 @@ int main(int ac, char **av)
         std::cout << "====" << std::endl;
         std::cout << "Server examples never returns" << std::endl;
     } else if (ac == 2) {
+        if (POCS.find(av[1]) == POCS.end()) {
+            std::cout << "Invalid option" << std::endl;
+            main(1, NULL);
+            return 1;
+        }
         POCS.at(av[1])();
     } else {
         std::cout << "Please specify one option" << std::endl;

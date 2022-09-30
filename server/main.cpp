@@ -1,6 +1,6 @@
+/*
 #include <iostream>
 #include "Network/Server.hpp"
-/*
 #include <boost/asio.hpp>
 #include <boost/asio/ts/buffer.hpp>
 #include <boost/asio/ts/internet.hpp>
@@ -8,6 +8,7 @@
 using namespace boost;
 */
 
+/*
 void display_event(rtype::net::ServerEvent& event, rtype::net::Server& s)
 {
     std::cout << "event coucou" << std::endl;
@@ -49,3 +50,6 @@ int main(int ac, char **av)
     }
     return 0;
 }
+*/
+
+int main() {}

@@ -3,6 +3,7 @@
 #include "./external/Galbar/InputHandler.hpp"
 #include "VectorExtension.hpp"
 #include "meta.hpp"
+#include <array>
 
 namespace paa {
 

@@ -1,8 +1,10 @@
+#include "Network/Server.hpp"
+#include "Network/Client.hpp"
+#include <iostream>
 /*
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <exception>
-#include "Network/Server.hpp"
 
 int main()
 {
@@ -31,4 +33,21 @@ int main()
 }
 */
 
-int main() {}
+int main()
+{
+    try {
+        boost::asio::io_service service;
+        rtype::net::UDPClient client(service, "127.0.0.1", "4243");
+        rtype::net::udp_buffer_t buff;
+
+        while (true) {
+            size_t readed_bytes = client.receive(buff.data(), buff.size());
+
+            if (readed_bytes > 0)
+                std::cout << buff.data() << std::endl;
+        }
+    } catch(...) {
+        std::cout << "RIP" << std::endl;
+    }
+    return 0;
+}

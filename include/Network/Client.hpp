@@ -1,11 +1,17 @@
 #pragma once
 
-#define "Server.hpp"
+#include "Server.hpp"
 
 #define MAGIC_NUMBER 0x0fficecoffeedefec
 
 namespace rtype {
 namespace net {
+
+    enum RFCMesssage_TCP {
+        CONN_INIT,
+        CONN_OK,
+    };
+
 
     class IClient {
     public:
@@ -59,7 +65,8 @@ namespace net {
             , _sender_endpoint()
         {
             _socket.open(boost::asio::ip::udp::v4());
-            //send("hello world", 12);
+            char data = RFCMesssage_TCP::CONN_INIT;
+            send(&data, 1);
         }
 
         size_t receive(void* data, const size_t size) override
@@ -106,7 +113,7 @@ namespace net {
             }
 
             if (_socket.is_open()) {
-                char c = RFCMessage_TCP::CONN_INIT;
+                char c = RFCMesssage_TCP::CONN_INIT;
                 send(&c, 1);
             }
             if (error) {

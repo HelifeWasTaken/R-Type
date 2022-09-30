@@ -152,7 +152,7 @@ namespace rtype {
 
                 static shared_message_info_t new_message(const void *data, size_t size)
                 {
-                    assert(size < tcp_buffer_t::size);
+                    // assert(size < tcp_buffer_t::size);
                     message_info *mesg = new message_info;
                     std::memcpy(mesg->buffer.c_array(), data, size);
                     mesg->size = size;

@@ -213,21 +213,22 @@ namespace rtype {
                     _socket.async_receive(
                         boost::asio::buffer(*_buffer_reader),
                         _buffer_reader->size(),
-                        [this](const boost::system::error_code& error, size_t bytes_transferred) {
+                        [this, should_exit=_should_exit, readed_messages_queue=_readed_messages_queue, buffer_reader=_buffer_reader, id=_id]
+                        (const boost::system::error_code& error, size_t bytes_transferred) {
                             if (error) {
                                 // TODO: Maybe check error type
-                                spdlog::error("tcp_connection({}): Error while reading from socket: {}", _id, error.message());
-                                *_should_exit = true;
+                                spdlog::error("tcp_connection({}): Error while reading from socket: {}", id, error.message());
+                                *should_exit = true;
                             } else {
                                 if (bytes_transferred) {
-                                    _readed_messages_queue->async_push(
+                                    readed_messages_queue->async_push(
                                             shared_message_info_t(
-                                                new message_info(std::move(*_buffer_reader), bytes_transferred)
+                                                new message_info(std::move(*buffer_reader), bytes_transferred)
                                             )
                                         );
-                                    spdlog::info("tcp_connection({}): Added to message queue a new message", _id);
+                                    spdlog::info("tcp_connection({}): Added to message queue a new message", id);
                                 }
-                                if (!(*_should_exit))
+                                if (!(*should_exit))
                                     handle_read();
                             }
                         }
@@ -434,22 +435,18 @@ namespace rtype {
 
                 using shared_message_info_t = boost::shared_ptr<message_info>;
 
-                udp_server(boost::asio::io_context& io_context, int port)
-                    : _socket(io_context, udp::endpoint(udp::v4(), port))
-                {
-                    start_receive();
-                }
 
             private:
                 void start_receive()
                 {
                     _socket.async_read_some(
-                            boost::asio::buffer(_recv_buffer),
-                        [this](const boost::system::error_code& error, std::size_t bytes_transferred) {
+                            boost::asio::buffer(*_recv_buffer),
+                        [this, recv_queue=_recv_queue, recv_buffer=_recv_buffer]
+                        (const boost::system::error_code& error, std::size_t bytes_transferred) {
                             if (!error) {
                                 if (bytes_transferred)
-                                    _recv_queue.async_push(
-                                        shared_message_info_t(new message_info(std::move(_recv_buffer), bytes_transferred))
+                                    recv_queue->async_push(
+                                        shared_message_info_t(new message_info(std::move(*recv_buffer), bytes_transferred))
                                     );
                                 start_receive();
                             } else {
@@ -462,19 +459,20 @@ namespace rtype {
             public:
                 bool poll(shared_message_info_t& info)
                 {
-                    return _recv_queue.async_pop(info);
+                    return _recv_queue->async_pop(info);
                 }
 
                 void send(shared_message_info_t message)
                 {
-                    size_t index = _messages.async_set(message);
+                    size_t index = _messages->async_set(message);
 
                     _socket.async_send(boost::asio::buffer(message->buffer, message->size),
-                        [this, index](const boost::system::error_code& error, std::size_t bytes_transferred) {
+                        [index, buffer_copy=message, messages=_messages](const boost::system::error_code& error, std::size_t bytes_transferred) {
                             // Might need to check bytes_transferred
+                            (void)buffer_copy; // Make sure that the buffer lifetime is up until the end of the async function (passed as copy)
                             (void)bytes_transferred;
                             if (!error) {
-                                _messages.async_remove(index);
+                                messages->async_remove(index);
                             } else {
                                 std::fprintf(stderr, "Error while sending UDP packet");
                             }
@@ -482,37 +480,64 @@ namespace rtype {
                     );
                 }
 
+                udp_server(boost::asio::io_context& io_context, int port)
+                    : _socket(io_context, udp::endpoint(udp::v4(), port))
+                    , _recv_buffer(new udp_buffer_t)
+                    , _messages(new async_automated_sparse_array<message_info>)
+                    , _recv_queue(new async_queue<shared_message_info_t>)
+                {
+                    start_receive();
+                }
+
+            private:
                 udp::socket _socket;
                 udp::endpoint _remote_endpoint;
-                udp_buffer_t _recv_buffer;
 
-                async_automated_sparse_array<message_info> _messages;
-
-                async_queue<shared_message_info_t> _recv_queue;
+                boost::shared_ptr<udp_buffer_t> _recv_buffer;
+                boost::shared_ptr<async_automated_sparse_array<message_info>> _messages;
+                boost::shared_ptr<async_queue<shared_message_info_t>> _recv_queue;
         };
 
         class tcp_udp_server {
         public:
-            tcp_udp_server(boost::asio::io_context& io_context, int tcp_port, int udp_port)
-                : _io_context(io_context)
-                , _tcp_server(io_context, tcp_port)
-                , _udp_server(io_context, udp_port)
-            {}
+            tcp_udp_server(int tcp_port, int udp_port)
+                : _io_context(boost::asio::io_context())
+                , _tcp_server(new tcp_server(_io_context, tcp_port))
+                , _udp_server(new udp_server(_io_context, udp_port))
+            {
+                run();
+            }
 
-            bool tcp_poll(tcp_event& event) { return _tcp_server.poll(event); }
+            bool tcp_poll(tcp_event& event) { return _tcp_server->poll(event); }
 
-            bool udp_poll(udp_server::shared_message_info_t& message) { return _udp_server.poll(message); }
+            bool udp_poll(udp_server::shared_message_info_t& message) { return _udp_server->poll(message); }
 
-            void tcp_send(tcp_connection::shared_message_info_t message, size_t index) { _tcp_server.send(index, message); }
+            void tcp_send(tcp_connection::shared_message_info_t message, size_t index) { _tcp_server->send(index, message); }
 
-            void udp_send(udp_server::shared_message_info_t message) { _udp_server.send(message); }
+            void udp_send(udp_server::shared_message_info_t message) { _udp_server->send(message); }
 
             boost::asio::io_context& io_context() { return _io_context; }
 
+            tcp_server& tcp() { return *_tcp_server; }
+            udp_server& udp() { return *_udp_server; }
+
         private:
-            boost::asio::io_context& _io_context;
-            tcp_server _tcp_server;
-            udp_server _udp_server;
+            void run()
+            {
+                _thread_io_context_runner = boost::shared_ptr<boost::thread>(
+                    new boost::thread([&io=_io_context]() {
+                        while (true)
+                            io.run();
+                    })
+                );
+            }
+
+            boost::asio::io_context _io_context;
+
+            boost::shared_ptr<tcp_server> _tcp_server;
+            boost::shared_ptr<udp_server> _udp_server;
+
+            boost::shared_ptr<boost::thread> _thread_io_context_runner;
         };
     }
 }

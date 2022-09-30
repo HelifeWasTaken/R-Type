@@ -38,24 +38,24 @@ jobs:
         - name: Build
           shell: bash
           run: "cd build && cmake .. && make -j 2>&1"
-    # build-windows:
-    #     runs-on: windows-latest
-    #     steps:
-    #       - uses: actions/checkout@v2
-    #       - name: Build
-    #         run: |
-    #           if (Test-Path build) {}
-    #           else {
-    #                 New-Item build -ItemType Directory
-    #           }
-    #       - name: Cache deps
-    #         id: build-deps
-    #         uses: actions/cache@v3
-    #         with:
-    #           path: build/_deps
-    #           key: ${{ runner.os }}-deps-${{ hashFiles('**/CMakeLists.txt') }}
-    #       - name: Build
-    #         run: |
-    #           cd build
-    #           cmake ..
-    #           cmake --build .
+    build-windows:
+        runs-on: windows-latest
+        steps:
+          - uses: actions/checkout@v2
+          - name: Build
+            run: |
+              if (Test-Path build) {}
+              else {
+                    New-Item build -ItemType Directory
+              }
+          - name: Cache deps
+            id: build-deps
+            uses: actions/cache@v3
+            with:
+              path: build/_deps
+              key: ${{ runner.os }}-deps-${{ hashFiles('**/CMakeLists.txt') }}
+          - name: Build
+            run: |
+              cd build
+              cmake ..
+              cmake --build .

@@ -340,6 +340,8 @@ namespace rtype {
                     poll_tcp_connections();
                 }
 
+                ~tcp_server() { _tcp_connection_polling_thread->join(); }
+
                 bool poll(tcp_event& event) {
                     return _events.async_pop(event);
                 }
@@ -385,10 +387,11 @@ namespace rtype {
                 void poll_tcp_connections()
                 {
                     spdlog::info("tcp_server: Starting to poll tcp connections");
+                    if (_tcp_connection_polling_thread)
+                        _tcp_connection_polling_thread->join();
                     _tcp_connection_polling_thread = std::unique_ptr<boost::thread>(
                         new boost::thread([this]() {
                             tcp_connection::shared_message_info_t message;
-                            while (true) {
                                 for (size_t i = 0; i < _connections.async_size(); ++i) {
                                     auto connection = _connections.async_get(i);
                                     if (!connection) {
@@ -405,7 +408,7 @@ namespace rtype {
                                         }
                                     }
                                 }
-                            }
+                                poll_tcp_connections();
                         })
                     );
                 }

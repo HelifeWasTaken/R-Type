@@ -33,8 +33,8 @@ message("Fetching spdlog")
 FetchContent_MakeAvailable(spdlog)
 
 include_directories(
+	${silva_SOURCE_DIR}
 	${SFML_SOURCE_DIR}/include
-	${silva_SOURCE_DIR}/include
     ${boost_fusion_SOURCE_DIR}/include
     ${boost_unordered_SOURCE_DIR}/include
     ${boost_regex_SOURCE_DIR}/include

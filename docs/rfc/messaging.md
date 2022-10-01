@@ -25,15 +25,20 @@ Network communication is separated into two main channels: `main` and `feed` cha
 Any message sent on the `feed` channel should be preceded by a sequence number, to ensure that older messages are not received after newer ones.
 
 ```
-000AAAAAAAABBBBBBBBBBBBBBBBBBBBBBBB
- |   |            |
- | SEQ        CONTENT
-MAGIC
+0000000AAAAAAAABBBBBBBBBCCCCCCCCCCDDDDDDDDDDDDDDDDDD
+ |       |        |         |           |
+MAGIC   SEQ      FROM        TO       CONTENT
 
 MAGIC is a magic number, used to ensure that the message is valid. its value is 0x0fficecoffeedefec.
-SEQ is the sequence number, encoded as a long, it is incremented by one for each message sent.
-CONTENT is the message content.
+SEQ is the sequence number, encoded as an int64, it is incremented by one for each message sent.
+FROM is the sender ID, encoded as a int16, used to identify the host that sent the message.
+TO is the target ID, encoded as a int16, used to identify the host that should receive the message.
+CONTENT is the message content, it should never be larger than 500 bytes for any message, otherwise behaviour is undefined.
 ```
+
+If `TO` is `65535` (`0xffff`), the message is adressed to all clients. If `TO` is non-zero, the message is adressed to the client with the corresponding ID. If `TO` is `0`, the message is adressed to the server.
+
+Messages in the `feed` channel that does not match this format should be ignored.
 
 ## Message types
 

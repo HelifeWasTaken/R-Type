@@ -66,9 +66,4 @@ If the server does not reply, the client should retry, and in case of failure, t
 
 ## Reconnection (feed channel)
 
-If the connection is lost, the client should try to reconnect.
-
-The client sends a feed auth request through the `feed` channel, with its player ID provided as data.
-
-The server replies a feed auth reply or a `CONN_FAILED`.
-
+If the connection is lost, the client can disconnect both the `main` and the `feed` channels.

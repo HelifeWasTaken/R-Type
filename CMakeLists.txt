@@ -16,10 +16,10 @@ FetchContent_Declare(SFML GIT_REPOSITORY https://github.com/SFML/SFML.git GIT_TA
 message("Fetching SFML...")
 FetchContent_MakeAvailable(SFML)
 
-message("Declaring hl...")
-FetchContent_Declare(hl GIT_REPOSITORY https://github.com/HelifeWasTaken/hl)
-message("Fetchting hl...")
-FetchContent_MakeAvailable(hl)
+message("Declaring silva...")
+FetchContent_Declare(silva GIT_REPOSITORY https://github.com/HelifeWasTaken/silva GIT_TAG main)
+message("Fetchting silva...")
+FetchContent_MakeAvailable(silva)
 
 message("Declaring Boost...")
 FetchContent_Declare(Boost GIT_REPOSITORY https://github.com/boostorg/boost.git GIT_TAG boost-1.80.0)
@@ -34,7 +34,7 @@ FetchContent_MakeAvailable(spdlog)
 
 include_directories(
 	${SFML_SOURCE_DIR}/include
-	${hl_SOURCE_DIR}/include
+	${silva_SOURCE_DIR}/include
     ${boost_fusion_SOURCE_DIR}/include
     ${boost_unordered_SOURCE_DIR}/include
     ${boost_regex_SOURCE_DIR}/include

@@ -369,12 +369,18 @@ namespace net {
             : _io_context(io_context)
             , _acceptor(io_context, tcp::endpoint(tcp::v4(), port))
         {
+            _running = true;
             spdlog::info("tcp_server: launched: 127.0.0.1:{}", port);
             start_accept();
             poll_tcp_connections();
         }
 
-        ~tcp_server() { _tcp_connection_polling_thread->join(); }
+        ~tcp_server()
+        {
+            _running = false;
+            if (_tcp_connection_polling_thread)
+                _tcp_connection_polling_thread->join();
+        }
 
         bool poll(tcp_event& event) { return _events.async_pop(event); }
 
@@ -421,44 +427,41 @@ namespace net {
 
         void poll_tcp_connections()
         {
-            if (_tcp_connection_polling_thread
-                && boost::this_thread::get_id()
-                    == _tcp_connection_polling_thread->get_id())
-                return;
             spdlog::info("tcp_server: Starting to poll tcp connections");
-            if (_tcp_connection_polling_thread
-                && _tcp_connection_polling_thread->joinable())
-                _tcp_connection_polling_thread->join();
+
             _tcp_connection_polling_thread = std::unique_ptr<boost::thread>(
                 new boost::thread([this]() {
-                    tcp_connection::shared_message_info_t message;
-                    for (size_t i = 0; i < _connections.async_size(); ++i) {
-                        auto connection = _connections.async_get(i);
-                        if (!connection) {
-                            continue;
-                        }
-                        if (connection->should_exit()) {
-                            _events.async_push(
-                                std::move(tcp_event_disconnexion(i)));
-                            _connections.async_remove(i);
-                            spdlog::info(
-                                "tcp_server: Disconnection from {}", i);
-                        } else {
-                            while (connection->poll(message)) {
+                    while (_running) {
+                        tcp_connection::shared_message_info_t message;
+                        for (size_t i = 0; i < _connections.async_size(); ++i) {
+                            auto connection = _connections.async_get(i);
+                            if (!connection) {
+                                continue;
+                            }
+                            if (connection->should_exit()) {
                                 _events.async_push(
-                                    std::move(tcp_event_message(i, message)));
+                                    std::move(tcp_event_disconnexion(i)));
+                                _connections.async_remove(i);
                                 spdlog::info(
-                                    "tcp_server: Polled a message from {}", i);
+                                    "tcp_server: Disconnection from {}", i);
+                            } else {
+                                while (connection->poll(message)) {
+                                    _events.async_push(std::move(
+                                        tcp_event_message(i, message)));
+                                    spdlog::info(
+                                        "tcp_server: Polled a message from {}",
+                                        i);
+                                }
                             }
                         }
                     }
-                    poll_tcp_connections();
                 }));
         }
 
         boost::asio::io_context& _io_context;
         tcp::acceptor _acceptor;
         async_automated_sparse_array<tcp_connection> _connections;
+        std::atomic_bool _running;
 
         std::unique_ptr<boost::thread> _tcp_connection_polling_thread;
 

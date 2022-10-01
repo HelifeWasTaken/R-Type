@@ -212,7 +212,6 @@ namespace rtype {
 
                     _socket.async_receive(
                         boost::asio::buffer(*_buffer_reader),
-                        _buffer_reader->size(),
                         [this, should_exit=_should_exit, readed_messages_queue=_readed_messages_queue, buffer_reader=_buffer_reader, id=_id]
                         (const boost::system::error_code& error, size_t bytes_transferred) {
                             if (error) {

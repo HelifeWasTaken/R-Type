@@ -141,8 +141,9 @@ namespace net {
 
         std::string to_string() { return to<std::string>(); }
         std::vector<char> to_vec() { return to<std::vector<char>>(); }
-        
-        unsigned char code() {
+
+        unsigned char code()
+        {
             if (buffer.size() > 0)
                 return buffer[0];
             return 0;
@@ -382,7 +383,8 @@ namespace net {
             poll_tcp_connections();
         }
 
-        ~tcp_server() {
+        ~tcp_server()
+        {
             _is_started = false;
             if (_tcp_connection_polling_thread)
                 _tcp_connection_polling_thread->join();
@@ -451,10 +453,11 @@ namespace net {
                                     "tcp_server: Disconnection from {}", i);
                             } else {
                                 while (connection->poll(message)) {
-                                    _events.async_push(
-                                        std::move(tcp_event_message(i, message)));
+                                    _events.async_push(std::move(
+                                        tcp_event_message(i, message)));
                                     spdlog::info(
-                                        "tcp_server: Polled a message from {}", i);
+                                        "tcp_server: Polled a message from {}",
+                                        i);
                                 }
                             }
                         }
@@ -582,19 +585,13 @@ namespace net {
         boost::shared_ptr<async_queue<shared_message_info_t>> _recv_queue;
     };
 
-    class remote_client
-        : public boost::enable_shared_from_this<remote_client> {
+    class remote_client : public boost::enable_shared_from_this<remote_client> {
     public:
         using pointer = boost::shared_ptr<remote_client>;
 
-        static pointer create()
-        {
-            return pointer(new remote_client());
-        }
+        static pointer create() { return pointer(new remote_client()); }
 
-        remote_client()
-        {
-        }
+        remote_client() { }
 
         void init_main_channel(tcp_server& main_channel, size_t main_id)
         {
@@ -602,57 +599,63 @@ namespace net {
             _main_id = main_id;
         }
 
-        void init_feed_channel(udp_server& feed_channel, udp::endpoint feed_endpoint)
+        void init_feed_channel(
+            udp_server& feed_channel, udp::endpoint feed_endpoint)
         {
             _feed_channel = &feed_channel;
             _feed_endpoint = feed_endpoint;
         }
 
-        using shared_main_message_info_t = tcp_connection::shared_message_info_t;
+        using shared_main_message_info_t
+            = tcp_connection::shared_message_info_t;
         using main_message_info_t = tcp_connection::message_info;
 
         using shared_feed_message_info_t = udp_server::shared_message_info_t;
         using feed_message_info_t = udp_server::message_info;
 
-        void send_main(tcp_connection::shared_message_info_t msg) {
+        void send_main(tcp_connection::shared_message_info_t msg)
+        {
             if (_main_channel) {
                 _main_channel->send(_main_id, std::move(msg));
             } else {
-                spdlog::error("remote_client: Cannot send to main channel: no connection");
+                spdlog::error("remote_client: Cannot send to main channel: no "
+                              "connection");
             }
         }
 
-        void send_main(const std::string& s) {
+        void send_main(const std::string& s)
+        {
             send_main(tcp_connection::new_message(s));
         }
 
-        void send_main(const void* data, size_t size) {
+        void send_main(const void* data, size_t size)
+        {
             send_main(tcp_connection::new_message(data, size));
         }
 
-        void send_feed(udp_server::shared_message_info_t msg) {
+        void send_feed(udp_server::shared_message_info_t msg)
+        {
             if (_feed_channel) {
                 _feed_channel->send_to(_feed_endpoint, std::move(msg));
             } else {
-                spdlog::error("remote_client: Cannot send to feed channel: no connection");
+                spdlog::error("remote_client: Cannot send to feed channel: no "
+                              "connection");
             }
         }
 
-        void send_feed(const std::string& s) {
+        void send_feed(const std::string& s)
+        {
             send_feed(udp_server::new_message(s));
         }
 
-        void send_feed(const void* data, size_t size) {
+        void send_feed(const void* data, size_t size)
+        {
             send_feed(udp_server::new_message(data, size));
         }
 
-        int get_main_id() const {
-            return _main_id;
-        }
+        int get_main_id() const { return _main_id; }
 
-        udp::endpoint get_feed_endpoint() const {
-            return _feed_endpoint;
-        }
+        udp::endpoint get_feed_endpoint() const { return _feed_endpoint; }
 
     private:
         size_t _main_id;
@@ -670,19 +673,26 @@ namespace net {
             run();
         }
 
-        enum event_type { Invalid, Connect, Disconnect, MainMessage, FeedMessage };
+        enum event_type {
+            Invalid,
+            Connect,
+            Disconnect,
+            MainMessage,
+            FeedMessage
+        };
 
-        class message {
+        class base_message {
         public:
-            virtual ~message() = default;
+            virtual ~base_message() = default;
             virtual remote_client::pointer sender() const = 0;
             virtual std::string to_string() const = 0;
             virtual std::vector<char> to_vec() const = 0;
         };
 
-        class main_message : public message {
+        class main_message : public base_message {
         public:
-            main_message(remote_client::pointer sender, tcp_connection::shared_message_info_t msg)
+            main_message(remote_client::pointer sender,
+                tcp_connection::shared_message_info_t msg)
                 : _sender(sender)
                 , _msg(msg)
             {
@@ -691,14 +701,16 @@ namespace net {
             remote_client::pointer sender() const override { return _sender; }
             std::string to_string() const override { return _msg->to_string(); }
             std::vector<char> to_vec() const override { return _msg->to_vec(); }
+
         private:
             remote_client::pointer _sender;
             tcp_connection::shared_message_info_t _msg;
         };
 
-        class feed_message : public message {
+        class feed_message : public base_message {
         public:
-            feed_message(remote_client::pointer sender, udp_server::shared_message_info_t msg)
+            feed_message(remote_client::pointer sender,
+                udp_server::shared_message_info_t msg)
                 : _sender(sender)
                 , _msg(msg)
             {
@@ -707,6 +719,7 @@ namespace net {
             remote_client::pointer sender() const override { return _sender; }
             std::string to_string() const override { return _msg->to_string(); }
             std::vector<char> to_vec() const override { return _msg->to_vec(); }
+
         private:
             remote_client::pointer _sender;
             udp_server::shared_message_info_t _msg;
@@ -715,7 +728,7 @@ namespace net {
         struct event {
             event_type type;
             remote_client::pointer client;
-            std::unique_ptr<message> message;
+            std::unique_ptr<server::base_message> message;
 
             event()
                 : type(Invalid)
@@ -725,7 +738,8 @@ namespace net {
             }
         };
 
-        bool poll(event& event) {
+        bool poll(event& event)
+        {
             tcp_event tcp_event;
             udp_server::shared_message_info_t msg;
 
@@ -733,19 +747,24 @@ namespace net {
                 switch (tcp_event.get_type()) {
                 case tcp_event_type::Connexion:
                     event.type = Connect;
-                    event.client = _clients.emplace_back(remote_client::create());
-                    event.client->init_main_channel(*_tcp_server, tcp_event.get<tcp_event_connexion>().get_id());
+                    event.client
+                        = _clients.emplace_back(remote_client::create());
+                    event.client->init_main_channel(*_tcp_server,
+                        tcp_event.get<tcp_event_connexion>().get_id());
                     break;
                 case tcp_event_type::Disconnexion:
                     event.type = Disconnect;
-                    event.client = get_client(tcp_event.get<tcp_event_disconnexion>().get_id());
+                    event.client = get_client(
+                        tcp_event.get<tcp_event_disconnexion>().get_id());
                     break;
                 case tcp_event_type::Message:
                     event.type = MainMessage;
                     {
-                        tcp_event_message& msg_event = tcp_event.get<tcp_event_message>();
+                        tcp_event_message& msg_event
+                            = tcp_event.get<tcp_event_message>();
                         event.client = get_client(msg_event.get_id());
-                        event.message = std::make_unique<main_message>(event.client, msg_event.get_message());
+                        event.message = std::make_unique<main_message>(
+                            event.client, msg_event.get_message());
                     }
                     break;
                 default:
@@ -755,15 +774,20 @@ namespace net {
                 return true;
             } else if (_udp_server->poll(msg)) {
                 // handle connection to the feed channel
-                if (msg->code() == 0) { // TODO: use a common constant as defined in the protocol
-                    event.client = _clients.emplace_back(remote_client::create()); // TODO: use the protocol to get the client
-                    event.client->init_feed_channel(*_udp_server, msg->sender());
+                if (msg->code() == 0) { // TODO: use a common constant as
+                                        // defined in the protocol
+                    event.client = _clients.emplace_back(
+                        remote_client::create()); // TODO: use the protocol to
+                                                  // get the client
+                    event.client->init_feed_channel(
+                        *_udp_server, msg->sender());
                     return false;
                 }
                 // otherwise it's just a message
                 event.type = FeedMessage;
                 event.client = get_client(msg->sender());
-                event.message = std::make_unique<feed_message>(event.client, msg);
+                event.message
+                    = std::make_unique<feed_message>(event.client, msg);
                 return true;
             }
             return false;
@@ -784,10 +808,12 @@ namespace net {
                 }));
         }
 
-        remote_client::pointer get_client(size_t id) {
-            auto it = std::find_if(_clients.begin(), _clients.end(), [id](const remote_client::pointer c) {
-                return c->get_main_id() == id;
-            });
+        remote_client::pointer get_client(size_t id)
+        {
+            auto it = std::find_if(_clients.begin(), _clients.end(),
+                [id](const remote_client::pointer c) {
+                    return c->get_main_id() == id;
+                });
             if (it != _clients.end()) {
                 return (*it).get()->shared_from_this();
             } else {
@@ -795,10 +821,12 @@ namespace net {
             }
         }
 
-        remote_client::pointer get_client(tcp_connection::pointer conn) {
-            auto it = std::find_if(_clients.begin(), _clients.end(), [conn](const remote_client::pointer c) {
-                return c->get_main_id() == conn->get_id();
-            });
+        remote_client::pointer get_client(tcp_connection::pointer conn)
+        {
+            auto it = std::find_if(_clients.begin(), _clients.end(),
+                [conn](const remote_client::pointer c) {
+                    return c->get_main_id() == conn->get_id();
+                });
             if (it != _clients.end()) {
                 return (*it).get()->shared_from_this();
             } else {
@@ -806,10 +834,12 @@ namespace net {
             }
         }
 
-        remote_client::pointer get_client(const udp::endpoint& endpoint) {
-            auto it = std::find_if(_clients.begin(), _clients.end(), [endpoint](const remote_client::pointer c) {
-                return c->get_feed_endpoint() == endpoint;
-            });
+        remote_client::pointer get_client(const udp::endpoint& endpoint)
+        {
+            auto it = std::find_if(_clients.begin(), _clients.end(),
+                [endpoint](const remote_client::pointer c) {
+                    return c->get_feed_endpoint() == endpoint;
+                });
             if (it != _clients.end()) {
                 return (*it).get()->shared_from_this();
             } else {

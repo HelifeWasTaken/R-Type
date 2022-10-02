@@ -44,12 +44,12 @@ Messages in the `feed` channel that does not match this format should be ignored
 
 Please note that some messages types MUST be available on both channels, while others MUST be available only on one channel.
 
-Here is a very basic and partial message structure:
+Here is a very basic and partial message interface implementation:
 ```cpp
 class IMessage {
     public:
         virtual void from(const std::vector<char>& buff) = 0;
-        virtual std::vector<char> bytes() = 0;
+        virtual std::vector<char> bytes() = 0; // note: the first byte is always the code
         virtual char code() = 0;
 };
 ```
@@ -120,6 +120,7 @@ class UpdateMessage : public IMessage {
 
         std::vector<char> bytes() {
             std::vector<char> buff;
+            buff.push_back(UPDATE_MSG);
             buff.push_back(_sid >> 8);
             buff.push_back(_sid & 0xff);
             buff.insert(buff.end(), _data.begin(), _data.end());
@@ -172,6 +173,7 @@ class SyncMessage : public IMessage {
 
         std::vector<char> bytes() {
             std::vector<char> buff;
+            buff.push_back(SYNC_MSG);
             buff.push_back(_sid >> 8);
             buff.push_back(_sid & 0xff);
             buff.insert(buff.end(), _data.begin(), _data.end());
@@ -327,6 +329,7 @@ class ConnectionInitReply : public IMessage {
 
         std::vector<char> bytes() {
             std::vector<char> buff;
+            buff.push_back(CONN_INIT_REP);
             buff.push_back(_playerId >> 8);
             buff.push_back(_playerId & 0xff);
             buff.push_back(_token >> 24);
@@ -382,6 +385,7 @@ class FeedInitRequest : public IMessage {
 
         std::vector<char> bytes() {
             std::vector<char> buff;
+            buff.push_back(FEED_INIT);
             buff.push_back(_playerId >> 8);
             buff.push_back(_playerId & 0xff);
             buff.push_back(_token >> 24);
@@ -435,6 +439,7 @@ class FeedInitReply : public IMessage {
 
         std::vector<char> bytes() {
             std::vector<char> buff;
+            buff.push_back(FEED_INIT_REP);
             buff.push_back(_token >> 24);
             buff.push_back((_token >> 16) & 0xff);
             buff.push_back((_token >> 8) & 0xff);

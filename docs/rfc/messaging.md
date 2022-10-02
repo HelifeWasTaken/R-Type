@@ -86,7 +86,7 @@ class SignalMarker : public IMessage {
         char code() {
             return code;
         }
-    private.
+    private:
         char _code;
 };
 ```
@@ -108,9 +108,11 @@ DATA is the serialized data which is relevant for this SID. its size in bytes is
 Sample implementation:
 ```cpp
 
+template <typename T>
 class UpdateMessage : public IMessage {
     public:
         UpdateMessage() : _sid(0) {}
+        UpdateMessage(int16_t sid, const T& data) : _sid(sid), _data(data.serialize()) {}
         UpdateMessage(int16_t sid, const std::vector<char>& data) : _sid(sid), _data(data) {}
 
         void from(const std::vector<char>& buff) {
@@ -138,6 +140,10 @@ class UpdateMessage : public IMessage {
         std::vector<char> data() {
             return _data;
         }
+
+        T get() {
+            return T::deserialize(_data);
+        }
     private:
         int16_t _sid;
         std::vector<char> _data;
@@ -161,9 +167,11 @@ DATA is the serialized data which is relevant for this SID. its size in bytes is
 Sample implementation:
 ```cpp
 
+template <typename T>
 class SyncMessage : public IMessage {
     public:
         SyncMessage() : _sid(0) {}
+        SyncMessage(int16_t sid, const T& data) : _sid(sid), _data(data.serialize()) {}
         SyncMessage(int16_t sid, const std::vector<char>& data) : _sid(sid), _data(data) {}
 
         void from(const std::vector<char>& buff) {
@@ -190,6 +198,10 @@ class SyncMessage : public IMessage {
 
         std::vector<char> data() {
             return _data;
+        }
+
+        T get() {
+            return T::deserialize(_data);
         }
     private:
         int16_t _sid;

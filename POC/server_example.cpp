@@ -1,19 +1,23 @@
-#include <iostream>
 #include "poc.hpp"
 #include <Network/Server.hpp>
+#include <iostream>
 
-static rtype::net::tcp_server *ref_s;
+static rtype::net::tcp_server* ref_s;
 
-static void display_event(rtype::net::tcp_event & event)
+static void display_event(rtype::net::tcp_event& event)
 {
     if (event.get_type() == rtype::net::tcp_event_type::Connexion) {
-        spdlog::info("EventPoller: Connexion: {}", event.get<rtype::net::tcp_event_connexion>().get_id());
+        spdlog::info("EventPoller: Connexion: {}",
+            event.get<rtype::net::tcp_event_connexion>().get_id());
     } else if (event.get_type() == rtype::net::tcp_event_type::Disconnexion) {
-        spdlog::info("EvenPoller: Disconnection: {}", event.get<rtype::net::tcp_event_disconnexion>().get_id());
+        spdlog::info("EvenPoller: Disconnection: {}",
+            event.get<rtype::net::tcp_event_disconnexion>().get_id());
     } else if (event.get_type() == rtype::net::tcp_event_type::Message) {
         auto& ref = event.get<rtype::net::tcp_event_message>();
-        spdlog::info("TCP Message: {} -> {}", ref.get_id(), ref.get_message()->to_string());
-        ref_s->send(ref.get_id(), rtype::net::tcp_connection::new_message("pong\n"));
+        spdlog::info("TCP Message: {} -> {}", ref.get_id(),
+            ref.get_message()->to_string());
+        ref_s->send(
+            ref.get_id(), rtype::net::tcp_connection::new_message("pong\n"));
     }
 }
 

@@ -9,6 +9,7 @@ static const std::unordered_map<std::string, std::function<void(void)>> POCS
           { "ecs_example", poc_ecs_example },
           { "server_tcp_example", poc_tcp_server_example },
           { "server_udp_example", poc_udp_server_example },
+          { "server_example", poc_server_example },
           { "server_write_tcp", poc_server_write_tcp_example },
           { "joystick_example", poc_joystick_example } };
 

@@ -57,7 +57,7 @@ int main(int ac, char **av)
 
 int main()
 {
-    rtype::net::tcp_udp_server server(4242, 4243);
+    rtype::net::server server(4242, 4243);
 
     while (true) {
         rtype::net::udp_server::shared_message_info_t event;

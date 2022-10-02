@@ -96,13 +96,14 @@ class SignalMarker : public IMessage {
 The channel used is the `feed` channel.
 
 ```
-AAAABBBBBBBBCCCCCCCCCCCC
- |      |         |
-CODE   SID       DATA
+AAAABBBBBCCCCCCCCDDDDDDDDDDDDDDDD
+ |    |      |       |
+CODE TYPE   SID     DATA
 
 CODE is the message code, it has the value of `UPDATE_MSG` (refer to the relevant code table).
+TYPE is the type code of the data, it is encoded as an int8.
 SID is the shared identifier, it should refer to the same element for the server and for every client.
-DATA is the serialized data which is relevant for this SID. its size in bytes is unspecified and can depend on the relevant SID.
+DATA is the serialized data which is relevant for this SID. its size in bytes is unspecified and can depend on the relevant TYPE.
 ```
 
 Sample implementation:
@@ -116,13 +117,14 @@ class UpdateMessage : public IMessage {
         UpdateMessage(int16_t sid, const std::vector<char>& data) : _sid(sid), _data(data) {}
 
         void from(const std::vector<char>& buff) {
-            _sid = (buff[0] << 8) | buff[1];
-            _data = std::vector<char>(buff.begin() + 2, buff.end());
+            _sid = (buff[1] << 8) | buff[2];
+            _data = std::vector<char>(buff.begin() + 3, buff.end());
         }
 
         std::vector<char> bytes() {
             std::vector<char> buff;
             buff.push_back(UPDATE_MSG);
+            buff.push_back(type());
             buff.push_back(_sid >> 8);
             buff.push_back(_sid & 0xff);
             buff.insert(buff.end(), _data.begin(), _data.end());
@@ -131,6 +133,10 @@ class UpdateMessage : public IMessage {
 
         char code() {
             return UPDATE_MSG;
+        }
+
+        int8_t type() {
+            return T::type();
         }
 
         int16_t sid() {
@@ -155,13 +161,14 @@ class UpdateMessage : public IMessage {
 The channel used is the `main` channel.
 
 ```
-AAAABBBBBBBBCCCCCCCCCCCC
- |      |         |
-CODE   SID       DATA
+AAAABBBBBCCCCCCCCDDDDDDDDDDDDDDDD
+ |    |      |       |
+CODE TYPE   SID     DATA
 
 CODE is the message code, it has the value of `SYNC_MSG` (refer to the relevant code table).
+TYPE is the type code of the data, it is encoded as an int8.
 SID is the shared identifier, it should refer to the same element for the server and for every client.
-DATA is the serialized data which is relevant for this SID. its size in bytes is unspecified and can depend on the relevant SID.
+DATA is the serialized data which is relevant for this SID. its size in bytes is unspecified and can depend on the relevant TYPE.
 ```
 
 Sample implementation:
@@ -175,13 +182,14 @@ class SyncMessage : public IMessage {
         SyncMessage(int16_t sid, const std::vector<char>& data) : _sid(sid), _data(data) {}
 
         void from(const std::vector<char>& buff) {
-            _sid = (buff[0] << 8) | buff[1];
+            _sid = (buff[1] << 8) | buff[2];
             _data = std::vector<char>(buff.begin() + 2, buff.end());
         }
 
         std::vector<char> bytes() {
             std::vector<char> buff;
             buff.push_back(SYNC_MSG);
+            buff.push_back(type());
             buff.push_back(_sid >> 8);
             buff.push_back(_sid & 0xff);
             buff.insert(buff.end(), _data.begin(), _data.end());
@@ -190,6 +198,10 @@ class SyncMessage : public IMessage {
 
         char code() {
             return SYNC_MSG;
+        }
+
+        int8_t type() {
+            return T::type();
         }
 
         int16_t sid() {

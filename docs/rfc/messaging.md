@@ -183,7 +183,7 @@ class SyncMessage : public IMessage {
 
         void from(const std::vector<char>& buff) {
             _sid = (buff[1] << 8) | buff[2];
-            _data = std::vector<char>(buff.begin() + 2, buff.end());
+            _data = std::vector<char>(buff.begin() + 3, buff.end());
         }
 
         std::vector<char> bytes() {

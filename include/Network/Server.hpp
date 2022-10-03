@@ -146,11 +146,11 @@ namespace net {
         std::string to_string() { return to<std::string>(); }
         std::vector<char> to_vec() { return to<std::vector<char>>(); }
 
-        unsigned char code()
+        message_code code()
         {
             if (buffer.size() > 0)
-                return buffer[0];
-            return 0;
+                return static_cast<message_code>(buffer[0]);
+            return message_code::DUMMY;
         }
     };
 
@@ -678,6 +678,12 @@ namespace net {
             send_main(tcp_connection::new_message(data, size));
         }
 
+        void send_main(const rtype::net::IMessage& message)
+        {
+            auto bytes = message.serialize();
+            send_main(bytes.data(), bytes.size());
+        }
+
         void send_feed(udp_server::shared_message_info_t msg)
         {
             if (_feed_channel) {
@@ -698,7 +704,13 @@ namespace net {
             send_feed(udp_server::new_message(_main_id, data, size));
         }
 
-        int get_main_id() const { return _main_id; }
+        void send_feed(const rtype::net::IMessage& message)
+        {
+            auto bytes = message.serialize();
+            send_feed(bytes.data(), bytes.size());
+        }
+
+        int id() const { return _main_id; }
 
         udp::endpoint get_feed_endpoint() const { return _feed_endpoint; }
 
@@ -710,10 +722,11 @@ namespace net {
     };
     class server {
     public:
-        server(int tcp_port, int udp_port)
+        server(int tcp_port, int udp_port, bool authenticate = false)
             : _io_context(boost::asio::io_context())
             , _tcp_server(new tcp_server(_io_context, tcp_port))
             , _udp_server(new udp_server(_io_context, udp_port))
+            , _authenticate(authenticate)
         {
             run();
         }
@@ -732,6 +745,7 @@ namespace net {
             virtual remote_client::pointer sender() const = 0;
             virtual std::string to_string() const = 0;
             virtual std::vector<char> to_vec() const = 0;
+            virtual message_code code() const = 0;
         };
 
         class main_message : public base_message {
@@ -746,6 +760,7 @@ namespace net {
             remote_client::pointer sender() const override { return _sender; }
             std::string to_string() const override { return _msg->to_string(); }
             std::vector<char> to_vec() const override { return _msg->to_vec(); }
+            message_code code() const override { return _msg->code(); }
 
         private:
             remote_client::pointer _sender;
@@ -764,6 +779,7 @@ namespace net {
             remote_client::pointer sender() const override { return _sender; }
             std::string to_string() const override { return _msg->to_string(); }
             std::vector<char> to_vec() const override { return _msg->to_vec(); }
+            message_code code() const override { return _msg->code(); }
 
         private:
             remote_client::pointer _sender;
@@ -811,6 +827,14 @@ namespace net {
                         event.message = std::make_unique<main_message>(
                             event.client, msg_event.get_message());
                     }
+                    if (_authenticate) {
+                        if (event.message->code() == message_code::CONN_INIT) {
+                            event.client->send_main(ConnectionInitReply(event.client->id(), 42));
+                            return false;
+                        } else {
+                            return true;
+                        }
+                    }
                     break;
                 default:
                     event.type = Invalid;
@@ -819,13 +843,11 @@ namespace net {
                 return true;
             } else if (_udp_server->poll(msg)) {
                 // handle connection to the feed channel
-                if (msg->code() == 0) { // TODO: use a common constant as
-                                        // defined in the protocol
-                    event.client = _clients.emplace_back(
-                        remote_client::create()); // TODO: use the protocol to
-                                                  // get the client
+                if (_authenticate && msg->code() == message_code::FEED_INIT) {
+                    event.client = get_client(msg->sender_id());
                     event.client->init_feed_channel(
                         *_udp_server, msg->sender());
+                    event.client->send_feed(FeedInitReply(84));
                     return false;
                 }
                 // otherwise it's just a message
@@ -857,7 +879,7 @@ namespace net {
         {
             auto it = std::find_if(_clients.begin(), _clients.end(),
                 [id](const remote_client::pointer c) {
-                    return c->get_main_id() == id;
+                    return c->id() == id;
                 });
             if (it != _clients.end()) {
                 return (*it).get()->shared_from_this();
@@ -870,7 +892,7 @@ namespace net {
         {
             auto it = std::find_if(_clients.begin(), _clients.end(),
                 [conn](const remote_client::pointer c) {
-                    return c->get_main_id() == conn->get_id();
+                    return c->id() == conn->get_id();
                 });
             if (it != _clients.end()) {
                 return (*it).get()->shared_from_this();
@@ -892,6 +914,7 @@ namespace net {
             }
         }
 
+        bool _authenticate = false;
         boost::asio::io_context _io_context;
 
         boost::shared_ptr<tcp_server> _tcp_server;

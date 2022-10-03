@@ -78,8 +78,8 @@ inline message_type get_message_type(const uint8_t *buffer) {
 class IMessage {
     public:
         virtual void from(const std::vector<uint8_t>& buff) = 0;
-        virtual std::vector<uint8_t> serialize() = 0;
-        virtual message_code code() = 0;
+        virtual const std::vector<uint8_t> serialize() const = 0;
+        virtual message_code code() const = 0;
 };
 
 class SignalMarker : public IMessage {
@@ -101,11 +101,11 @@ class SignalMarker : public IMessage {
             return deserialize(buff.data(), buff.size());
         } 
 
-        std::vector<uint8_t> serialize() {
+        const std::vector<uint8_t> serialize() const {
             return std::vector<uint8_t>{ static_cast<uint8_t>(_code) };
         }
 
-        message_code code() {
+        message_code code() const {
             return _code;
         }
     private:
@@ -139,7 +139,7 @@ class UpdateMessage : public IMessage {
             return deserialize(buff.data(), buff.size());
         } 
 
-        std::vector<uint8_t> serialize() {
+        const std::vector<uint8_t> serialize() const {
             uint8_t* byteReader;
             uint16_t type = boost::endian::native_to_big(_type);
             uint16_t sid = boost::endian::native_to_big(_sid);
@@ -154,19 +154,19 @@ class UpdateMessage : public IMessage {
             return buff;
         }
 
-        message_code code() {
+        message_code code() const {
             return message_code::UPDATE_MSG;
         }
 
-        uint16_t type() {
+        uint16_t type() const {
             return _type;
         }
 
-        uint16_t sid() {
+        uint16_t sid() const {
             return _sid;
         }
 
-        std::vector<uint8_t> data() {
+        const std::vector<uint8_t> data() const {
             return _data;
         }
 
@@ -207,7 +207,7 @@ class SyncMessage : public IMessage {
             return deserialize(buff.data(), buff.size());
         } 
 
-        std::vector<uint8_t> serialize() {
+        const std::vector<uint8_t> serialize() const {
             uint8_t* byteReader;
             uint16_t type = boost::endian::native_to_big(_type);
             uint16_t sid = boost::endian::native_to_big(_sid);
@@ -222,19 +222,19 @@ class SyncMessage : public IMessage {
             return buff;
         }
 
-        message_code code() {
+        message_code code() const {
             return message_code::SYNC_MSG;
         }
 
-        uint16_t type() {
+        uint16_t type() const {
             return _type;
         }
 
-        uint16_t sid() {
+        uint16_t sid() const {
             return _sid;
         }
 
-        std::vector<uint8_t> data() {
+        const std::vector<uint8_t> data() const {
             return _data;
         }
 
@@ -268,17 +268,21 @@ class QueryMessage : public IMessage {
             return deserialize(buff.data(), buff.size());
         } 
 
-        std::vector<uint8_t> serialize() {
+        const std::vector<uint8_t> serialize() const {
             std::vector<uint8_t> buff;
             buff.push_back(static_cast<uint8_t>(code()));
             buff.insert(buff.end(), _data.begin(), _data.end());
             return buff;
         }
 
-        message_code code() {
+        message_code code() const {
             return _code;
         }
 
+        const std::vector<uint8_t> data() const {
+            return _data;
+        }
+        
         std::vector<uint8_t> data() {
             return _data;
         }
@@ -308,7 +312,7 @@ class ReplyMessage : public IMessage {
             return deserialize(buff.data(), buff.size());
         } 
 
-        std::vector<uint8_t> serialize() {
+        const std::vector<uint8_t> serialize() const {
             std::vector<uint8_t> buff;
             buff.push_back(static_cast<uint8_t>(_code));
             buff.push_back(_status);
@@ -316,15 +320,15 @@ class ReplyMessage : public IMessage {
             return buff;
         }
 
-        message_code code() {
+        message_code code() const {
             return _code;
         }
 
-        uint8_t status() {
+        uint8_t status() const {
             return _status;
         }
 
-        std::vector<uint8_t> data() {
+        const std::vector<uint8_t> data() const {
             return _data;
         }
     private:
@@ -355,7 +359,7 @@ class ConnectionInitReply : public IMessage {
             return deserialize(buff.data(), buff.size());
         } 
 
-        std::vector<uint8_t> serialize() {
+        const std::vector<uint8_t> serialize() const {
             uint8_t* byteReader;
             uint16_t playerId = boost::endian::native_to_big(_playerId);
             uint32_t token = boost::endian::native_to_big(_token);
@@ -369,15 +373,15 @@ class ConnectionInitReply : public IMessage {
             return buff;
         }
 
-        message_code code() {
+        message_code code() const {
             return message_code::CONN_INIT_REP;
         }
 
-        uint16_t playerId() {
+        uint16_t playerId() const {
             return _playerId;
         }
 
-        uint32_t token() {
+        uint32_t token() const {
             return _token;
         }
     private:
@@ -407,7 +411,7 @@ class FeedInitRequest : public IMessage {
             return deserialize(buff.data(), buff.size());
         } 
 
-        std::vector<uint8_t> serialize() {
+        const std::vector<uint8_t> serialize() const {
             uint8_t* byteReader;
             int16_t playerId = boost::endian::native_to_big(_playerId);
             int32_t token = boost::endian::native_to_big(_token);
@@ -421,15 +425,15 @@ class FeedInitRequest : public IMessage {
             return buff;
         }
 
-        message_code code() {
+        message_code code() const {
             return message_code::FEED_INIT;
         }
 
-        uint16_t playerId() {
+        uint16_t playerId() const {
             return _playerId;
         }
 
-        uint32_t token() {
+        uint32_t token() const {
             return _token;
         }
     private:
@@ -457,7 +461,7 @@ class FeedInitReply : public IMessage {
             return deserialize(buff.data(), buff.size());
         } 
 
-        std::vector<uint8_t> serialize() {
+        const std::vector<uint8_t> serialize() const {
             uint8_t* byteReader;
             std::vector<uint8_t> buff;
             uint32_t token = boost::endian::native_to_big(_token);
@@ -468,11 +472,11 @@ class FeedInitReply : public IMessage {
             return buff;
         }
 
-        message_code code() {
+        message_code code() const {
             return message_code::FEED_INIT_REP;
         }
 
-        int32_t token() {
+        int32_t token() const {
             return _token;
         }
     private:

@@ -1,31 +1,37 @@
-#include <iostream>
 #include "poc.hpp"
 #include <Network/Server.hpp>
+#include <iostream>
 
-static rtype::net::tcp_server *ref_s;
+static rtype::net::server* ref_s;
 
-static void display_event(rtype::net::tcp_event & event)
+static void display_event(rtype::net::server::event& event)
 {
-    if (event.get_type() == rtype::net::tcp_event_type::Connexion) {
-        spdlog::info("EventPoller: Connexion: {}", event.get<rtype::net::tcp_event_connexion>().get_id());
-    } else if (event.get_type() == rtype::net::tcp_event_type::Disconnexion) {
-        spdlog::info("EvenPoller: Disconnection: {}", event.get<rtype::net::tcp_event_disconnexion>().get_id());
-    } else if (event.get_type() == rtype::net::tcp_event_type::Message) {
-        auto& ref = event.get<rtype::net::tcp_event_message>();
-        spdlog::info("TCP Message: {} -> {}", ref.get_id(), ref.get_message()->to_string());
-        ref_s->send(ref.get_id(), rtype::net::tcp_connection::new_message("pong\n"));
+    if (event.type == rtype::net::server::event_type::Connect) {
+        spdlog::info("TCP: Connection: {}",
+            event.client->get_main_id());
+    } else if (event.type == rtype::net::server::event_type::Disconnect) {
+        spdlog::info("TCP: Disconnection: {}",
+            event.client->get_main_id());
+    } else if (event.type == rtype::net::server::event_type::MainMessage) {
+        spdlog::info("TCP Message: {} -> {}", event.client->get_main_id(),
+            event.message->to_string());
+        event.client->send_main("pong\n");
+    } else if (event.type == rtype::net::server::event_type::FeedMessage) {
+        // NOTE: for now, it WILL fail because the connection protocol is not implemented
+        spdlog::info("UDP Message: {} -> {}", event.client->get_main_id(),
+            event.message->to_string());
+        event.client->send_feed("pong\n");
     }
 }
 
-void poc_tcp_server_example()
+void poc_server_example()
 {
     boost::asio::io_context context;
-    rtype::net::tcp_server s(context, 4242);
+    rtype::net::server s(4242, 4343);
 
     ref_s = &s;
     while (true) {
-        context.run_one();
-        rtype::net::tcp_event event;
+        rtype::net::server::event event;
         while (s.poll(event)) {
             display_event(event);
         }

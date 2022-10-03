@@ -4,6 +4,7 @@
 #include <assert.h>
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
+#include <boost/endian.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/thread.hpp>
@@ -121,7 +122,8 @@ namespace net {
     using tcp_buffer_t = boost::array<char, RTYPE_TCP_BUFFER_SIZE>;
     using udp_buffer_t = boost::array<char, RTYPE_UDP_BUFFER_SIZE>;
 
-    template <typename BufferType> struct base_message_info {
+    template <typename BufferType, int StartOffset = 0>
+    struct base_message_info {
         BufferType buffer;
         size_t size = 0;
 
@@ -135,8 +137,8 @@ namespace net {
 
         template <typename To> To to()
         {
-            return To(
-                this->buffer.c_array(), this->buffer.c_array() + this->size);
+            return To(this->buffer.c_array() + StartOffset,
+                this->buffer.c_array() + StartOffset + this->size);
         }
 
         std::string to_string() { return to<std::string>(); }
@@ -477,38 +479,75 @@ namespace net {
 
     class udp_server {
     public:
-        class message_info : public base_message_info<udp_buffer_t> {
+        class message_info : public base_message_info<udp_buffer_t,
+                                 2 * sizeof(uint64_t) + sizeof(uint16_t)> {
         public:
             message_info(
                 udp::endpoint sender, udp_buffer_t&& buffer, size_t size)
                 : base_message_info(std::move(buffer), size)
                 , _sender(sender)
             {
+                char* pos = this->buffer.c_array();
+                uint64_t big_seq_num;
+                uint16_t big_sender;
+                std::memcpy(
+                    &big_seq_num, pos + sizeof(uint64_t), sizeof(uint64_t));
+                std::memcpy(
+                    &big_sender, pos + 2 * sizeof(uint64_t), sizeof(uint16_t));
+                _seq_num = boost::endian::big_to_native(big_seq_num);
+                _sender_id = boost::endian::big_to_native(big_sender);
             }
 
             udp::endpoint sender() { return _sender; }
+
+            uint64_t seq_num() { return _seq_num; }
+
+            uint16_t sender_id() { return _sender_id; }
 
             HL_AUTO_COMPLETE_CANONICAL_FORM(message_info);
 
         private:
             udp::endpoint _sender;
+            uint16_t _sender_id;
+            uint16_t _seq_num;
         };
 
         using shared_message_info_t = boost::shared_ptr<message_info>;
 
-        static shared_message_info_t new_message(const void* data, size_t size)
+        static shared_message_info_t new_message(
+            int sender, const void* data, size_t size)
         {
-            assert(size < udp_buffer_t::size());
+            static uint64_t seq_num = 0; // for now, it will do
+
+            uint64_t big_magic
+                = boost::endian::native_to_big<uint64_t>(0xff1cec0ffeedefec);
+            uint64_t big_seq_num
+                = boost::endian::native_to_big<uint64_t>(seq_num++);
+            uint16_t big_sender
+                = boost::endian::native_to_big<uint16_t>(sender);
+            constexpr int header_size = 2 * sizeof(uint64_t) - sizeof(uint16_t);
+
+            assert(size < udp_buffer_t::size() - header_size);
+
             message_info* mesg = new message_info;
-            std::memcpy(mesg->buffer.c_array(), data, size);
-            mesg->size = size;
+            char* pos = mesg->buffer.c_array();
+            std::memcpy(pos, &big_magic, sizeof(big_magic));
+            pos += sizeof(big_magic);
+            std::memcpy(pos, &big_seq_num, sizeof(big_seq_num));
+            pos += sizeof(big_seq_num);
+            std::memcpy(pos, &big_sender, sizeof(big_sender));
+            pos += sizeof(big_sender);
+            std::memcpy(pos, data, size);
+            mesg->size = size + header_size;
             return shared_message_info_t(mesg);
         }
 
-        static shared_message_info_t new_message(const std::string& s)
+        static shared_message_info_t new_message(
+            int sender, const std::string& s)
         {
             return new_message(
-                reinterpret_cast<const void*>(s.c_str()), s.size());
+                sender, reinterpret_cast<const void*>(s.c_str()), s.size());
+
         }
 
     private:
@@ -591,7 +630,12 @@ namespace net {
 
         static pointer create() { return pointer(new remote_client()); }
 
-        remote_client() { }
+        remote_client()
+            : _main_channel(nullptr)
+            , _feed_channel(nullptr)
+            , _main_id(0)
+        {
+        }
 
         void init_main_channel(tcp_server& main_channel, size_t main_id)
         {
@@ -645,12 +689,12 @@ namespace net {
 
         void send_feed(const std::string& s)
         {
-            send_feed(udp_server::new_message(s));
+            send_feed(udp_server::new_message(_main_id, s));
         }
 
         void send_feed(const void* data, size_t size)
         {
-            send_feed(udp_server::new_message(data, size));
+            send_feed(udp_server::new_message(_main_id, data, size));
         }
 
         int get_main_id() const { return _main_id; }
@@ -785,7 +829,7 @@ namespace net {
                 }
                 // otherwise it's just a message
                 event.type = FeedMessage;
-                event.client = get_client(msg->sender());
+                event.client = get_client(msg->sender_id());
                 event.message
                     = std::make_unique<feed_message>(event.client, msg);
                 return true;

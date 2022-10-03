@@ -89,6 +89,7 @@ include_directories(
     ${boost_lockfree_SOURCE_DIR}/include
     ${boost_parameter_SOURCE_DIR}/include
     ${boost_variant_SOURCE_DIR}/include
+    ${boost_endian_SOURCE_DIR}/include
 	${CMAKE_SOURCE_DIR}/include
 )
 

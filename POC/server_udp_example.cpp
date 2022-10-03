@@ -16,7 +16,7 @@ void poc_udp_server_example()
         while (s.poll(msg)) {
             spdlog::info("UDP Message: {}", msg->to_string());
             ref_s->send_to(
-                msg->sender(), rtype::net::udp_server::new_message("pong\n"));
+                msg->sender(), rtype::net::udp_server::new_message(0, "pong\n"));
         }
     }
 }

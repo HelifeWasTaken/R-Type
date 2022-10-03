@@ -11,7 +11,8 @@ static const std::unordered_map<std::string, std::function<void(void)>> POCS
           { "server_udp_example", poc_udp_server_example },
           { "server_example", poc_server_example },
           { "server_write_tcp", poc_server_write_tcp_example },
-          { "joystick_example", poc_joystick_example } };
+          { "joystick_example", poc_joystick_example },
+          { "message_parser", poc_message_parser } };
 
 int main(int ac, char** av)
 {

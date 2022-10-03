@@ -1,17 +1,19 @@
 #pragma once
 
 #include "PileAA/meta.hpp"
+#include <Network/Messages.hpp>
 #include <assert.h>
 #include <boost/array.hpp>
 #include <boost/asio.hpp>
-#include <boost/endian.hpp>
 #include <boost/bind/bind.hpp>
 #include <boost/enable_shared_from_this.hpp>
+#include <boost/endian.hpp>
 #include <boost/thread.hpp>
 #include <iostream>
 #include <queue>
 #include <spdlog/spdlog.h>
 #include <variant>
+
 // TODO: Use proper logging library vs std::fprintf stderr
 
 // using namespace boost::placeholders;
@@ -547,7 +549,6 @@ namespace net {
         {
             return new_message(
                 sender, reinterpret_cast<const void*>(s.c_str()), s.size());
-
         }
 
     private:

@@ -517,7 +517,7 @@ template <typename T>
 inline boost::shared_ptr<T> parse_message(const uint8_t* buffer, size_t size) {
     auto message = parse_message(buffer, size);
     if (dynamic_cast<T*>(message.get()) != nullptr) {
-        return std::static_pointer_cast<T>(message);
+        return boost::static_pointer_cast<T>(message);
     }
     return nullptr;
 }

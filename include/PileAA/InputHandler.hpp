@@ -4,6 +4,7 @@
 #include "VectorExtension.hpp"
 #include "meta.hpp"
 #include <array>
+#include <memory>
 
 namespace paa {
 
@@ -112,6 +113,9 @@ public:
     sf::Vector2f getAxisPOV() const override
     { return sf::Vector2f(getAxis(sf::Joystick::Axis::PovX), getAxis(sf::Joystick::Axis::PovY)); }
 };
+
+using Controller = std::shared_ptr<IController>;
+
 }
 
 inline std::ostream& operator<<(std::ostream& os, const paa::IController& controller)

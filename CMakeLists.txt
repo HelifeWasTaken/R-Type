@@ -2,7 +2,6 @@ project(rtype)
 cmake_minimum_required(VERSION 3.15)
 
 add_compile_definitions(SILVA_STATE_DRAW)
-add_compile_definitions(SILVA_STATE_HANDLE_EVENT)
 
 add_compile_definitions(_WIN32_WINNT=0x0601)
 

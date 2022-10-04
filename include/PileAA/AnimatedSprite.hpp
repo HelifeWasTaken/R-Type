@@ -3,6 +3,7 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <unordered_map>
+#include "ResourceManager.hpp"
 #include "Timer.hpp"
 
 namespace paa {
@@ -32,7 +33,11 @@ namespace paa {
         }
 
     public:
-        AnimatedSprite() = default;
+        AnimatedSprite(const std::string& textureName)
+        {
+            this->setTexture(ResourceManagerInstance::get().get<sf::Texture>(textureName));
+        }
+
         ~AnimatedSprite() = default;
 
         /**

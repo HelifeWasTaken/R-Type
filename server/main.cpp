@@ -19,8 +19,8 @@ int main()
                     = rtype::net::parse_message<rtype::net::UpdateMessage>(event.message->to_vec());
 
                 for (auto& it : server.clients()) {
-                    auto id = it.first;
-                    auto client = it.second;
+                    auto& id = it.first;
+                    auto& client = it.second;
                     if (id != event.client->id())
                         client->send_main(*msg);
                 }

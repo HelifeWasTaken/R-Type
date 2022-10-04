@@ -778,6 +778,7 @@ namespace net {
             std::string to_string() const override { return _msg->to_string(); }
             std::vector<uint8_t> to_vec() const override { return _msg->to_vec(); }
             boost::shared_ptr<IMessage> to_msg() override { return _msg->to_msg(); }
+
             message_code code() const override { return _msg->code(); }
 
         private:

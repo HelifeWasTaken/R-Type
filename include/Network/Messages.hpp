@@ -62,21 +62,21 @@ static inline std::unordered_map<message_code, message_type> message_type_map = 
     { message_code::REFUSED, message_type::SIGNAL_MARKER }
 };
 
-inline message_type get_message_type(message_code code) {
+static inline message_type get_message_type(message_code code) {
     auto a = message_type_map.find(code);
     if (a == message_type_map.end())
         return message_type::INVALID;
     return a->second;
 }
 
-inline message_type get_message_type(uint8_t code) {
+static inline message_type get_message_type(uint8_t code) {
     auto a = message_type_map.find(static_cast<message_code>(code));
     if (a == message_type_map.end())
         return message_type::INVALID;
     return a->second;
 }
 
-inline message_type get_message_type(const uint8_t *buffer) {
+static inline message_type get_message_type(const uint8_t *buffer) {
     return get_message_type(buffer[0]);
 }
 
@@ -122,7 +122,7 @@ class UpdateMessage : public IMessage {
         UpdateMessage() : _sid(0), _data(), _type(0) {}
 
         template <typename T>
-        UpdateMessage(int16_t sid, const T& data) : _sid(sid), _data(data.serialize()), _type(T::serializable_type()) {}
+        UpdateMessage(int16_t sid, const T& data) : _sid(sid), _data(data.serialize()), _type(T::get_serializable_type()) {}
 
         UpdateMessage(int16_t sid, int16_t type, const std::vector<uint8_t>& data) : _sid(sid), _data(data), _type(type) {}
 
@@ -488,7 +488,7 @@ class FeedInitReply : public IMessage {
         uint32_t _token;
 };
 
-inline boost::shared_ptr<IMessage> parse_message(const uint8_t* buffer, size_t size) {
+static inline boost::shared_ptr<IMessage> parse_message(const uint8_t* buffer, size_t size) {
     assert(size > 0);
     message_code code = static_cast<message_code>(buffer[0]);
     message_type type = get_message_type(buffer[0]);
@@ -510,12 +510,12 @@ inline boost::shared_ptr<IMessage> parse_message(const uint8_t* buffer, size_t s
     }
 }
 
-inline boost::shared_ptr<IMessage> parse_message(const std::vector<uint8_t>& buff) {
+static inline boost::shared_ptr<IMessage> parse_message(const std::vector<uint8_t>& buff) {
     return parse_message(buff.data(), buff.size());
 }
 
 template <typename T>
-inline boost::shared_ptr<T> parse_message(const uint8_t* buffer, size_t size) {
+static inline boost::shared_ptr<T> parse_message(const uint8_t* buffer, size_t size) {
     auto message = parse_message(buffer, size);
     if (dynamic_cast<T*>(message.get()) != nullptr) {
         return boost::static_pointer_cast<T>(message);
@@ -524,7 +524,7 @@ inline boost::shared_ptr<T> parse_message(const uint8_t* buffer, size_t size) {
 }
 
 template <typename T>
-inline boost::shared_ptr<T> parse_message(const std::vector<uint8_t>& buff) {
+static inline boost::shared_ptr<T> parse_message(const std::vector<uint8_t>& buff) {
     return parse_message<T>(buff.data(), buff.size());
 }
 

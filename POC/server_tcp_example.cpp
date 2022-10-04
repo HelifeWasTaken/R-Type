@@ -16,8 +16,9 @@ static void display_event(rtype::net::tcp_event& event)
         auto& ref = event.get<rtype::net::tcp_event_message>();
         spdlog::info("TCP Message: {} -> {}", ref.get_id(),
             ref.get_message()->to_string());
-        ref_s->send(
-            ref.get_id(), rtype::net::tcp_connection::new_message("pong\n"));
+        ref_s->send(ref.get_id(),
+            rtype::net::tcp_connection::new_message(
+                rtype::net::TextReplyMessage(0, "pong\n")));
     }
 }
 

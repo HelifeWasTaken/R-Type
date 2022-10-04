@@ -1,7 +1,7 @@
 #pragma once
 
-#include <iostream>
 #include "Server.hpp"
+#include <iostream>
 
 #define MAGIC_NUMBER 0x0fficecoffeedefec
 
@@ -43,10 +43,7 @@ namespace net {
         async_queue<shared_message_t> _queue;
 
     protected:
-        void add_event(shared_message_t message)
-        {
-            _queue.async_push(message);
-        }
+        void add_event(shared_message_t message) { _queue.async_push(message); }
     };
 
     class UDPClient : public AClient {
@@ -65,10 +62,10 @@ namespace net {
          * @param const char * The port the client is listening to
          */
         UDPClient(boost::asio::io_context& io_context, const char* host,
-                                                    const char* port)
+            const char* port)
             : _resolver(io_context)
             , _query(boost::asio::ip::udp::v4(), host, "daytime")
-            , _receiver_endpoint(*_resolver.resolve({host, port}))
+            , _receiver_endpoint(*_resolver.resolve({ host, port }))
             , _socket(io_context)
             , _sender_endpoint()
         {
@@ -79,14 +76,17 @@ namespace net {
         void receive()
         {
             spdlog::info("UDPClient::receive: Started receiving");
-            _socket.async_receive_from(
-                boost::asio::buffer(*_buf_recv),
+            _socket.async_receive_from(boost::asio::buffer(*_buf_recv),
                 _sender_endpoint,
-                [this, buf_recv=_buf_recv](const boost::system::error_code& ec, size_t bytes) {
+                [this, buf_recv = _buf_recv](
+                    const boost::system::error_code& ec, size_t bytes) {
                     if (!ec) {
-                        auto msg = parse_message(reinterpret_cast<uint8_t *>(_buf_recv->c_array()), bytes);
+                        auto msg = parse_message(
+                            reinterpret_cast<uint8_t*>(_buf_recv->c_array()),
+                            bytes);
                         if (msg == nullptr) {
-                            spdlog::error("UDPClient::receive: Invalid message");
+                            spdlog::error(
+                                "UDPClient::receive: Invalid message");
                         } else {
                             add_event(msg);
                         }
@@ -94,11 +94,10 @@ namespace net {
                     } else {
                         spdlog::error("UDPClient::receive: {}", ec.message());
                     }
-                }
-            );
+                });
         }
 
-        void send(boost::shared_ptr<udp_buffer_t> message, size_t size=-1)
+        void send(boost::shared_ptr<udp_buffer_t> message, size_t size = -1)
         {
             // return _socket.send_to(
             // boost::asio::buffer(data, size), _receiver_endpoint);
@@ -106,8 +105,7 @@ namespace net {
             spdlog::info("UDPClient::send: Sending message");
             if (size == (size_t)-1)
                 size = message->size();
-            _socket.async_send_to(
-                boost::asio::buffer(*message, size),
+            _socket.async_send_to(boost::asio::buffer(*message, size),
                 _receiver_endpoint,
                 [message](const boost::system::error_code& ec, size_t bytes) {
                     (void)bytes;
@@ -116,8 +114,7 @@ namespace net {
                     } else {
                         spdlog::error("UDPClient::receive: {}", ec.message());
                     }
-                }
-            );
+                });
         }
 
         boost::shared_ptr<udp_buffer_t> _buf_recv;
@@ -138,11 +135,12 @@ namespace net {
          * @param const char * The port the client is listening to
          */
         TCPClient(boost::asio::io_context& io_context, const char* host,
-                                                        const char *port)
+            const char* port)
             : _resolver(io_context)
             , _query(host, "daytime")
-            , _endpoint_iterator(_resolver.resolve({host, port}))
+            , _endpoint_iterator(_resolver.resolve({ host, port }))
             , _socket(io_context)
+            , _buf_recv(new tcp_buffer_t)
         {
             boost::system::error_code error
                 = boost::asio::error::host_not_found;
@@ -154,49 +152,53 @@ namespace net {
             }
 
             if (error) {
+
                 throw boost::system::system_error(error);
             }
         }
 
-    private:
         void receive()
         {
             spdlog::info("TCPClient::receive: Start receiving");
-            _socket.async_receive(
-                boost::asio::buffer(*_buf_recv),
-                [this, buf_recv=_buf_recv](const boost::system::error_code& ec, size_t bytes) {
+            _socket.async_receive(boost::asio::buffer(*_buf_recv),
+                [this, buf_recv = _buf_recv](
+                    const boost::system::error_code& ec, size_t bytes) {
                     if (!ec) {
-                        auto msg = parse_message(reinterpret_cast<uint8_t *>(_buf_recv->c_array()), bytes);
+                        auto msg = parse_message(
+                            reinterpret_cast<uint8_t*>(_buf_recv->c_array()),
+                            bytes);
                         if (msg) {
-                            spdlog::info("TCPClient::receive: Received {} bytes", bytes);
+                            spdlog::info(
+                                "TCPClient::receive: Received {} bytes", bytes);
+                            spdlog::info("TCPClient::receive: {}",
+                                std::string(_buf_recv->c_array(), bytes));
                             tcp_event(msg);
                         } else {
-                            spdlog::error("TCPClient::receive: Invalid message");
+                            spdlog::error(
+                                "TCPClient::receive: Invalid message");
                         }
                         receive();
                     } else {
                         spdlog::error("UDPClient::receive: {}", ec.message());
                     }
-                }
-            );
+                });
         }
 
-        void send(boost::shared_ptr<tcp_buffer_t> message, size_t size=-1)
+        void send(boost::shared_ptr<tcp_buffer_t> message, size_t size = -1)
         {
             if (size == (size_t)-1)
                 size = message->size();
             spdlog::info("TCPClient::send: Sending {} bytes", size);
-            _socket.async_receive(
-                boost::asio::buffer(*message, size),
-                [this, message](const boost::system::error_code& ec, size_t bytes) {
+            _socket.async_send(boost::asio::buffer(*message, size),
+                [this, message](
+                    const boost::system::error_code& ec, size_t bytes) {
                     (void)bytes;
                     if (!ec) {
                         spdlog::info("TCPClient::send: Sent {} bytes", bytes);
                     } else {
                         spdlog::error("UDPClient::receive: {}", ec.message());
                     }
-                }
-            );
+                });
         }
 
         boost::shared_ptr<tcp_buffer_t> _buf_recv;
@@ -219,7 +221,7 @@ namespace net {
          * @param const char * The UDP port the socket is listening to
          */
         UDP_TCP_Client(const char* host_tcp, const char* host_udp,
-                        const char* tcp_port, const char* udp_port)
+            const char* tcp_port, const char* udp_port)
             : _tcp_io_context(boost::asio::io_context())
             , _udp_io_context(boost::asio::io_context())
             , _udp_client(_udp_io_context, host_udp, udp_port)

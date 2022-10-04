@@ -1,5 +1,7 @@
 #pragma once
 
+
+void poc_client_tcp_example(void);
 void poc_tcp_server_example(void);
 void poc_udp_server_example(void);
 void poc_server_example(void);

@@ -27,7 +27,7 @@ struct vector2f {
         return *this;
     }
 
-    static serializable_type serializable_type() { return serializable_type::VECTOR2F; }
+    static serializable_type get_serializable_type() { return serializable_type::VECTOR2F; }
 
     std::vector<uint8_t> serialize() const {
         std::vector<uint8_t> buffer(2 * sizeof(float));
@@ -60,7 +60,7 @@ struct vector2i {
         return *this;
     }
 
-    static serializable_type serializable_type() { return serializable_type::VECTOR2I; }
+    static serializable_type get_serializable_type() { return serializable_type::VECTOR2I; }
 
     std::vector<uint8_t> serialize() const {
         std::vector<uint8_t> buffer(2 * sizeof(int));

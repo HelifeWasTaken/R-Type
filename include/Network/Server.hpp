@@ -14,6 +14,8 @@
 #include <spdlog/spdlog.h>
 #include <variant>
 
+#define MAGIC_NUMBER 0xff1cec0ffeedefec
+
 // TODO: Use proper logging library vs std::fprintf stderr
 
 // using namespace boost::placeholders;
@@ -145,7 +147,7 @@ namespace net {
 
         std::string to_string() { return to<std::string>(); }
         std::vector<uint8_t> to_vec() { return to<std::vector<uint8_t>>(); }
-        std::shared_ptr<IMessage> to_msg() { return parse_message(to<std::vector<uint8_t>>()); }
+        boost::shared_ptr<IMessage> to_msg() { return parse_message(to<std::vector<uint8_t>>()); }
         template <typename T> std::shared_ptr<T> to_msg() { return parse_message<T>(to<std::vector<uint8_t>>()); }
 
         message_code code()
@@ -524,7 +526,7 @@ namespace net {
             static uint64_t seq_num = 0; // for now, it will do
 
             uint64_t big_magic
-                = boost::endian::native_to_big<uint64_t>(0xff1cec0ffeedefec);
+                = boost::endian::native_to_big<uint64_t>(MAGIC_NUMBER);
             uint64_t big_seq_num
                 = boost::endian::native_to_big<uint64_t>(seq_num++);
             uint16_t big_sender
@@ -762,7 +764,7 @@ namespace net {
             virtual remote_client::pointer sender() const = 0;
             virtual std::string to_string() const = 0;
             virtual std::vector<uint8_t> to_vec() const = 0;
-            virtual std::shared_ptr<IMessage> to_msg() = 0;
+            virtual boost::shared_ptr<IMessage> to_msg() = 0;
             virtual message_code code() const = 0;
         };
 
@@ -778,7 +780,8 @@ namespace net {
             remote_client::pointer sender() const override { return _sender; }
             std::string to_string() const override { return _msg->to_string(); }
             std::vector<uint8_t> to_vec() const override { return _msg->to_vec(); }
-            std::shared_ptr<IMessage> to_msg() override { return _msg->to_msg(); }
+            boost::shared_ptr<IMessage> to_msg() override { return _msg->to_msg(); }
+
             message_code code() const override { return _msg->code(); }
 
         private:
@@ -798,7 +801,7 @@ namespace net {
             remote_client::pointer sender() const override { return _sender; }
             std::string to_string() const override { return _msg->to_string(); }
             std::vector<uint8_t> to_vec() const override { return _msg->to_vec(); }
-            std::shared_ptr<IMessage> to_msg() override { return _msg->to_msg(); }
+            boost::shared_ptr<IMessage> to_msg() override { return _msg->to_msg(); }
             message_code code() const override { return _msg->code(); }
 
         private:

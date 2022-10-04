@@ -36,8 +36,15 @@ int main()
 int main()
 {
     try {
-        rtype::net::UDP_TCP_Client client("127.0.0.1", "127.0.0.1", "4242", "4243");
+        boost::asio::io_context context;
+        rtype::net::UDPClient client(context, "127.0.0.1", "4242");
 
+        while (true) {
+            context.run_one();
+            rtype::net::shared_message_t msg;
+            while (client.poll(msg)) {
+            }
+        }
     } catch(...) {
         std::cout << "RIP" << std::endl;
     }

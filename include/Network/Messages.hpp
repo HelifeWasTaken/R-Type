@@ -7,6 +7,7 @@
 #include <boost/endian.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/make_shared.hpp>
+#include <boost/pointer_cast.hpp>
 
 namespace rtype {
 namespace net {
@@ -189,7 +190,7 @@ class SyncMessage : public IMessage {
         SyncMessage() : _sid(0), _data(), _type(0) {}
 
         template <typename T>
-        SyncMessage(int16_t sid, const T& data) : _sid(sid), _data(data.serialize()), _type(T::serializable_type()) {}
+        SyncMessage(int16_t sid, const T& data) : _sid(sid), _data(data.serialize()), _type(T::get_serializable_type()) {}
 
         SyncMessage(int16_t sid, int16_t type, const std::vector<uint8_t>& data) : _sid(sid), _data(data), _type(type) {}
 
@@ -517,7 +518,7 @@ template <typename T>
 inline boost::shared_ptr<T> parse_message(const uint8_t* buffer, size_t size) {
     auto message = parse_message(buffer, size);
     if (dynamic_cast<T*>(message.get()) != nullptr) {
-        return std::static_pointer_cast<T>(message);
+        return boost::static_pointer_cast<T>(message);
     }
     return nullptr;
 }

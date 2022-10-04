@@ -14,6 +14,8 @@
 #include <spdlog/spdlog.h>
 #include <variant>
 
+#define MAGIC_NUMBER 0xff1cec0ffeedefec
+
 // TODO: Use proper logging library vs std::fprintf stderr
 
 // using namespace boost::placeholders;
@@ -522,7 +524,7 @@ namespace net {
             static uint64_t seq_num = 0; // for now, it will do
 
             uint64_t big_magic
-                = boost::endian::native_to_big<uint64_t>(0xff1cec0ffeedefec);
+                = boost::endian::native_to_big<uint64_t>(MAGIC_NUMBER);
             uint64_t big_seq_num
                 = boost::endian::native_to_big<uint64_t>(seq_num++);
             uint16_t big_sender

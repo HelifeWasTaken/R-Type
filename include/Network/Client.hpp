@@ -3,8 +3,6 @@
 #include <iostream>
 #include "Server.hpp"
 
-#define MAGIC_NUMBER 0x0fficecoffeedefec
-
 namespace rtype {
 namespace net {
 
@@ -58,6 +56,34 @@ namespace net {
         boost::asio::ip::udp::endpoint _sender_endpoint;
 
     public:
+
+        class HeaderMessage {
+            public:
+                HeaderMessage(udp_buffer_t& buffer)
+                {
+                    unsigned char* msg = reinterpret_cast<unsigned char*>(buffer.c_array());
+                    std::memcpy(&_magic, msg, sizeof(uint64_t));
+                    std::memcpy(&_seq, msg + sizeof(uint64_t), sizeof(uint64_t));
+                    std::memcpy(&_id, msg + (2 * sizeof(uint64_t)), sizeof(uint16_t));
+                    _magic = boost::endian::big_to_native(_magic);
+                    _seq = boost::endian::big_to_native(_seq);
+                    _id = boost::endian::big_to_native(_id);
+                }
+
+                bool is_valid() const { return _magic == MAGIC_NUMBER; }
+
+                std::size_t size() const { return sizeof(_magic) + sizeof(_seq) + sizeof(_id); }
+
+                uint64_t get_msg_sequence() { return _seq; }
+
+                uint16_t get_sender_id() { return _id; }
+
+            private:
+                uint64_t _magic;
+                uint64_t _seq;
+                uint16_t _id;
+        };
+
         /**
          * @brief Creates a new UDP client
          * @param boost::asio::io_service & The io_service
@@ -73,6 +99,7 @@ namespace net {
             , _sender_endpoint()
         {
             _socket.open(boost::asio::ip::udp::v4());
+            receive();
         }
 
     private:
@@ -84,7 +111,13 @@ namespace net {
                 _sender_endpoint,
                 [this, buf_recv=_buf_recv](const boost::system::error_code& ec, size_t bytes) {
                     if (!ec) {
-                        auto msg = parse_message(reinterpret_cast<uint8_t *>(_buf_recv->c_array()), bytes);
+                        HeaderMessage header(*buf_recv);
+                        if (!header.is_valid()) {
+                            spdlog::info("UDPClient::receive: Invalid Magic !");
+                            return;
+                        }
+                        std::size_t header_size = header.size();
+                        auto msg = parse_message(reinterpret_cast<uint8_t *>(_buf_recv->c_array() + header_size), bytes - header_size);
                         if (msg == nullptr) {
                             spdlog::error("UDPClient::receive: Invalid message");
                         } else {
@@ -100,8 +133,7 @@ namespace net {
 
         void send(boost::shared_ptr<udp_buffer_t> message, size_t size=-1)
         {
-            // return _socket.send_to(
-            // boost::asio::buffer(data, size), _receiver_endpoint);
+            // TODO: BAD should send serialized IMessage instead of udp_buffer_t
 
             spdlog::info("UDPClient::send: Sending message");
             if (size == (size_t)-1)

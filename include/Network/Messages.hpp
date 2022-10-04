@@ -42,7 +42,7 @@ enum message_type : uint8_t {
     FEED_INIT_REPLY
 };
 
-static inline std::unordered_map<message_code, message_type> message_type_map = {
+static inline const std::unordered_map<message_code, message_type> message_type_map = {
     { message_code::DUMMY, message_type::INVALID },
     { message_code::UPDATE_MSG, message_type::UPDATE_MESSAGE },
     { message_code::SYNC_MSG, message_type::SYNC_MESSAGE },

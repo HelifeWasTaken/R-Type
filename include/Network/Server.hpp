@@ -558,6 +558,7 @@ namespace net {
             std::size_t bytes_transferred)
         {
             if (!error && bytes_transferred > 0) {
+                spdlog::info("udp_server: Received {} bytes", bytes_transferred);
                 _recv_queue->async_push(
                     shared_message_info_t(new message_info(_sender_endpoint,
                         std::move(*_recv_buffer), bytes_transferred)));
@@ -572,6 +573,7 @@ namespace net {
 
         void start_receive()
         {
+            spdlog::info("udp_server: Starting to receive");
             _socket.async_receive_from(boost::asio::buffer(*_recv_buffer),
                 _sender_endpoint,
                 boost::bind(&udp_server::handle_receive_from, this,
@@ -734,6 +736,7 @@ namespace net {
         tcp_server* _main_channel;
         udp_server* _feed_channel;
     };
+
     class server {
     public:
         server(int tcp_port, int udp_port, bool authenticate = false)

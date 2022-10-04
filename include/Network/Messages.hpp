@@ -1,8 +1,12 @@
+#pragma once
+
 #include <vector>
 #include <unordered_map>
 #include <memory>
 #include <assert.h>
 #include <boost/endian.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/make_shared.hpp>
 
 namespace rtype {
 namespace net {
@@ -91,15 +95,15 @@ class SignalMarker : public IMessage {
             _code = static_cast<message_code>(buff[0]);
         }
 
-        static std::shared_ptr<SignalMarker> deserialize(const uint8_t* buffer, size_t size) {
-            auto msg = std::make_shared<SignalMarker>();
+        static boost::shared_ptr<SignalMarker> deserialize(const uint8_t* buffer, size_t size) {
+            auto msg = boost::make_shared<SignalMarker>();
             msg->from(std::vector<uint8_t>(buffer, buffer + size));
             return msg;
         }
 
-        static std::shared_ptr<SignalMarker> deserialize(const std::vector<uint8_t>& buff) {
+        static boost::shared_ptr<SignalMarker> deserialize(const std::vector<uint8_t>& buff) {
             return deserialize(buff.data(), buff.size());
-        } 
+        }
 
         const std::vector<uint8_t> serialize() const {
             return std::vector<uint8_t>{ static_cast<uint8_t>(_code) };
@@ -129,15 +133,15 @@ class UpdateMessage : public IMessage {
             _data = std::vector<uint8_t>(buff.begin() + 1 + sizeof(_type) + sizeof(_sid), buff.end());
         }
 
-        static std::shared_ptr<UpdateMessage> deserialize(const uint8_t* buffer, size_t size) {
-            auto msg = std::make_shared<UpdateMessage>();
+        static boost::shared_ptr<UpdateMessage> deserialize(const uint8_t* buffer, size_t size) {
+            auto msg = boost::make_shared<UpdateMessage>();
             msg->from(std::vector<uint8_t>(buffer, buffer + size));
             return msg;
         }
 
-        static std::shared_ptr<UpdateMessage> deserialize(const std::vector<uint8_t>& buff) {
+        static boost::shared_ptr<UpdateMessage> deserialize(const std::vector<uint8_t>& buff) {
             return deserialize(buff.data(), buff.size());
-        } 
+        }
 
         const std::vector<uint8_t> serialize() const {
             uint8_t* byteReader;
@@ -197,15 +201,15 @@ class SyncMessage : public IMessage {
             _data = std::vector<uint8_t>(buff.begin() + 1 + sizeof(_type) + sizeof(_sid), buff.end());
         }
 
-        static std::shared_ptr<SyncMessage> deserialize(const uint8_t* buffer, size_t size) {
-            auto msg = std::make_shared<SyncMessage>();
+        static boost::shared_ptr<SyncMessage> deserialize(const uint8_t* buffer, size_t size) {
+            auto msg = boost::make_shared<SyncMessage>();
             msg->from(std::vector<uint8_t>(buffer, buffer + size));
             return msg;
         }
 
-        static std::shared_ptr<SyncMessage> deserialize(const std::vector<uint8_t>& buff) {
+        static boost::shared_ptr<SyncMessage> deserialize(const std::vector<uint8_t>& buff) {
             return deserialize(buff.data(), buff.size());
-        } 
+        }
 
         const std::vector<uint8_t> serialize() const {
             uint8_t* byteReader;
@@ -258,15 +262,15 @@ class QueryMessage : public IMessage {
             _data = std::vector<uint8_t>(buff.begin() + 1, buff.end());
         }
 
-        static std::shared_ptr<QueryMessage> deserialize(const uint8_t* buffer, size_t size) {
-            auto msg = std::make_shared<QueryMessage>();
+        static boost::shared_ptr<QueryMessage> deserialize(const uint8_t* buffer, size_t size) {
+            auto msg = boost::make_shared<QueryMessage>();
             msg->from(std::vector<uint8_t>(buffer, buffer + size));
             return msg;
         }
 
-        static std::shared_ptr<QueryMessage> deserialize(const std::vector<uint8_t>& buff) {
+        static boost::shared_ptr<QueryMessage> deserialize(const std::vector<uint8_t>& buff) {
             return deserialize(buff.data(), buff.size());
-        } 
+        }
 
         const std::vector<uint8_t> serialize() const {
             std::vector<uint8_t> buff;
@@ -282,7 +286,7 @@ class QueryMessage : public IMessage {
         const std::vector<uint8_t> data() const {
             return _data;
         }
-        
+
         std::vector<uint8_t> data() {
             return _data;
         }
@@ -302,15 +306,15 @@ class ReplyMessage : public IMessage {
             _data = std::vector<uint8_t>(buff.begin() + 2, buff.end());
         }
 
-        static std::shared_ptr<ReplyMessage> deserialize(const uint8_t* buffer, size_t size) {
-            auto msg = std::make_shared<ReplyMessage>();
+        static boost::shared_ptr<ReplyMessage> deserialize(const uint8_t* buffer, size_t size) {
+            auto msg = boost::make_shared<ReplyMessage>();
             msg->from(std::vector<uint8_t>(buffer, buffer + size));
             return msg;
         }
 
-        static std::shared_ptr<ReplyMessage> deserialize(const std::vector<uint8_t>& buff) {
+        static boost::shared_ptr<ReplyMessage> deserialize(const std::vector<uint8_t>& buff) {
             return deserialize(buff.data(), buff.size());
-        } 
+        }
 
         const std::vector<uint8_t> serialize() const {
             std::vector<uint8_t> buff;
@@ -349,15 +353,15 @@ class ConnectionInitReply : public IMessage {
             boost::endian::big_to_native_inplace(_token);
         }
 
-        static std::shared_ptr<ConnectionInitReply> deserialize(const uint8_t* buffer, size_t size) {
-            auto msg = std::make_shared<ConnectionInitReply>();
+        static boost::shared_ptr<ConnectionInitReply> deserialize(const uint8_t* buffer, size_t size) {
+            auto msg = boost::make_shared<ConnectionInitReply>();
             msg->from(std::vector<uint8_t>(buffer, buffer + size));
             return msg;
         }
 
-        static std::shared_ptr<ConnectionInitReply> deserialize(const std::vector<uint8_t>& buff) {
+        static boost::shared_ptr<ConnectionInitReply> deserialize(const std::vector<uint8_t>& buff) {
             return deserialize(buff.data(), buff.size());
-        } 
+        }
 
         const std::vector<uint8_t> serialize() const {
             uint8_t* byteReader;
@@ -401,15 +405,15 @@ class FeedInitRequest : public IMessage {
             boost::endian::big_to_native_inplace(_token);
         }
 
-        static std::shared_ptr<FeedInitRequest> deserialize(const uint8_t* buffer, size_t size) {
-            auto msg = std::make_shared<FeedInitRequest>();
+        static boost::shared_ptr<FeedInitRequest> deserialize(const uint8_t* buffer, size_t size) {
+            auto msg = boost::make_shared<FeedInitRequest>();
             msg->from(std::vector<uint8_t>(buffer, buffer + size));
             return msg;
         }
 
-        static std::shared_ptr<FeedInitRequest> deserialize(const std::vector<uint8_t>& buff) {
+        static boost::shared_ptr<FeedInitRequest> deserialize(const std::vector<uint8_t>& buff) {
             return deserialize(buff.data(), buff.size());
-        } 
+        }
 
         const std::vector<uint8_t> serialize() const {
             uint8_t* byteReader;
@@ -451,15 +455,15 @@ class FeedInitReply : public IMessage {
             boost::endian::big_to_native_inplace(_token);
         }
 
-        static std::shared_ptr<FeedInitReply> deserialize(const uint8_t* buffer, size_t size) {
-            auto msg = std::make_shared<FeedInitReply>();
+        static boost::shared_ptr<FeedInitReply> deserialize(const uint8_t* buffer, size_t size) {
+            auto msg = boost::make_shared<FeedInitReply>();
             msg->from(std::vector<uint8_t>(buffer, buffer + size));
             return msg;
         }
 
-        static std::shared_ptr<FeedInitReply> deserialize(const std::vector<uint8_t>& buff) {
+        static boost::shared_ptr<FeedInitReply> deserialize(const std::vector<uint8_t>& buff) {
             return deserialize(buff.data(), buff.size());
-        } 
+        }
 
         const std::vector<uint8_t> serialize() const {
             uint8_t* byteReader;
@@ -483,7 +487,7 @@ class FeedInitReply : public IMessage {
         uint32_t _token;
 };
 
-inline std::shared_ptr<IMessage> parse_message(const uint8_t* buffer, size_t size) {
+inline boost::shared_ptr<IMessage> parse_message(const uint8_t* buffer, size_t size) {
     assert(size > 0);
     message_code code = static_cast<message_code>(buffer[0]);
     message_type type = get_message_type(buffer[0]);
@@ -505,12 +509,12 @@ inline std::shared_ptr<IMessage> parse_message(const uint8_t* buffer, size_t siz
     }
 }
 
-inline std::shared_ptr<IMessage> parse_message(const std::vector<uint8_t>& buff) {
+inline boost::shared_ptr<IMessage> parse_message(const std::vector<uint8_t>& buff) {
     return parse_message(buff.data(), buff.size());
 }
 
 template <typename T>
-inline std::shared_ptr<T> parse_message(const uint8_t* buffer, size_t size) {
+inline boost::shared_ptr<T> parse_message(const uint8_t* buffer, size_t size) {
     auto message = parse_message(buffer, size);
     if (dynamic_cast<T*>(message.get()) != nullptr) {
         return std::static_pointer_cast<T>(message);
@@ -519,7 +523,7 @@ inline std::shared_ptr<T> parse_message(const uint8_t* buffer, size_t size) {
 }
 
 template <typename T>
-inline std::shared_ptr<T> parse_message(const std::vector<uint8_t>& buff) {
+inline boost::shared_ptr<T> parse_message(const std::vector<uint8_t>& buff) {
     return parse_message<T>(buff.data(), buff.size());
 }
 

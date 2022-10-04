@@ -37,7 +37,6 @@ int main()
 {
     try {
         rtype::net::UDP_TCP_Client client("127.0.0.1", "127.0.0.1", "4242", "4243");
-
     } catch(...) {
         std::cout << "RIP" << std::endl;
     }

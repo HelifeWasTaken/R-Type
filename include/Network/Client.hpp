@@ -33,7 +33,9 @@ namespace message {
         CONN_INIT,
         CONN_OK,
     };
-};
+
+    using shared_message_t = boost::shared_ptr<IMessage>;
+}
 
 
     class IClient {
@@ -48,23 +50,34 @@ namespace message {
         virtual ~IClient() = default;
 
         /**
-         * @brief Receive data from the server (Blocking)
-         * @param void * The buffer
-         * @param size_t The size of the buffer
-         * @return size_t Number of bytes received
+         * @brief Poll the client for messages
+         * @param message::shared_message_t The message
+         * @return bool True if a message was received
          */
-        virtual size_t receive(void*, const size_t) = 0;
-
-        /**
-         * @brief Send data to the client (Blocking)
-         * @param void * The buffer
-         * @param size_t The size of the buffer
-         * @return size_t Number of bytes sent
-         */
-        virtual size_t send(const void*, const size_t) = 0;
+        virtual bool poll(message::shared_message_t&) = 0;
     };
 
-    class UDPClient : public IClient {
+    class AClient : public IClient {
+    public:
+        AClient() = default;
+        ~AClient() override = default;
+
+        bool poll(message::shared_message_t& message) override final
+        {
+            return _queue.async_pop(message);
+        }
+
+    private:
+        async_queue<message::shared_message_t> _queue;
+
+    protected:
+        void add_event(message::shared_message_t message)
+        {
+            _queue.async_push(message);
+        }
+    };
+
+    class UDPClient : public AClient {
     private:
         boost::asio::ip::udp::resolver _resolver;
         boost::asio::ip::udp::resolver::query _query;
@@ -88,20 +101,55 @@ namespace message {
             , _sender_endpoint()
         {
             _socket.open(boost::asio::ip::udp::v4());
-            send("good world", 11);
+            // send("good world", 11);
         }
 
-        size_t receive(void* data, const size_t size) override
+    private:
+        size_t receive()
         {
-            return _socket.receive_from(
-                boost::asio::buffer(data, size), _sender_endpoint);
+            spdlog::info("UDPClient::receive: Started receiving");
+            _socket.async_receive_from(
+                boost::asio::buffer(*_buf_recv),
+                _sender_endpoint,
+                [this, buf_recv=_buf_recv](const boost::system::error_code& ec, size_t bytes) {
+                    if (!ec) {
+                        auto msg = parse_message(_buf_recv->c_array(), bytes);
+                        if (msg == nullptr) {
+                            spdlog::error("UDPClient::receive: Invalid message");
+                        } else {
+                            add_event(msg);
+                        }
+                        receive();
+                    } else {
+                        spdlog::error("UDPClient::receive: {}", ec.message());
+                    }
+                }
+            );
         }
 
-        size_t send(const void* data, const size_t size) override
+        size_t send(boost::shared_ptr<udp_buffer_t> message, size_t size=-1)
         {
-            return _socket.send_to(
-                boost::asio::buffer(data, size), _receiver_endpoint);
+            // return _socket.send_to(
+            // boost::asio::buffer(data, size), _receiver_endpoint);
+
+            spdlog::info("UDPClient::send: Sending message");
+            if (size == (size_t)-1)
+                size = message->size();
+            _socket.async_send_to(
+                boost::asio::buffer(*message, size),
+                _receiver_endpoint,
+                [message](const boost::system::error_code& ec, size_t bytes) {
+                    (void)bytes;
+                    if (!ec) {
+                        spdlog::info("UDPClient::send: Sent {} bytes", bytes);
+                    } else {
+                        spdlog::error("UDPClient::receive: {}", ec.message());
+                    }
+                }
+            );
         }
+
+        boost::shared_ptr<udp_buffer_t> _buf_recv;
     };
 
     class TCPClient : public IClient {
@@ -139,15 +187,48 @@ namespace message {
             }
         }
 
-        size_t receive(void* data, const size_t size) override
+    private:
+        size_t receive()
         {
-            return _socket.receive(boost::asio::buffer(data, size));
+            spdlog::info("TCPClient::receive: Start receiving");
+            _socket.async_receive(
+                boost::asio::buffer(*_buf_recv),
+                [this, buf_recv=_buf_recv](const boost::system::error_code& ec, size_t bytes) {
+                    if (!ec) {
+                        auto msg = parse_message(_buf_recv->c_array(), bytes);
+                        if (msg) {
+                            spdlog::info("TCPClient::receive: Received {} bytes", bytes);
+                            add_event(msg);
+                        } else {
+                            spdlog::error("TCPClient::receive: Invalid message");
+                        }
+                        receive();
+                    } else {
+                        spdlog::error("UDPClient::receive: {}", ec.message());
+                    }
+                }
+            );
         }
 
-        size_t send(const void* data, const size_t size) override
+        size_t send(boost::shared_ptr<tcp_buffer_t> message, size_t size=-1)
         {
-            return _socket.send(boost::asio::buffer(data, size));
+            if (size == (size_t)-1)
+                size = message->size();
+            spdlog::info("TCPClient::send: Sending {} bytes", size);
+            _socket.async_receive(
+                boost::asio::buffer(*message, size),
+                [this, message](const boost::system::error_code& ec, size_t bytes) {
+                    (void)bytes;
+                    if (!ec) {
+                        spdlog::info("TCPClient::send: Sent {} bytes", bytes);
+                    } else {
+                        spdlog::error("UDPClient::receive: {}", ec.message());
+                    }
+                }
+            );
         }
+
+        boost::shared_ptr<tcp_buffer_t> _buf_recv;
     };
 
     class UDP_TCP_Client {

@@ -7,36 +7,8 @@
 
 namespace rtype {
 namespace net {
-namespace message {
-
-    class IMessage {
-        public:
-            IMessage() = default;
-            ~IMessage() = default;
-
-        virtual IMessage& add_value(char byte) = 0;
-    };
-
-    class Message : public IMessage, public std::vector<char> {
-        public:
-            Message() = default;
-            ~Message() = default;
-
-        IMessage& add_value(char byte) override
-        {
-            push_back(byte);
-            return *this;
-        }
-    };
-
-    enum RFCMesssage_TCP {
-        CONN_INIT,
-        CONN_OK,
-    };
 
     using shared_message_t = boost::shared_ptr<IMessage>;
-}
-
 
     class IClient {
     public:
@@ -54,7 +26,7 @@ namespace message {
          * @param message::shared_message_t The message
          * @return bool True if a message was received
          */
-        virtual bool poll(message::shared_message_t&) = 0;
+        virtual bool poll(shared_message_t&) = 0;
     };
 
     class AClient : public IClient {
@@ -62,16 +34,16 @@ namespace message {
         AClient() = default;
         ~AClient() override = default;
 
-        bool poll(message::shared_message_t& message) override final
+        bool poll(shared_message_t& message) override final
         {
             return _queue.async_pop(message);
         }
 
     private:
-        async_queue<message::shared_message_t> _queue;
+        async_queue<shared_message_t> _queue;
 
     protected:
-        void add_event(message::shared_message_t message)
+        void add_event(shared_message_t message)
         {
             _queue.async_push(message);
         }
@@ -101,11 +73,10 @@ namespace message {
             , _sender_endpoint()
         {
             _socket.open(boost::asio::ip::udp::v4());
-            // send("good world", 11);
         }
 
     private:
-        size_t receive()
+        void receive()
         {
             spdlog::info("UDPClient::receive: Started receiving");
             _socket.async_receive_from(
@@ -113,7 +84,7 @@ namespace message {
                 _sender_endpoint,
                 [this, buf_recv=_buf_recv](const boost::system::error_code& ec, size_t bytes) {
                     if (!ec) {
-                        auto msg = parse_message(_buf_recv->c_array(), bytes);
+                        auto msg = parse_message(reinterpret_cast<uint8_t *>(_buf_recv->c_array()), bytes);
                         if (msg == nullptr) {
                             spdlog::error("UDPClient::receive: Invalid message");
                         } else {
@@ -127,7 +98,7 @@ namespace message {
             );
         }
 
-        size_t send(boost::shared_ptr<udp_buffer_t> message, size_t size=-1)
+        void send(boost::shared_ptr<udp_buffer_t> message, size_t size=-1)
         {
             // return _socket.send_to(
             // boost::asio::buffer(data, size), _receiver_endpoint);
@@ -152,7 +123,7 @@ namespace message {
         boost::shared_ptr<udp_buffer_t> _buf_recv;
     };
 
-    class TCPClient : public IClient {
+    class TCPClient : public AClient {
     private:
         boost::asio::ip::tcp::resolver _resolver;
         boost::asio::ip::tcp::resolver::query _query;
@@ -188,17 +159,17 @@ namespace message {
         }
 
     private:
-        size_t receive()
+        void receive()
         {
             spdlog::info("TCPClient::receive: Start receiving");
             _socket.async_receive(
                 boost::asio::buffer(*_buf_recv),
                 [this, buf_recv=_buf_recv](const boost::system::error_code& ec, size_t bytes) {
                     if (!ec) {
-                        auto msg = parse_message(_buf_recv->c_array(), bytes);
+                        auto msg = parse_message(reinterpret_cast<uint8_t *>(_buf_recv->c_array()), bytes);
                         if (msg) {
                             spdlog::info("TCPClient::receive: Received {} bytes", bytes);
-                            add_event(msg);
+                            tcp_event(msg);
                         } else {
                             spdlog::error("TCPClient::receive: Invalid message");
                         }
@@ -210,7 +181,7 @@ namespace message {
             );
         }
 
-        size_t send(boost::shared_ptr<tcp_buffer_t> message, size_t size=-1)
+        void send(boost::shared_ptr<tcp_buffer_t> message, size_t size=-1)
         {
             if (size == (size_t)-1)
                 size = message->size();

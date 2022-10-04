@@ -121,7 +121,7 @@ class UpdateMessage : public IMessage {
         UpdateMessage() : _sid(0), _data(), _type(0) {}
 
         template <typename T>
-        UpdateMessage(int16_t sid, const T& data) : _sid(sid), _data(data.serialize()), _type(T::serializable_type()) {}
+        UpdateMessage(int16_t sid, const T& data) : _sid(sid), _data(data.serialize()), _type(T::get_serializable_type()) {}
 
         UpdateMessage(int16_t sid, int16_t type, const std::vector<uint8_t>& data) : _sid(sid), _data(data), _type(type) {}
 
@@ -189,7 +189,7 @@ class SyncMessage : public IMessage {
         SyncMessage() : _sid(0), _data(), _type(0) {}
 
         template <typename T>
-        SyncMessage(int16_t sid, const T& data) : _sid(sid), _data(data.serialize()), _type(T::serializable_type()) {}
+        SyncMessage(int16_t sid, const T& data) : _sid(sid), _data(data.serialize()), _type(T::get_serializable_type()) {}
 
         SyncMessage(int16_t sid, int16_t type, const std::vector<uint8_t>& data) : _sid(sid), _data(data), _type(type) {}
 

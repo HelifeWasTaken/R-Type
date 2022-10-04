@@ -144,7 +144,9 @@ namespace net {
         }
 
         std::string to_string() { return to<std::string>(); }
-        std::vector<char> to_vec() { return to<std::vector<char>>(); }
+        std::vector<uint8_t> to_vec() { return to<std::vector<uint8_t>>(); }
+        std::shared_ptr<IMessage> to_msg() { return parse_message(to<std::vector<uint8_t>>()); }
+        template <typename T> std::shared_ptr<T> to_msg() { return parse_message<T>(to<std::vector<uint8_t>>()); }
 
         message_code code()
         {
@@ -684,6 +686,12 @@ namespace net {
             send_main(bytes.data(), bytes.size());
         }
 
+        void send_main(rtype::net::IMessage& message)
+        {
+            auto bytes = message.serialize();
+            send_main(bytes.data(), bytes.size());
+        }
+
         void send_feed(udp_server::shared_message_info_t msg)
         {
             if (_feed_channel) {
@@ -705,6 +713,12 @@ namespace net {
         }
 
         void send_feed(const rtype::net::IMessage& message)
+        {
+            auto bytes = message.serialize();
+            send_feed(bytes.data(), bytes.size());
+        }
+
+        void send_feed(rtype::net::IMessage& message)
         {
             auto bytes = message.serialize();
             send_feed(bytes.data(), bytes.size());
@@ -744,7 +758,8 @@ namespace net {
             virtual ~base_message() = default;
             virtual remote_client::pointer sender() const = 0;
             virtual std::string to_string() const = 0;
-            virtual std::vector<char> to_vec() const = 0;
+            virtual std::vector<uint8_t> to_vec() const = 0;
+            virtual std::shared_ptr<IMessage> to_msg() = 0;
             virtual message_code code() const = 0;
         };
 
@@ -759,7 +774,8 @@ namespace net {
 
             remote_client::pointer sender() const override { return _sender; }
             std::string to_string() const override { return _msg->to_string(); }
-            std::vector<char> to_vec() const override { return _msg->to_vec(); }
+            std::vector<uint8_t> to_vec() const override { return _msg->to_vec(); }
+            std::shared_ptr<IMessage> to_msg() override { return _msg->to_msg(); }
             message_code code() const override { return _msg->code(); }
 
         private:
@@ -778,7 +794,8 @@ namespace net {
 
             remote_client::pointer sender() const override { return _sender; }
             std::string to_string() const override { return _msg->to_string(); }
-            std::vector<char> to_vec() const override { return _msg->to_vec(); }
+            std::vector<uint8_t> to_vec() const override { return _msg->to_vec(); }
+            std::shared_ptr<IMessage> to_msg() override { return _msg->to_msg(); }
             message_code code() const override { return _msg->code(); }
 
         private:
@@ -809,7 +826,7 @@ namespace net {
                 case tcp_event_type::Connexion:
                     event.type = Connect;
                     event.client
-                        = _clients.emplace_back(remote_client::create());
+                        = _clients.insert_or_assign(tcp_event.get<tcp_event_connexion>().get_id(), remote_client::create()).first->second;
                     event.client->init_main_channel(*_tcp_server,
                         tcp_event.get<tcp_event_connexion>().get_id());
                     break;
@@ -864,6 +881,7 @@ namespace net {
 
         tcp_server& tcp() { return *_tcp_server; }
         udp_server& udp() { return *_udp_server; }
+        std::unordered_map<uint16_t, remote_client::pointer>& clients() { return _clients; }
 
     private:
         void run()
@@ -875,27 +893,23 @@ namespace net {
                 }));
         }
 
-        remote_client::pointer get_client(size_t id)
+        remote_client::pointer get_client(uint16_t id)
         {
-            auto it = std::find_if(_clients.begin(), _clients.end(),
-                [id](const remote_client::pointer c) {
-                    return c->id() == id;
-                });
-            if (it != _clients.end()) {
-                return (*it).get()->shared_from_this();
-            } else {
-                throw std::runtime_error("remote_client: Cannot find client");
+            auto c = _clients.find(id);
+            if (c != _clients.end()) {
+                return c->second;
             }
+            throw std::runtime_error("remote_client: Cannot find client");
         }
 
         remote_client::pointer get_client(tcp_connection::pointer conn)
         {
             auto it = std::find_if(_clients.begin(), _clients.end(),
-                [conn](const remote_client::pointer c) {
-                    return c->id() == conn->get_id();
+                [conn](const auto& c) {
+                    return c.second->id() == conn->get_id();
                 });
             if (it != _clients.end()) {
-                return (*it).get()->shared_from_this();
+                return it->second.get()->shared_from_this();
             } else {
                 throw std::runtime_error("remote_client: Cannot find client");
             }
@@ -904,11 +918,11 @@ namespace net {
         remote_client::pointer get_client(const udp::endpoint& endpoint)
         {
             auto it = std::find_if(_clients.begin(), _clients.end(),
-                [endpoint](const remote_client::pointer c) {
-                    return c->get_feed_endpoint() == endpoint;
+                [endpoint](const auto& c) {
+                    return c.second->get_feed_endpoint() == endpoint;
                 });
             if (it != _clients.end()) {
-                return (*it).get()->shared_from_this();
+                return it->second.get()->shared_from_this();
             } else {
                 throw std::runtime_error("remote_client: Cannot find client");
             }
@@ -920,7 +934,7 @@ namespace net {
         boost::shared_ptr<tcp_server> _tcp_server;
         boost::shared_ptr<udp_server> _udp_server;
 
-        std::vector<remote_client::pointer> _clients;
+        std::unordered_map<uint16_t, remote_client::pointer> _clients;
 
         boost::shared_ptr<boost::thread> _thread_io_context_runner;
     };

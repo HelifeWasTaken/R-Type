@@ -1,3 +1,5 @@
+#pragma once
+
 #include <vector>
 #include <unordered_map>
 #include <memory>
@@ -57,21 +59,21 @@ static inline std::unordered_map<message_code, message_type> message_type_map = 
     { message_code::REFUSED, message_type::SIGNAL_MARKER }
 };
 
-inline message_type get_message_type(message_code code) {
+static inline message_type get_message_type(message_code code) {
     auto a = message_type_map.find(code);
     if (a == message_type_map.end())
         return message_type::INVALID;
     return a->second;
 }
 
-inline message_type get_message_type(uint8_t code) {
+static inline message_type get_message_type(uint8_t code) {
     auto a = message_type_map.find(static_cast<message_code>(code));
     if (a == message_type_map.end())
         return message_type::INVALID;
     return a->second;
 }
 
-inline message_type get_message_type(const uint8_t *buffer) {
+static inline message_type get_message_type(const uint8_t *buffer) {
     return get_message_type(buffer[0]);
 }
 
@@ -483,7 +485,7 @@ class FeedInitReply : public IMessage {
         uint32_t _token;
 };
 
-inline std::shared_ptr<IMessage> parse_message(const uint8_t* buffer, size_t size) {
+static inline std::shared_ptr<IMessage> parse_message(const uint8_t* buffer, size_t size) {
     assert(size > 0);
     message_code code = static_cast<message_code>(buffer[0]);
     message_type type = get_message_type(buffer[0]);
@@ -505,12 +507,12 @@ inline std::shared_ptr<IMessage> parse_message(const uint8_t* buffer, size_t siz
     }
 }
 
-inline std::shared_ptr<IMessage> parse_message(const std::vector<uint8_t>& buff) {
+static inline std::shared_ptr<IMessage> parse_message(const std::vector<uint8_t>& buff) {
     return parse_message(buff.data(), buff.size());
 }
 
 template <typename T>
-inline std::shared_ptr<T> parse_message(const uint8_t* buffer, size_t size) {
+static inline std::shared_ptr<T> parse_message(const uint8_t* buffer, size_t size) {
     auto message = parse_message(buffer, size);
     if (dynamic_cast<T*>(message.get()) != nullptr) {
         return std::static_pointer_cast<T>(message);
@@ -519,7 +521,7 @@ inline std::shared_ptr<T> parse_message(const uint8_t* buffer, size_t size) {
 }
 
 template <typename T>
-inline std::shared_ptr<T> parse_message(const std::vector<uint8_t>& buff) {
+static inline std::shared_ptr<T> parse_message(const std::vector<uint8_t>& buff) {
     return parse_message<T>(buff.data(), buff.size());
 }
 

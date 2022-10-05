@@ -1,8 +1,8 @@
 #include "Network/Server.hpp"
 #include "Network/Client.hpp"
+#include <SFML/Graphics.hpp>
 #include <iostream>
 /*
-#include <SFML/Graphics.hpp>
 #include <iostream>
 #include <exception>
 
@@ -38,10 +38,12 @@ int main()
     try {
         boost::asio::io_context context;
         rtype::net::UDPClient client(context, "127.0.0.1", "4242");
+        // sf::RenderWindow w(sf::VideoMode(800, 600), "「R - タイプ」");
 
         while (true) {
-            context.run_one();
+
             rtype::net::shared_message_t msg;
+            client.send(rtype::net::udp_server::new_message(0, "hello world\n"));
             while (client.poll(msg)) {
             }
         }

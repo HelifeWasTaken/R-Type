@@ -39,7 +39,6 @@ static void __write_async()
     }
 }
 
-
 void poc_server_write_tcp_example(void)
 {
     boost::asio::io_context ctx;

@@ -102,7 +102,6 @@ namespace net {
             receive();
         }
 
-    private:
         void receive()
         {
             spdlog::info("UDPClient::receive: Started receiving");
@@ -131,15 +130,14 @@ namespace net {
             );
         }
 
-        void send(boost::shared_ptr<udp_buffer_t> message, size_t size=-1)
+        void send(rtype::net::udp_server::shared_message_info_t message, size_t size=-1)
         {
             // TODO: BAD should send serialized IMessage instead of udp_buffer_t
-
             spdlog::info("UDPClient::send: Sending message");
             if (size == (size_t)-1)
                 size = message->size();
             _socket.async_send_to(
-                boost::asio::buffer(*message, size),
+                boost::asio::buffer(message->msg(), size),
                 _receiver_endpoint,
                 [message](const boost::system::error_code& ec, size_t bytes) {
                     (void)bytes;
@@ -152,6 +150,7 @@ namespace net {
             );
         }
 
+    private:
         boost::shared_ptr<udp_buffer_t> _buf_recv;
     };
 
@@ -163,6 +162,7 @@ namespace net {
         boost::asio::ip::tcp::socket _socket;
 
     public:
+
         /**
          * @brief Creates a new TCP client
          * @param boost::asio::io_service & The io_service
@@ -190,7 +190,6 @@ namespace net {
             }
         }
 
-    private:
         void receive()
         {
             spdlog::info("TCPClient::receive: Start receiving");
@@ -230,6 +229,8 @@ namespace net {
                 }
             );
         }
+
+    private:
 
         boost::shared_ptr<tcp_buffer_t> _buf_recv;
     };

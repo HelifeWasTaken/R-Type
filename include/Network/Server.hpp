@@ -419,7 +419,6 @@ namespace net {
                 = tcp_connection::create(_io_context);
 
             spdlog::info("tcp_server: Starting to accept a new connection");
-
             _acceptor.async_accept(new_connection->socket(),
                 boost::bind(&tcp_server::handle_accept, this, new_connection,
                     boost::asio::placeholders::error));
@@ -493,7 +492,9 @@ namespace net {
                 : base_message_info(std::move(buffer), size)
                 , _sender(sender)
             {
+                _msg = buffer.c_array();
                 char* pos = this->buffer.c_array();
+                _size = buffer.size();
                 uint64_t big_seq_num;
                 uint16_t big_sender;
                 std::memcpy(
@@ -504,6 +505,12 @@ namespace net {
                 _sender_id = boost::endian::big_to_native(big_sender);
             }
 
+            char *msg() const { return _msg; }
+
+            size_t size() { return _size; }
+
+            void set_size(size_t size) { _size = size; }
+
             udp::endpoint sender() { return _sender; }
 
             uint64_t seq_num() { return _seq_num; }
@@ -513,6 +520,8 @@ namespace net {
             HL_AUTO_COMPLETE_CANONICAL_FORM(message_info);
 
         private:
+            char *_msg;
+            size_t _size;
             udp::endpoint _sender;
             uint16_t _sender_id;
             uint16_t _seq_num;
@@ -544,7 +553,7 @@ namespace net {
             std::memcpy(pos, &big_sender, sizeof(big_sender));
             pos += sizeof(big_sender);
             std::memcpy(pos, data, size);
-            mesg->size = size + header_size;
+            mesg->set_size(size + header_size);
             return shared_message_info_t(mesg);
         }
 
@@ -592,7 +601,7 @@ namespace net {
             size_t index = _messages->async_set(message);
 
             _socket.async_send_to(
-                boost::asio::buffer(message->buffer, message->size), target,
+                boost::asio::buffer(message->buffer, message->size()), target,
                 [index, buffer_copy = message, messages = _messages](
                     const boost::system::error_code& error,
                     std::size_t bytes_transferred) {

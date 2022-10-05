@@ -9,4 +9,6 @@ struct Vec2 { float x, y; };
 struct Position : public Vec2 {};
 struct Velocity : public Vec2 {};
 
+void setup_ecs(hl::silva::registry& r);
+
 }

@@ -1,5 +1,5 @@
 #include "PileAA/AnimatedSprite.hpp"
-#include "ResourceManager.hpp"
+#include "PileAA/ResourceManager.hpp"
 
 namespace paa {
 
@@ -23,8 +23,6 @@ AnimatedSprite::AnimatedSprite(const std::string& textureName)
     setPosition(0, 0);
 }
 
-AnimatedSprite::~AnimatedSprite() = default;
-
 void AnimatedSprite::registerAnimation(
     const std::string& animationName, const Animation& animation)
 {
@@ -45,10 +43,10 @@ void AnimatedSprite::update()
     }
 }
 
-static inline std::vector<IntRect> AnimatedSprite::determineRects(
+std::vector<IntRect> AnimatedSprite::determineRects(
     const Vector2u& frameSize, const Texture& texture,
-    const unsigned int& frames, const Vector2u& startPos = Vector2u(0, 0),
-    const Vector2u& spacing = Vector2u(0, 0))
+    const unsigned int& frames, const Vector2u& startPos,
+    const Vector2u& spacing)
 {
     const Vector2u textureSize = texture.getSize();
     std::vector<IntRect> rects;

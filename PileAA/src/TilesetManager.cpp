@@ -128,6 +128,4 @@ namespace paa {
     size_t TilesetManager::layerCount() const {
         return _layers.size();
     }
-
-    TilesetManager::~TilesetManager() = default;
 }

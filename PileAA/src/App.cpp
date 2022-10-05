@@ -1,4 +1,6 @@
 #include "PileAA/App.hpp"
+#include "PileAA/BaseComponents.hpp"
+#include <iostream>
 
 namespace paa {
 
@@ -65,12 +67,6 @@ void App::stop()
 {
     Screen::get().close();
     SceneManager::get().stop();
-}
-
-static inline void setup_ecs(hl::silva::registry& r)
-{
-    r.register_component<Position, Velocity, Sprite, AnimatedSprite>();
-    r.add_system(animated_sprite_system);
 }
 
 void setup_paa_system()

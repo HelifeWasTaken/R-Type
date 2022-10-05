@@ -57,7 +57,7 @@ namespace paa {
          * @param spacing Spacing between frames (Optional)
          * @return std::vector<sf::IntRect>
          */
-        static inline std::vector<IntRect> determineRects(
+        static std::vector<IntRect> determineRects(
             const Vector2u &frameSize,
             const Texture &texture,
             const unsigned int &frames,

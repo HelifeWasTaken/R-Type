@@ -2,10 +2,6 @@
 
 namespace paa {
 
-    Timer::Timer() = default;
-
-    Timer::~Timer() = default;
-
     bool Timer::isFinished() const
     {
         return getElapsedTime().asMilliseconds() >= _targetTime;
@@ -17,5 +13,4 @@ namespace paa {
         restart();
         return *this;
     }
-}
 }

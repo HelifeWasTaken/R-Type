@@ -1,6 +1,6 @@
 #pragma once
 
-#include <SilvaState>
+#include "external/HelifeWasTaken/SilvaState"
 
 #include "BaseComponents.hpp"
 #include "InputHandler.hpp"
@@ -12,7 +12,6 @@ namespace paa {
     HL_SINGLETON_IMPL(hl::silva::registry, EcsInstance);
     HL_SINGLETON_IMPL(hl::silva::StateManager, SceneManager);
     HL_SINGLETON_IMPL(RenderWindow, Screen);
-
     class App {
     private:
         static inline App *_instance = nullptr;
@@ -58,8 +57,8 @@ namespace paa {
     template<typename T>
     static inline void scene_pop_meta() { paa::SceneManager::get().popState(); }
 
-    void setup_system();
-    void stop_system();
+    void setup_paa_system();
+    void stop_paa_system();
 }
 
 #define PAA_STATE(name) struct name : public paa::GameState
@@ -107,10 +106,10 @@ namespace paa {
 #define PAA_PROGRAM_START(baseScene) \
     int main() \
     { \
-        paa::setup_system(); \
+        paa::setup_paa_system(); \
         paa::SceneManager::get().changeState<baseScene>(); \
         paa::SceneManager::get().update(); \
         paa::App::get().run(); \
-        paa::stop_system(); \
+        paa::stop_paa_system(); \
         return 0; \
     }

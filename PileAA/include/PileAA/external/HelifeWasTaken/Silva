@@ -30,6 +30,7 @@
 #include <unordered_set>
 #include <cstddef>
 #include <functional>
+#include <exception>
 
 #include "sparse_array"
 
@@ -37,6 +38,15 @@ namespace hl
 {
 namespace silva
 {
+    class Error : public std::exception
+    {
+    public:
+        Error(const std::string& msg) : msg(msg) {}
+        const char* what() const noexcept override { return msg.c_str(); }
+    private:
+        const std::string msg;
+    };
+
     class Entity
     {
     public:
@@ -314,7 +324,7 @@ namespace silva
         {
             auto& ref = get_components<Component>().get(e.get_id());
             if (ref.has_value() == false)
-                throw std::runtime_error("Entity does not have the component");
+                throw Error("Entity does not have the component");
             return ref.value();
         }
 

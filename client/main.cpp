@@ -62,8 +62,6 @@ PAA_STATE(mystate) {
         PAA_SET_COMPONENT(entity, paa::Sprite, "image");
     }
 
-    PAA_METHOD(my_method) {}
-
     PAA_END(mystate) {}
 };
 

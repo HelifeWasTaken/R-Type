@@ -30,6 +30,5 @@ void poc_client_tcp_example(void)
             std::memcpy(message->data(), "World", 5);
             c.send(message, 5);
         }
-        c.receive();
     }
 }

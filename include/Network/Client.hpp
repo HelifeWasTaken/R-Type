@@ -53,32 +53,36 @@ namespace net {
         boost::asio::ip::udp::endpoint _sender_endpoint;
 
     public:
-
         class HeaderMessage {
-            public:
-                HeaderMessage(udp_buffer_t& buffer)
-                {
-                    unsigned char* msg = reinterpret_cast<unsigned char*>(buffer.c_array());
-                    std::memcpy(&_magic, msg, sizeof(uint64_t));
-                    std::memcpy(&_seq, msg + sizeof(uint64_t), sizeof(uint64_t));
-                    std::memcpy(&_id, msg + (2 * sizeof(uint64_t)), sizeof(uint16_t));
-                    _magic = boost::endian::big_to_native(_magic);
-                    _seq = boost::endian::big_to_native(_seq);
-                    _id = boost::endian::big_to_native(_id);
-                }
+        public:
+            HeaderMessage(udp_buffer_t& buffer)
+            {
+                unsigned char* msg
+                    = reinterpret_cast<unsigned char*>(buffer.c_array());
+                std::memcpy(&_magic, msg, sizeof(uint64_t));
+                std::memcpy(&_seq, msg + sizeof(uint64_t), sizeof(uint64_t));
+                std::memcpy(
+                    &_id, msg + (2 * sizeof(uint64_t)), sizeof(uint16_t));
+                _magic = boost::endian::big_to_native(_magic);
+                _seq = boost::endian::big_to_native(_seq);
+                _id = boost::endian::big_to_native(_id);
+            }
 
-                bool is_valid() const { return _magic == MAGIC_NUMBER; }
+            bool is_valid() const { return _magic == MAGIC_NUMBER; }
 
-                std::size_t size() const { return sizeof(_magic) + sizeof(_seq) + sizeof(_id); }
+            std::size_t size() const
+            {
+                return sizeof(_magic) + sizeof(_seq) + sizeof(_id);
+            }
 
-                uint64_t get_msg_sequence() { return _seq; }
+            uint64_t get_msg_sequence() { return _seq; }
 
-                uint16_t get_sender_id() { return _id; }
+            uint16_t get_sender_id() { return _id; }
 
-            private:
-                uint64_t _magic;
-                uint64_t _seq;
-                uint16_t _id;
+        private:
+            uint64_t _magic;
+            uint64_t _seq;
+            uint16_t _id;
         };
 
         /**
@@ -96,7 +100,8 @@ namespace net {
             , _sender_endpoint()
         {
             _socket.open(boost::asio::ip::udp::v4());
-            receive();
+            _udp_connection_polling_thread = std::unique_ptr<boost::thread>(
+                new boost::thread([this]() { receive(); }));
         }
 
     private:
@@ -114,7 +119,10 @@ namespace net {
                             return;
                         }
                         std::size_t header_size = header.size();
-                        auto msg = parse_message(reinterpret_cast<uint8_t *>(_buf_recv->c_array() + header_size), bytes - header_size);
+                        auto msg = parse_message(
+                            reinterpret_cast<uint8_t*>(
+                                _buf_recv->c_array() + header_size),
+                            bytes - header_size);
                         if (msg == nullptr) {
                             spdlog::error(
                                 "UDPClient::receive: Invalid message");
@@ -148,6 +156,7 @@ namespace net {
         }
 
         boost::shared_ptr<udp_buffer_t> _buf_recv;
+        std::unique_ptr<boost::thread> _udp_connection_polling_thread;
     };
 
     class TCPClient : public AClient {
@@ -182,9 +191,10 @@ namespace net {
             }
 
             if (error) {
-
                 throw boost::system::system_error(error);
             }
+            _tcp_connection_polling_thread = std::unique_ptr<boost::thread>(
+                new boost::thread([this]() { receive(); }));
         }
 
         void receive()
@@ -226,12 +236,13 @@ namespace net {
                     if (!ec) {
                         spdlog::info("TCPClient::send: Sent {} bytes", bytes);
                     } else {
-                        spdlog::error("UDPClient::receive: {}", ec.message());
+                        spdlog::error("UDPClient::send: {}", ec.message());
                     }
                 });
         }
 
         boost::shared_ptr<tcp_buffer_t> _buf_recv;
+        std::unique_ptr<boost::thread> _tcp_connection_polling_thread;
     };
 
     class UDP_TCP_Client {

@@ -1,5 +1,7 @@
 project(r-type_client)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 file(GLOB_RECURSE SRC *.cpp *.hpp)
 
 add_executable(${PROJECT_NAME} ${SRC})

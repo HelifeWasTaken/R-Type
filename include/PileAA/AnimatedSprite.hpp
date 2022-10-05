@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "ResourceManager.hpp"
 #include "Timer.hpp"
+#include "Types.hpp"
 
 namespace paa {
 
@@ -12,13 +13,13 @@ namespace paa {
      * @brief Animation base presentation
      */
     struct Animation {
-        std::vector<sf::IntRect> rects;
+        std::vector<IntRect> rects;
         double speed;
     };
 
     using AnimationRegister = std::unordered_map<std::string, Animation>;
 
-    class AnimatedSprite : public sf::Sprite {
+    class AnimatedSprite : public BaseSprite {
     private:
         AnimationRegister _reg;
         Animation* _currentAnimation = nullptr;
@@ -36,6 +37,16 @@ namespace paa {
         AnimatedSprite(const std::string& textureName)
         {
             this->setTexture(ResourceManagerInstance::get().get<sf::Texture>(textureName));
+
+            const IntRect rect(0, 0,
+                getTexture()->getSize().x, 
+                getTexture()->getSize().y);
+
+            registerAnimation("DEFAULT",
+                paa::Animation{ { rect }, 1000000.f }
+            );
+            useAnimation("DEFAULT");
+            setPosition(0, 0);
         }
 
         ~AnimatedSprite() = default;
@@ -48,8 +59,6 @@ namespace paa {
         void registerAnimation(const std::string& animationName, const Animation& animation)
         {
             _reg[animationName] = animation;
-            if (_currentAnimation == nullptr)
-                _currentAnimation = &_reg[animationName];
         }
 
         /**
@@ -82,16 +91,18 @@ namespace paa {
          * @param spacing Spacing between frames (Optional)
          * @return std::vector<sf::IntRect>
          */
-        static inline std::vector<sf::IntRect> determineRects(
-            const sf::Vector2u &frameSize, const sf::Texture &texture,
-            const unsigned int &frames, const sf::Vector2u &startPos = sf::Vector2u(0, 0),
-            const sf::Vector2u &spacing = sf::Vector2u(0, 0))
+        static inline std::vector<IntRect> determineRects(
+            const Vector2u &frameSize,
+            const Texture &texture,
+            const unsigned int &frames,
+            const Vector2u &startPos = Vector2u(0, 0),
+            const Vector2u &spacing = Vector2u(0, 0))
         {
-            const sf::Vector2u textureSize = texture.getSize();
-            std::vector<sf::IntRect> rects;
+            const Vector2u textureSize = texture.getSize();
+            std::vector<IntRect> rects;
 
             for (unsigned int i = 0, x = startPos.x, y = startPos.y; i < frames; i++) {
-                rects.push_back(sf::IntRect(x, y, frameSize.x, frameSize.y));
+                rects.push_back(IntRect(x, y, frameSize.x, frameSize.y));
                 x += frameSize.x + spacing.x;
                 if (x + frameSize.x > textureSize.x) {
                     x = startPos.x;
@@ -102,4 +113,6 @@ namespace paa {
         }
 
     };
+
+    using Sprite = AnimatedSprite;
 }

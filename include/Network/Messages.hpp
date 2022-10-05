@@ -517,7 +517,7 @@ static inline boost::shared_ptr<IMessage> parse_message(const std::vector<uint8_
 template <typename T>
 static inline boost::shared_ptr<T> parse_message(const uint8_t* buffer, size_t size) {
     auto message = parse_message(buffer, size);
-    if (message && message->code() != message_type::INVALID &&
+    if (message && message->code() != message_code::DUMMY &&
         dynamic_cast<T*>(message.get()) != nullptr) {
         return boost::static_pointer_cast<T>(message);
     }

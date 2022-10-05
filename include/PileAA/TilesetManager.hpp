@@ -4,23 +4,24 @@
 #include <SFML/Graphics.hpp>
 #include <filesystem>
 #include <fstream>
+#include "Types.hpp"
 
 #include "./external/nlohmann/json.hpp"
 
 namespace paa {
 
 struct Tileset {
-    sf::Texture texture;
+    Texture texture;
     int tileWidth;
     int tileHeight;
     int firstGid;
     int tileCount;
 };
 
-class TilesetManager : public sf::Drawable, public sf::Transformable {
+class TilesetManager : public Drawable, public Transformable {
 private:
     std::vector<std::unique_ptr<Tileset>> _tilesets;
-    std::vector<std::unique_ptr<std::pair<sf::Texture&, sf::VertexArray>>> _layers;
+    std::vector<std::unique_ptr<std::pair<Texture&, VertexArray>>> _layers;
 
 public:
     static inline const uint64_t FLIP_H_FLAG = 0x80000000;
@@ -78,10 +79,10 @@ public:
                     break;
                 }
             }
-            auto layer = std::unique_ptr<std::pair<sf::Texture&, sf::VertexArray>>(
-                new std::pair<sf::Texture&, sf::VertexArray>(
+            auto layer = std::unique_ptr<std::pair<Texture&, VertexArray>>(
+                new std::pair<Texture&, VertexArray>(
                     _tilesets[tilesetIndex]->texture,
-                    sf::VertexArray()
+                    VertexArray()
                 )
             );
 
@@ -95,41 +96,41 @@ public:
                 for (uint64_t j = 0; j < height; j++) {
                     int rawId = data[i + j * width];
                     int tileNumber = (rawId & ~(FLIP_H_FLAG | FLIP_V_FLAG | FLIP_D_FLAG)) - _tilesets[tilesetIndex]->firstGid;
-                    sf::Vertex* vertices = &layer->second[(i + j * width) * 4];
+                    Vertex* vertices = &layer->second[(i + j * width) * 4];
 
                     int tu = tileNumber % (layer->first.getSize().x / _tilesets[tilesetIndex]->tileWidth);
                     int tv = tileNumber / (layer->first.getSize().x / _tilesets[tilesetIndex]->tileWidth);
 
-                    vertices[0].position = sf::Vector2f(i * _tilesets[tilesetIndex]->tileWidth, j * _tilesets[tilesetIndex]->tileHeight);
-                    vertices[1].position = sf::Vector2f((i + 1) * _tilesets[tilesetIndex]->tileWidth, j * _tilesets[tilesetIndex]->tileHeight);
-                    vertices[2].position = sf::Vector2f((i + 1) * _tilesets[tilesetIndex]->tileWidth, (j + 1) * _tilesets[tilesetIndex]->tileHeight);
-                    vertices[3].position = sf::Vector2f(i * _tilesets[tilesetIndex]->tileWidth, (j + 1) * _tilesets[tilesetIndex]->tileHeight);
+                    vertices[0].position = Vector2f(i * _tilesets[tilesetIndex]->tileWidth, j * _tilesets[tilesetIndex]->tileHeight);
+                    vertices[1].position = Vector2f((i + 1) * _tilesets[tilesetIndex]->tileWidth, j * _tilesets[tilesetIndex]->tileHeight);
+                    vertices[2].position = Vector2f((i + 1) * _tilesets[tilesetIndex]->tileWidth, (j + 1) * _tilesets[tilesetIndex]->tileHeight);
+                    vertices[3].position = Vector2f(i * _tilesets[tilesetIndex]->tileWidth, (j + 1) * _tilesets[tilesetIndex]->tileHeight);
 
                     if (tileNumber < 0) {
-                        vertices[0].color = sf::Color(0, 0, 0, 0);
-                        vertices[1].color = sf::Color(0, 0, 0, 0);
-                        vertices[2].color = sf::Color(0, 0, 0, 0);
-                        vertices[3].color = sf::Color(0, 0, 0, 0);
+                        vertices[0].color = Color(0, 0, 0, 0);
+                        vertices[1].color = Color(0, 0, 0, 0);
+                        vertices[2].color = Color(0, 0, 0, 0);
+                        vertices[3].color = Color(0, 0, 0, 0);
                     } else if (rawId < FLIP_D_FLAG) {
-                        vertices[0].texCoords = sf::Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
-                        vertices[1].texCoords = sf::Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
-                        vertices[2].texCoords = sf::Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
-                        vertices[3].texCoords = sf::Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[0].texCoords = Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[1].texCoords = Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[2].texCoords = Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[3].texCoords = Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
                     } else if ((rawId & FLIP_H_FLAG) && (rawId & FLIP_D_FLAG)) {
-                        vertices[1].texCoords = sf::Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
-                        vertices[2].texCoords = sf::Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
-                        vertices[3].texCoords = sf::Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
-                        vertices[0].texCoords = sf::Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[1].texCoords = Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[2].texCoords = Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[3].texCoords = Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[0].texCoords = Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
                     } else if ((rawId & FLIP_H_FLAG) && (rawId & FLIP_V_FLAG)) {
-                        vertices[2].texCoords = sf::Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
-                        vertices[3].texCoords = sf::Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
-                        vertices[0].texCoords = sf::Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
-                        vertices[1].texCoords = sf::Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[2].texCoords = Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[3].texCoords = Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[0].texCoords = Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[1].texCoords = Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
                     } else {
-                        vertices[3].texCoords = sf::Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
-                        vertices[0].texCoords = sf::Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
-                        vertices[1].texCoords = sf::Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
-                        vertices[2].texCoords = sf::Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[3].texCoords = Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[0].texCoords = Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, tv * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[1].texCoords = Vector2f((tu + 1) * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
+                        vertices[2].texCoords = Vector2f(tu * _tilesets[tilesetIndex]->tileWidth, (tv + 1) * _tilesets[tilesetIndex]->tileHeight);
                     }
                 }
             }
@@ -142,7 +143,7 @@ public:
      * @param target The target to draw to
      * @param states The render states
      */
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override {
+    virtual void draw(RenderTarget& target, RenderStates states) const override {
         states.transform *= getTransform();
         for (auto& layer : _layers) {
             states.texture = &layer->first;
@@ -155,8 +156,10 @@ public:
      * @param window The window to draw to
      * @param layerIndex The nth Layer
      */
-    void drawLayer(sf::RenderWindow& window, size_t layerIndex) const {
-        window.draw(_layers[layerIndex]->second, sf::RenderStates(sf::BlendAlpha, sf::Transform::Identity, &_layers[layerIndex]->first, nullptr));
+    void drawLayer(RenderWindow& window, size_t layerIndex) const {
+        window.draw(_layers[layerIndex]->second,
+            RenderStates(sf::BlendAlpha, Transform::Identity,
+                        &_layers[layerIndex]->first, nullptr));
     }
 
     /**

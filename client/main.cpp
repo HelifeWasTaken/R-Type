@@ -1,7 +1,7 @@
-#include "Network/Server.hpp"
-#include "Network/Client.hpp"
 #include <iostream>
 /*
+#include "Network/Server.hpp"
+#include "Network/Client.hpp"
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <exception>
@@ -31,7 +31,6 @@ int main()
     }
     return 0;
 }
-*/
 
 int main()
 {
@@ -50,3 +49,22 @@ int main()
     }
     return 0;
 }
+*/
+
+#include "PileAA/App.hpp"
+#include "PileAA/AnimatedSprite.hpp"
+
+PAA_STATE(mystate) {
+
+    PAA_START(mystate) {
+        paa::ResourceManagerInstance::get().load<sf::Texture>("../assets/r-typesheet5.png", "image");
+        PAA_ENTITY entity = PAA_NEW_ENTITY();
+        PAA_SET_COMPONENT(entity, paa::Sprite, "image");
+    }
+
+    PAA_METHOD(my_method) {}
+
+    PAA_END(mystate) {}
+};
+
+PAA_PROGRAM_START(mystate);

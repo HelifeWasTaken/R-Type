@@ -7,6 +7,7 @@
 
 void poc_animated_sprite(void)
 {
+    /*
     sf::Texture tex;
     tex.loadFromFile("../assets/r-typesheet5.png");
     sf::RenderWindow window(sf::VideoMode(800, 800), "lol");
@@ -31,4 +32,6 @@ void poc_animated_sprite(void)
         window.draw(sprite);
         window.display();
     }
+    */
+   abort();
 }

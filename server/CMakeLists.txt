@@ -2,7 +2,6 @@ project(r-type_server)
 
 file(GLOB_RECURSE SRC *.cpp *.hpp)
 
-set(CMAKE_BUILD_TYPE Debug)
 add_executable(${PROJECT_NAME} ${SRC})
 
 target_link_libraries(${PROJECT_NAME} boost_system boost_thread)

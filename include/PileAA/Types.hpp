@@ -2,6 +2,9 @@
 
 #include <cstdint>
 
+#include <SFML/Graphics.hpp>
+#include <SFML/Audio.hpp>
+
 namespace paa {
 
 using u8 = std::uint8_t;
@@ -20,4 +23,42 @@ using f64 = double;
 using usize = std::size_t;
 // using isize = std::ptrdiff_t;
 
-}
+using Keyboard = sf::Keyboard;
+using Joystick = sf::Joystick;
+using Mouse = sf::Mouse;
+using Event = sf::Event;
+using Vector2f = sf::Vector2f;
+using Vector2i = sf::Vector2i;
+using Vector2u = sf::Vector2u;
+using Vector3f = sf::Vector3f;
+using Vector3i = sf::Vector3i;
+using IntRect = sf::IntRect;
+using FloatRect = sf::FloatRect;
+using Color = sf::Color;
+using Font = sf::Font;
+using Texture = sf::Texture;
+using Text = sf::Text;
+using BaseSprite = sf::Sprite;
+using Sound = sf::Sound;
+using SoundBuffer = sf::SoundBuffer;
+using Music = sf::Music;
+using Image = sf::Image;
+using Drawable = sf::Drawable;
+using Transformable = sf::Transformable;
+using RenderWindow = sf::RenderWindow;
+using Window = sf::RenderWindow;
+using Vertex = sf::Vertex;
+using VertexArray = sf::VertexArray;
+using RenderStates = sf::RenderStates;
+using RenderTarget = sf::RenderTarget;
+using Transform = sf::Transform;
+using VideoMode = sf::VideoMode;
+
+template<typename T>
+using Vector2 = sf::Vector2<T>;
+template<typename T>
+using Vector3 = sf::Vector3<T>;
+template<typename T>
+using Rect = sf::Rect<T>;
+
+} // namespace paa

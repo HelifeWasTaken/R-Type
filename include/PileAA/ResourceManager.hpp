@@ -8,6 +8,7 @@
 #include "external/nlohmann/json.hpp"
 
 #include "Error.hpp"
+#include "Types.hpp"
 
 namespace paa {
 
@@ -19,7 +20,8 @@ HL_SUB_ERROR_IMPL(ResourceManagerError, AABaseError);
  */
 class ResourceManager {
 private:
-    using LoadableResource = std::variant<sf::Texture, sf::Font, sf::SoundBuffer, sf::Image>;
+    using LoadableResource = std::variant<Texture, Font,
+                                        SoundBuffer, Image>;
     using ResourceHolder    = std::unordered_map<std::string,
                             std::unique_ptr<LoadableResource>>;
 
@@ -39,7 +41,7 @@ public:
         const std::string& filename, const std::string& name, LoadArgs&&... loadArgs)
     {
         LoadableResource* resource = new LoadableResource(T());
-        T& ref = std::get<T&>(*resource);
+        T& ref = std::get<T>(*resource);
 
         if (!ref.loadFromFile(filename, std::forward<LoadArgs>(loadArgs)...))
             throw ResourceManagerError("ResourceHolder::load - Failed to load " + filename);
@@ -58,7 +60,7 @@ public:
         auto found = _resourceMap.find(name);
         if (found == _resourceMap.end())
             throw ResourceManagerError("ResourceHolder::get - Resource not found: " + name);
-        return get<T>(*found->second);
+        return std::get<T>(*found->second);
     }
 
     /**
@@ -106,10 +108,10 @@ static inline void load_configuration_file(const std::string& filename)
             const auto type = it["type"].get<std::string>();
             const auto path = it["path"].get<std::string>();
             const auto name = it["name"].get<std::string>();
-            if (type == "texture") resourceManager.load<sf::Texture>(path, name);
-            else if (type == "font") resourceManager.load<sf::Font>(path, name);
-            else if (type == "sound") resourceManager.load<sf::SoundBuffer>(path, name);
-            else if (type == "image") resourceManager.load<sf::Image>(path, name);
+            if (type == "texture") resourceManager.load<Texture>(path, name);
+            else if (type == "font") resourceManager.load<Font>(path, name);
+            else if (type == "sound") resourceManager.load<SoundBuffer>(path, name);
+            else if (type == "image") resourceManager.load<Image>(path, name);
             else
                 throw ResourceManagerError("load_configuration_file - Invalid type");
         } catch (const nlohmann::json::exception& e) {

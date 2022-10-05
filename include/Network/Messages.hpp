@@ -341,9 +341,39 @@ namespace net {
 
         std::vector<uint8_t> data() { return _data; }
 
-    private:
+    protected:
         message_code _code;
         std::vector<uint8_t> _data;
+    };
+
+    class TextQueryMessage : public QueryMessage {
+    public:
+        TextQueryMessage()
+            : QueryMessage(message_code::TEXT_REQ, std::vector<uint8_t>())
+        {
+        }
+
+        TextQueryMessage(const std::string& msg)
+            : QueryMessage(message_code::TEXT_REQ,
+                std::vector<uint8_t>(msg.begin(), msg.end()))
+        {
+        }
+
+        std::string text() { return std::string(_data.begin(), _data.end()); }
+
+        static boost::shared_ptr<TextQueryMessage> deserialize(
+            const uint8_t* buffer, size_t size)
+        {
+            auto msg = boost::make_shared<TextQueryMessage>();
+            msg->from(std::vector<uint8_t>(buffer, buffer + size));
+            return msg;
+        }
+
+        static boost::shared_ptr<TextQueryMessage> deserialize(
+            const std::vector<uint8_t>& buff)
+        {
+            return deserialize(buff.data(), buff.size());
+        }
     };
 
     class ReplyMessage : public IMessage {
@@ -397,7 +427,7 @@ namespace net {
 
         const std::vector<uint8_t> data() const { return _data; }
 
-    private:
+    protected:
         message_code _code;
         uint8_t _status;
         std::vector<uint8_t> _data;
@@ -415,6 +445,8 @@ namespace net {
                 std::vector<uint8_t>(msg.begin(), msg.end()))
         {
         }
+
+        std::string text() { return std::string(_data.begin(), _data.end()); }
 
         static boost::shared_ptr<TextReplyMessage> deserialize(
             const uint8_t* buffer, size_t size)
@@ -656,6 +688,20 @@ namespace net {
         const std::vector<uint8_t>& buff)
     {
         return parse_message<T>(buff.data(), buff.size());
+    }
+
+    template <typename T>
+    static inline const boost::shared_ptr<T> parse_message(
+        const boost::shared_ptr<IMessage>& msg)
+    {
+        return boost::static_pointer_cast<T>(msg);
+    }
+
+    template <typename T>
+    static inline boost::shared_ptr<T> parse_message(
+        boost::shared_ptr<IMessage>& msg)
+    {
+        return boost::static_pointer_cast<T>(msg);
     }
 
 }

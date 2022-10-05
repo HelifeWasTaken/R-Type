@@ -40,7 +40,7 @@ int main()
         rtype::net::UDPClient client(context, "127.0.0.1", "4243");
         sf::RenderWindow w(sf::VideoMode(800, 600), "「R - タイプ」");
 
-        while (true) {
+        while (w.isOpen()) {
             sf::Event event;
             while (w.pollEvent(event)) {
                 if (event.type == sf::Event::Closed) {
@@ -48,11 +48,15 @@ int main()
                     w.close();
                 }
             }
+            client.send(rtype::net::udp_server::new_message(0, "closing window"));
             rtype::net::shared_message_t msg;
             while (client.poll(msg)) {
+                auto mes = msg->serialize();
+                spdlog::info("UDPClient::receive: {}", std::string(mes.begin(), mes.end()));
             }
             w.clear(sf::Color::Black);
             w.display();
+            context.run_one();
         }
     } catch(...) {
         std::cout << "RIP" << std::endl;

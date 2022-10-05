@@ -53,6 +53,7 @@ using RenderStates = sf::RenderStates;
 using RenderTarget = sf::RenderTarget;
 using Transform = sf::Transform;
 using VideoMode = sf::VideoMode;
+using Clock = sf::Clock;
 
 template<typename T>
 using Vector2 = sf::Vector2<T>;

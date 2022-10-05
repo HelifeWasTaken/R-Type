@@ -15,11 +15,6 @@ FetchContent_Declare(SFML GIT_REPOSITORY https://github.com/SFML/SFML.git GIT_TA
 message("Fetching SFML...")
 FetchContent_MakeAvailable(SFML)
 
-message("Declaring silva...")
-FetchContent_Declare(silva GIT_REPOSITORY https://github.com/HelifeWasTaken/silva GIT_TAG main)
-message("Fetchting silva...")
-FetchContent_MakeAvailable(silva)
-
 message("Declaring Boost...")
 FetchContent_Declare(Boost GIT_REPOSITORY https://github.com/boostorg/boost.git GIT_TAG boost-1.80.0)
 message("Fetching Boost...")
@@ -90,7 +85,10 @@ include_directories(
     ${boost_variant_SOURCE_DIR}/include
     ${boost_endian_SOURCE_DIR}/include
 	${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_SOURCE_DIR}/PileAA/include
 )
+
+add_subdirectory(PileAA)
 
 add_subdirectory(server)
 

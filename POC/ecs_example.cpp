@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../PileAA/include/PileAA/external/HelifeWasTaken/Silva"
+#include "PileAA/external/HelifeWasTaken/Silva"
 
 struct cposition {
     int x, y;

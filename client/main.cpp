@@ -56,13 +56,19 @@ int main()
 
 PAA_STATE(mystate) {
 
+    PAA_ENTITY e;
+
     PAA_START(mystate) {
         paa::ResourceManagerInstance::get().load<sf::Texture>("../assets/r-typesheet5.png", "image");
-        PAA_ENTITY entity = PAA_NEW_ENTITY();
-        PAA_SET_COMPONENT(entity, paa::Sprite, "image");
+        e = PAA_NEW_ENTITY();
+        PAA_SET_COMPONENT(e, paa::Sprite, "image");
     }
 
     PAA_END(mystate) {}
+
+    PAA_UPDATE {
+        window.draw(PAA_GET_COMPONENT(e, paa::Sprite));
+    }
 };
 
 PAA_PROGRAM_START(mystate);

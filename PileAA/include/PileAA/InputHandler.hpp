@@ -6,6 +6,7 @@
 #include <memory>
 #include "Types.hpp"
 #include <ostream>
+
 namespace paa {
 
 HL_SINGLETON_IMPL(galbar::InputHandler, InputHandler);

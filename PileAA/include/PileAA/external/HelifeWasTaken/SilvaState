@@ -166,7 +166,7 @@ public:
      * @brief Tells wheter the state machine is empty
      */
     inline bool canBeUpdated() const
-    { return !_currentState.empty(); }
+    { return !_currentState.empty() || isInTransition(); }
 
     /**
      * @brief Tells the state machine depth
@@ -184,9 +184,10 @@ public:
     {
         _actualPopState();
         if (isInTransition()) {
-            stop();
+            _toPopCount = _currentState.size();
+            _actualPopState();
             _currentState.push(std::move(_pendingState));
-        } else if (!canBeUpdated()) {
+        } else if (_currentState.empty()) {
             return false;
         }
         _currentState.top()->update();
@@ -199,7 +200,7 @@ public:
      */
     inline void draw()
     {
-        if (!canBeUpdated())
+        if (_currentState.empty())
             return;
         _currentState.top()->draw();
     }
@@ -211,7 +212,7 @@ public:
      */
     inline void handleEvent()
     {
-        if (!canBeUpdated())
+        if (_currentState.empty())
             return;
         _currentState.top()->handleEvent();
     }

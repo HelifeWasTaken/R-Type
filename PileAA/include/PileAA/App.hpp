@@ -98,17 +98,19 @@ namespace paa {
 
 #define PAA_ITERATE_VIEW(view, ...) for (auto&& [paa_entity_id, __VA_ARGS__] : view)
 
+#define PAA_GET_COMPONENT(entity, component) PAA_ECS.get_component<component>(entity)
+
 #define PAA_OBJECT auto
-#define PAA_ENTITY PAA_OBJECT
-#define PAA_VIEW PAA_OBJECT
-#define PAA_COMPONENT PAA_OBJECT&
+#define PAA_ENTITY hl::silva::Entity
+#define PAA_ENTITY_ID hl::silva::Entity::Id
+#define PAA_VIEW auto
+#define PAA_COMPONENT auto&
 
 #define PAA_PROGRAM_START(baseScene) \
     int main() \
     { \
         paa::setup_paa_system(); \
         paa::SceneManager::get().changeState<baseScene>(); \
-        paa::SceneManager::get().update(); \
         paa::App::get().run(); \
         paa::stop_paa_system(); \
         return 0; \

@@ -1,6 +1,5 @@
 #include "PileAA/App.hpp"
 #include "PileAA/BaseComponents.hpp"
-#include <iostream>
 
 namespace paa {
 
@@ -21,11 +20,8 @@ void App::release()
 
 bool App::isRunning() const
 {
-    bool screenIsOpen = Screen::get().isOpen();
-    bool canBeUpdated = SceneManager::get().canBeUpdated();
-    std::cout << "screenIsOpen: " << screenIsOpen << std::endl;
-    std::cout << "canBeUpdated: " << canBeUpdated << std::endl;
-    return screenIsOpen && canBeUpdated;
+    return Screen::get().isOpen() &&
+            SceneManager::get().canBeUpdated();
 }
 
 void App::update()

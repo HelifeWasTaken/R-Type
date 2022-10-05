@@ -37,15 +37,22 @@ int main()
 {
     try {
         boost::asio::io_context context;
-        rtype::net::UDPClient client(context, "127.0.0.1", "4242");
-        // sf::RenderWindow w(sf::VideoMode(800, 600), "「R - タイプ」");
+        rtype::net::UDPClient client(context, "127.0.0.1", "4243");
+        sf::RenderWindow w(sf::VideoMode(800, 600), "「R - タイプ」");
 
         while (true) {
-
+            sf::Event event;
+            while (w.pollEvent(event)) {
+                if (event.type == sf::Event::Closed) {
+                    client.send(rtype::net::udp_server::new_message(0, "closing window"));
+                    w.close();
+                }
+            }
             rtype::net::shared_message_t msg;
-            client.send(rtype::net::udp_server::new_message(0, "hello world\n"));
             while (client.poll(msg)) {
             }
+            w.clear(sf::Color::Black);
+            w.display();
         }
     } catch(...) {
         std::cout << "RIP" << std::endl;

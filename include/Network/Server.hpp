@@ -147,8 +147,14 @@ namespace net {
 
         std::string to_string() { return to<std::string>(); }
         std::vector<uint8_t> to_vec() { return to<std::vector<uint8_t>>(); }
-        boost::shared_ptr<IMessage> to_msg() { return parse_message(to<std::vector<uint8_t>>()); }
-        template <typename T> std::shared_ptr<T> to_msg() { return parse_message<T>(to<std::vector<uint8_t>>()); }
+        boost::shared_ptr<IMessage> to_msg()
+        {
+            return parse_message(to<std::vector<uint8_t>>());
+        }
+        template <typename T> std::shared_ptr<T> to_msg()
+        {
+            return parse_message<T>(to<std::vector<uint8_t>>());
+        }
 
         message_code code()
         {
@@ -181,6 +187,12 @@ namespace net {
             std::memcpy(mesg->buffer.c_array(), data, size);
             mesg->size = size;
             return shared_message_info_t(mesg);
+        }
+
+        static shared_message_info_t new_message(const IMessage& msg)
+        {
+            auto buffer = msg.serialize();
+            return new_message(buffer.data(), buffer.size());
         }
 
         static shared_message_info_t new_message(const std::string& s)
@@ -492,7 +504,6 @@ namespace net {
                 : base_message_info(std::move(buffer), size)
                 , _sender(sender)
             {
-                _msg = buffer.c_array();
                 char* pos = this->buffer.c_array();
                 _size = buffer.size();
                 uint64_t big_seq_num;
@@ -506,6 +517,8 @@ namespace net {
             }
 
             char *msg() const { return _msg; }
+
+            void set_msg(char *msg) { _msg = msg; }
 
             size_t size() { return _size; }
 
@@ -546,6 +559,7 @@ namespace net {
 
             message_info* mesg = new message_info;
             char* pos = mesg->buffer.c_array();
+            mesg->set_msg(mesg->buffer.c_array());
             std::memcpy(pos, &big_magic, sizeof(big_magic));
             pos += sizeof(big_magic);
             std::memcpy(pos, &big_seq_num, sizeof(big_seq_num));
@@ -555,6 +569,13 @@ namespace net {
             std::memcpy(pos, data, size);
             mesg->set_size(size + header_size);
             return shared_message_info_t(mesg);
+        }
+
+        static shared_message_info_t new_message(
+            int sender, const IMessage& msg)
+        {
+            auto buffer = msg.serialize();
+            return new_message(sender, buffer.data(), buffer.size());
         }
 
         static shared_message_info_t new_message(
@@ -787,6 +808,7 @@ namespace net {
             std::string to_string() const override { return _msg->to_string(); }
             std::vector<uint8_t> to_vec() const override { return _msg->to_vec(); }
             boost::shared_ptr<IMessage> to_msg() override { return _msg->to_msg(); }
+
             message_code code() const override { return _msg->code(); }
 
         private:
@@ -805,8 +827,14 @@ namespace net {
 
             remote_client::pointer sender() const override { return _sender; }
             std::string to_string() const override { return _msg->to_string(); }
-            std::vector<uint8_t> to_vec() const override { return _msg->to_vec(); }
-            boost::shared_ptr<IMessage> to_msg() override { return _msg->to_msg(); }
+            std::vector<uint8_t> to_vec() const override
+            {
+                return _msg->to_vec();
+            }
+            boost::shared_ptr<IMessage> to_msg() override
+            {
+                return _msg->to_msg();
+            }
             message_code code() const override { return _msg->code(); }
 
         private:
@@ -837,7 +865,11 @@ namespace net {
                 case tcp_event_type::Connexion:
                     event.type = Connect;
                     event.client
-                        = _clients.insert_or_assign(tcp_event.get<tcp_event_connexion>().get_id(), remote_client::create()).first->second;
+                        = _clients
+                              .insert_or_assign(
+                                  tcp_event.get<tcp_event_connexion>().get_id(),
+                                  remote_client::create())
+                              .first->second;
                     event.client->init_main_channel(*_tcp_server,
                         tcp_event.get<tcp_event_connexion>().get_id());
                     break;
@@ -857,7 +889,8 @@ namespace net {
                     }
                     if (_authenticate) {
                         if (event.message->code() == message_code::CONN_INIT) {
-                            event.client->send_main(ConnectionInitReply(event.client->id(), 42));
+                            event.client->send_main(
+                                ConnectionInitReply(event.client->id(), 42));
                             return false;
                         } else {
                             return true;
@@ -892,7 +925,10 @@ namespace net {
 
         tcp_server& tcp() { return *_tcp_server; }
         udp_server& udp() { return *_udp_server; }
-        std::unordered_map<uint16_t, remote_client::pointer>& clients() { return _clients; }
+        std::unordered_map<uint16_t, remote_client::pointer>& clients()
+        {
+            return _clients;
+        }
 
     private:
         void run()
@@ -915,8 +951,8 @@ namespace net {
 
         remote_client::pointer get_client(tcp_connection::pointer conn)
         {
-            auto it = std::find_if(_clients.begin(), _clients.end(),
-                [conn](const auto& c) {
+            auto it = std::find_if(
+                _clients.begin(), _clients.end(), [conn](const auto& c) {
                     return c.second->id() == conn->get_id();
                 });
             if (it != _clients.end()) {
@@ -928,8 +964,8 @@ namespace net {
 
         remote_client::pointer get_client(const udp::endpoint& endpoint)
         {
-            auto it = std::find_if(_clients.begin(), _clients.end(),
-                [endpoint](const auto& c) {
+            auto it = std::find_if(
+                _clients.begin(), _clients.end(), [endpoint](const auto& c) {
                     return c.second->get_feed_endpoint() == endpoint;
                 });
             if (it != _clients.end()) {

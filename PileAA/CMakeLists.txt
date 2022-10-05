@@ -1,6 +1,6 @@
 project(pileaa)
 
-link_libraries(sfml-graphics sfml-window sfml-system)
+link_libraries(sfml-graphics sfml-window sfml-system sfml-audio)
 
 file(GLOB_RECURSE SRC *.cpp *.hpp)
 

@@ -67,7 +67,7 @@ PAA_STATE(mystate) {
     PAA_END(mystate) {}
 
     PAA_UPDATE {
-        window.draw(PAA_GET_COMPONENT(e, paa::Sprite));
+        PAA_DRAW_SPRITE(e);
     }
 };
 

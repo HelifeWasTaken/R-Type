@@ -100,6 +100,8 @@ namespace paa {
 
 #define PAA_GET_COMPONENT(entity, component) PAA_ECS.get_component<component>(entity)
 
+#define PAA_DRAW_SPRITE(entity) paa::Screen::get().draw(PAA_GET_COMPONENT(entity, paa::Sprite))
+
 #define PAA_OBJECT auto
 #define PAA_ENTITY hl::silva::Entity
 #define PAA_ENTITY_ID hl::silva::Entity::Id
@@ -109,9 +111,20 @@ namespace paa {
 #define PAA_PROGRAM_START(baseScene) \
     int main() \
     { \
-        paa::setup_paa_system(); \
-        paa::SceneManager::get().changeState<baseScene>(); \
-        paa::App::get().run(); \
-        paa::stop_paa_system(); \
-        return 0; \
+        try { \
+            paa::setup_paa_system(); \
+            paa::SceneManager::get().changeState<baseScene>(); \
+            paa::App::get().run(); \
+            paa::stop_paa_system(); \
+            return 0; \
+        } catch (const std::exception& e) { \
+            std::printf("std::exception: Error: %s\n", e.what()); \
+            return 1; \
+        } catch (const paa::AABaseError& e) { \
+            std::printf("paa::AABaseError: Error: %s\n", e.what()); \
+            return 1; \
+        } catch (...) { \
+            std::printf("Unknown error\n"); \
+            return 1; \
+        } \
     }

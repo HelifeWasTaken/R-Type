@@ -3,24 +3,28 @@
 #include "paa_getters.hpp"
 #include "paa_command_state.hpp"
 
+#include <spdlog/spdlog.h>
+
 #define PAA_PROGRAM_START(baseScene, resources_file) \
     int main() \
     { \
         try { \
-            paa::setup_paa_system(); \
-            paa::ResourceManager::load_configuration_file(resources_file); \
-            PAA_SET_SCENE(baseScene); \
-            PAA_APP.run(); \
-            paa::stop_paa_system(); \
+            do { \
+                paa::setup_paa_system(resources_file); \
+                PAA_SET_SCENE(baseScene); \
+                bool res = PAA_APP.run(); \
+                paa::stop_paa_system(); \
+                if (!res) break; \
+            } while (1); \
             return 0; \
         } catch (const std::exception& e) { \
-            std::printf("std::exception: Error: %s\n", e.what()); \
+            spdlog::error("std::exception: Error: {}", e.what()); \
             return 1; \
         } catch (const paa::AABaseError& e) { \
-            std::printf("paa::AABaseError: Error: %s\n", e.what()); \
+            spdlog::error("paa::AABaseError: Error: {}", e.what()); \
             return 1; \
         } catch (...) { \
-            std::printf("Unknown error\n"); \
+            spdlog::error("Unknown error"); \
             return 1; \
         } \
     }

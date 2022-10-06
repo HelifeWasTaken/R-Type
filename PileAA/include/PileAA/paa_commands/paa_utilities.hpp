@@ -7,4 +7,5 @@
     { \
         PAA_SET_COMPONENT(entity, paa::Sprite, textureName); \
         PAA_SET_COMPONENT(entity, paa::Depth, 0); \
+        PAA_ANIMATION_REGISTER.setAnimationToSpriteIfExist(textureName, PAA_GET_COMPONENT(entity, paa::Sprite)); \
     }

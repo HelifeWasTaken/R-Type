@@ -13,3 +13,7 @@
 #define PAA_INPUT paa::InputHandler::get()
 
 #define PAA_RESOURCE_MANAGER paa::ResourceManagerInstance::get()
+
+#define PAA_ANIMATION_REGISTER paa::AnimationRegisterInstance::get()
+
+#define PAA_BATCH_RENDERER paa::BatchRendererInstance::get()

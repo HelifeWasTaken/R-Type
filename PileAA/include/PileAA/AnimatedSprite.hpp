@@ -14,9 +14,11 @@ namespace paa {
         double speed;
     };
 
-    using AnimationRegister = std::unordered_map<std::string, Animation>;
 
     class AnimatedSprite : public BaseSprite {
+    public:
+        using AnimationRegister = std::unordered_map<std::string, Animation>;
+
     private:
         AnimationRegister _reg;
         Animation* _currentAnimation = nullptr;

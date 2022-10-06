@@ -72,16 +72,8 @@ public:
      */
     void clear();
 
-    /**
-     * @brief Load a configuration file
-     *
-     * @param filename The name of the file
-     */
-    static void load_configuration_file(const std::string& filename);
-
 };
 
 HL_SINGLETON_IMPL(ResourceManager, ResourceManagerInstance);
-
 
 }

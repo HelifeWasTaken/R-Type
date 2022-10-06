@@ -6,6 +6,8 @@
 #include "InputHandler.hpp"
 #include "ResourceManager.hpp"
 #include "AnimatedSprite.hpp"
+#include "AnimationRegister.hpp"
+#include "PileAA/BatchRenderer.hpp"
 
 #include "paa_commands/paa_getters.hpp"
 #include "paa_commands/paa_command_ecs.hpp"
@@ -30,12 +32,11 @@ namespace paa {
         static App& get();
         static void release();
 
-    private:
-        bool isRunning() const;
-        void update();
+        HL_SUB_ERROR_IMPL(Error, AABaseError);
 
     public:
-        void run();
+        bool isRunning() const;
+        bool run();
         void stop();
     };
 
@@ -64,6 +65,11 @@ namespace paa {
     template<typename T>
     static inline void scene_pop_meta() { paa::SceneManager::get().popState(); }
 
-    void setup_paa_system();
+    /**
+     * @brief Load a configuration file and setup the system
+     *
+     * @param configuration_file The name of the file
+     */
+    void setup_paa_system(const std::string& configuration_file);
     void stop_paa_system();
 }

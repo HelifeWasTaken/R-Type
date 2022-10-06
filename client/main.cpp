@@ -54,21 +54,12 @@ int main()
 #include "PileAA/App.hpp"
 #include "PileAA/AnimatedSprite.hpp"
 
-PAA_STATE(mystate) {
-
-    PAA_ENTITY e;
+PAA_SCENE(mystate) {
 
     PAA_START(mystate) {
-        paa::ResourceManagerInstance::get().load<sf::Texture>("../assets/r-typesheet5.png", "image");
-        e = PAA_NEW_ENTITY();
-        PAA_SET_COMPONENT(e, paa::Sprite, "image");
-    }
-
-    PAA_END(mystate) {}
-
-    PAA_UPDATE {
-        PAA_DRAW_SPRITE(e);
+        PAA_ENTITY e = PAA_NEW_ENTITY();
+        PAA_SET_SPRITE(e, "image");
     }
 };
 
-PAA_PROGRAM_START(mystate);
+PAA_PROGRAM_START(mystate, "../Textures.conf");

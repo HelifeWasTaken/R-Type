@@ -5,15 +5,15 @@ namespace paa {
 
 void InputManagement::update(PAA_ENTITY& entity, IController& controller)
 {
-    for (auto& [button, callback] : _isButtonPressedCallbacks) {
+    for (const auto& [button, callback] : _isButtonPressedCallbacks) {
         if (_controller.isButtonPressed(button))
             callback(entity);
     }
-    for (auto& [button, callback] : _isButtonDownCallbacks) {
+    for (const auto& [button, callback] : _isButtonDownCallbacks) {
         if (_controller.isButtonDown(button))
             callback(entity);
     }
-    for (auto& [button, callback] : _isbButtonReleasedCallbacks) {
+    for (const auto& [button, callback] : _isbButtonReleasedCallbacks) {
         if (_controller.isButtonReleased(button))
             callback(entity);
     }

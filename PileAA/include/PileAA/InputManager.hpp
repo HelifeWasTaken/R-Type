@@ -68,9 +68,10 @@ private:
 };
 }
 
+
+
 // InputManagent manager(controller, entity);
 
-// manager.setIsButtonPressedCallback(0,
-//     [](PAA_ENTITY entity, IController& controller) {
-//          entity.move(controller.getAxisXY());
-//     });
+// manager.setAxisCallback([](PAA_ENTITY entity) {
+//          PAA_GET_COMPONENT(entity, paa::Sprite).move(controller.getAxisXY());
+// });

@@ -7,11 +7,18 @@
 #include "ResourceManager.hpp"
 #include "AnimatedSprite.hpp"
 
+#include "paa_commands/paa_getters.hpp"
+#include "paa_commands/paa_command_ecs.hpp"
+#include "paa_commands/paa_command_state.hpp"
+#include "paa_commands/paa_utilities.hpp"
+#include "paa_commands/paa_command_main.hpp"
+
 namespace paa {
 
     HL_SINGLETON_IMPL(hl::silva::registry, EcsInstance);
     HL_SINGLETON_IMPL(hl::silva::StateManager, SceneManager);
     HL_SINGLETON_IMPL(RenderWindow, Screen);
+
     class App {
     private:
         static inline App *_instance = nullptr;
@@ -34,11 +41,11 @@ namespace paa {
 
     class GameState : public hl::silva::State {
     protected:
-        paa::App& app = paa::App::get();
-        galbar::InputHandler &input = paa::InputHandler::get();
-        paa::ResourceManager &resource_manager = paa::ResourceManagerInstance::get();
-        paa::Window &window = paa::Screen::get();
-        hl::silva::registry &ecs = paa::EcsInstance::get();
+        paa::App& app = PAA_APP;
+        galbar::InputHandler &input = PAA_INPUT;
+        paa::ResourceManager &resource_manager = PAA_RESOURCE_MANAGER;
+        paa::Window &window = PAA_SCREEN;
+        hl::silva::registry &ecs = PAA_ECS;
 
     public:
         GameState() = default;
@@ -60,71 +67,3 @@ namespace paa {
     void setup_paa_system();
     void stop_paa_system();
 }
-
-#define PAA_STATE(name) struct name : public paa::GameState
-
-#define PAA_START(name) name()
-
-#define PAA_END(name) ~name()
-
-#define PAA_UPDATE void update() override
-
-#define PAA_EVENTS void handleEvent() override
-
-#define PAA_SET_SCENE(scene_name) paa::scene_change_meta<scene_name>()
-
-#define PAA_PUSH_SCENE(scene_name) paa::scene_push_meta<scene_name>()
-
-#define PAA_POP_SCENE() paa::scene_pop_meta()
-
-#define PAA_METHOD(name) void name()
-
-#define PAA_CALL_METHOD(name) name()
-
-#define PAA_ECS paa::EcsInstance::get()
-
-#define PAA_REGISTER_COMPONENTS(...) PAA_ECS.registerComponents<__VA_ARGS__>()
-
-#define PAA_REGISTER_SYSTEM(system) PAA_ECS.add_system(system)
-
-#define PAA_NEW_ENTITY() PAA_ECS.spawn_entity()
-
-#define PAA_SET_COMPONENT(entity, component_type, ...) \
-    PAA_ECS.emplace<component_type>(entity, __VA_ARGS__)
-
-#define PAA_REMOVE_COMPONENT(entity, component_type) PAA_ECS.remove<component_type>(entity)
-
-#define PAA_VIEW_COMPONENTS(...) PAA_ECS.view<__VA_ARGS__>()
-
-#define PAA_ITERATE_VIEW(view, ...) for (auto&& [paa_entity_id, __VA_ARGS__] : view)
-
-#define PAA_GET_COMPONENT(entity, component) PAA_ECS.get_component<component>(entity)
-
-#define PAA_DRAW_SPRITE(entity) paa::Screen::get().draw(PAA_GET_COMPONENT(entity, paa::Sprite))
-
-#define PAA_OBJECT auto
-#define PAA_ENTITY hl::silva::Entity
-#define PAA_ENTITY_ID hl::silva::Entity::Id
-#define PAA_VIEW auto
-#define PAA_COMPONENT auto&
-
-#define PAA_PROGRAM_START(baseScene) \
-    int main() \
-    { \
-        try { \
-            paa::setup_paa_system(); \
-            paa::SceneManager::get().changeState<baseScene>(); \
-            paa::App::get().run(); \
-            paa::stop_paa_system(); \
-            return 0; \
-        } catch (const std::exception& e) { \
-            std::printf("std::exception: Error: %s\n", e.what()); \
-            return 1; \
-        } catch (const paa::AABaseError& e) { \
-            std::printf("paa::AABaseError: Error: %s\n", e.what()); \
-            return 1; \
-        } catch (...) { \
-            std::printf("Unknown error\n"); \
-            return 1; \
-        } \
-    }

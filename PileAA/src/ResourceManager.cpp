@@ -18,7 +18,7 @@ namespace paa {
         _resourceMap.clear();
     }
 
-    void load_configuration_file(const std::string& filename)
+    void ResourceManager::load_configuration_file(const std::string& filename)
     {
         ResourceManager& resourceManager = ResourceManagerInstance::get();
 

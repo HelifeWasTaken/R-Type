@@ -25,14 +25,13 @@ Network communication is separated into two main channels: `main` and `feed` cha
 Any message sent on the `feed` channel should be preceded by a sequence number, to ensure that older messages are not received after newer ones.
 
 ```
-0000000AAAAAAAABBBBBBBBBCCCCCCCCCCDDDDDDDDDDDDDDDDDD
- |       |        |         |           |
-MAGIC   SEQ      FROM        TO       CONTENT
+0000000AAAAAAAABBBBBBBBBDDDDDDDDDDDDDDDDDD
+ |       |        |             |
+MAGIC   SEQ    PLAYERID       CONTENT
 
-MAGIC is a magic number, used to ensure that the message is valid. its value is 0x0fficecoffeedefec.
+MAGIC is a magic number, as an int64, used to ensure that the message is valid. its value is 0xff1cec0ffeedefec.
 SEQ is the sequence number, encoded as an int64, it is incremented by one for each message sent.
-FROM is the sender ID, encoded as a int16, used to identify the host that sent the message.
-TO is the target ID, encoded as a int16, used to identify the host that should receive the message.
+PLAYERID is the sender player ID, encoded as a int16, used to identify the host that sent the message.
 CONTENT is the message content, it should never be larger than 500 bytes for any message, otherwise behaviour is undefined.
 ```
 
@@ -385,12 +384,11 @@ class ConnectionInitReply : public IMessage {
 Sent by the client to the server to request the `feed` channel init.
 
 ```
-AAAABBBBBBBBBBCCCCCCCCCCCCC
- |      |         |
-CODE PLAYERID   TOKEN
+AAAACCCCCCCCCCCCC
+ |        |
+CODE     TOKEN
 
 CODE is the message code, it has the value of `FEED_INIT` (refer to the relevant code table).
-PLAYERID is the player ID, it is encoded as an int16.
 TOKEN is the token, it is encoded as an int32.
 ```
 

@@ -18,10 +18,6 @@ The server replies a feed init reply or `CONN_FAILED`.
 
 If the server replies `CONN_FAILED`, the connection is closed and the client should either retry or abort the current connection attempt.
 
-The client should then send a final auth request through the `main` channel, with the token provided by the feed init reply.
-
-The server replies either `CONN_OK` or `CONN_FAILED`.
-
 
 > Please refer to Message Types in messaging.md for more information about the messages format.
 
@@ -34,9 +30,6 @@ Client        Server      Client        Server
 |                |        |                |
 |                |        |---feed init--->|  feed init req provides a player ID and a token A
 |                |        |<-----------rep-|  feed init rep provides a token B
-|                |        |                |
-|--final auth--->|        |                |  final auth uses the token B
-|<----CONN_OK----|        |                |
 |                |        |                |
 ```
 

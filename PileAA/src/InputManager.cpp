@@ -1,4 +1,3 @@
-#pragma once
 #include "PileAA/InputManager.hpp"
 
 namespace paa {
@@ -6,19 +5,19 @@ namespace paa {
 void InputManagement::update(PAA_ENTITY& entity, IController& controller)
 {
     for (const auto& [button, callback] : _isButtonPressedCallbacks) {
-        if (_controller.isButtonPressed(button))
+        if (controller.isButtonPressed(button))
             callback(entity);
     }
     for (const auto& [button, callback] : _isButtonDownCallbacks) {
-        if (_controller.isButtonDown(button))
+        if (controller.isButtonDown(button))
             callback(entity);
     }
     for (const auto& [button, callback] : _isbButtonReleasedCallbacks) {
-        if (_controller.isButtonReleased(button))
+        if (controller.isButtonReleased(button))
             callback(entity);
     }
     if (_callback_axis) {
-        _callback_axis(entity, _controller);
+        _callback_axis(entity, controller);
     }
 }
 

@@ -31,7 +31,11 @@ void AnimatedSprite::registerAnimation(
 
 void AnimatedSprite::useAnimation(const std::string& animationName)
 {
-    _currentAnimation = &_reg.at(animationName);
+    try {
+        _currentAnimation = &_reg.at(animationName);
+    } catch (...) {
+        throw Error(std::string("AnimatedSprite: Could not find animtion: [") + animationName + "]");
+    }
     _timer.setTarget(_currentAnimation->speed);
     _setRect(0);
 }

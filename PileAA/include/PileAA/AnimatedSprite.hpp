@@ -3,6 +3,8 @@
 #include <unordered_map>
 #include "Timer.hpp"
 #include "Types.hpp"
+#include "meta.hpp"
+#include "Error.hpp"
 
 namespace paa {
 
@@ -28,6 +30,8 @@ namespace paa {
         void _setRect(const unsigned int& index);
 
     public:
+        HL_SUB_ERROR_IMPL(Error, AABaseError);
+
         AnimatedSprite(const std::string& textureName);
 
         ~AnimatedSprite() = default;

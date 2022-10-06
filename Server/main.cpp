@@ -1,4 +1,4 @@
-#include "Network/Server.hpp"
+#include "Server.hpp"
 #include "Network/Messages.hpp"
 #include <iostream>
 
@@ -13,9 +13,10 @@ int main()
 
         if (server.poll(event)) {
             if (event.type == server::event_type::MainMessage
-                && event.message->code() == message_code::SYNC_MSG) {
-                
-                auto msg = parse_message<UpdateMessage>(event.message->to_vec());
+                && event.message->code() == rtype::net::message_code::SYNC_MSG) {
+
+                boost::shared_ptr<rtype::net::UpdateMessage> msg
+                    = rtype::net::parse_message<rtype::net::UpdateMessage>(event.message->to_vec());
 
                 for (auto& it : server.clients()) {
                     auto& id = it.first;

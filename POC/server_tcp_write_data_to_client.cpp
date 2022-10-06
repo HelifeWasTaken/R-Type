@@ -3,7 +3,7 @@
 #include <iostream>
 #include <unordered_set>
 #include <thread>
-#include <Network/Server.hpp>
+#include <Server.hpp>
 
 using namespace rtype::net;
 
@@ -38,7 +38,6 @@ static void __write_async()
             s->send(index, tcp_connection::new_message("ferocious ping\n"));
     }
 }
-
 
 void poc_server_write_tcp_example(void)
 {

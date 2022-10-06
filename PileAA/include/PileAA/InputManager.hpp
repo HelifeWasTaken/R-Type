@@ -30,7 +30,7 @@ public:
      * @param  callback: The callback to call
      * @retval None
      */
-    InputManagement& InputManagement::setButtonPressedCallback(
+    InputManagement& setButtonPressedCallback(
         const unsigned int& button, const callback_button_t& callback);
     /**
      * @brief  Set the Button Down Callback object
@@ -38,7 +38,7 @@ public:
      * @param  callback: The callback to call
      * @retval None
      */
-    InputManagement& InputManagement::setButtonDownCallback(
+    InputManagement& setButtonDownCallback(
         const unsigned int& button, const callback_button_t& callback);
     /**
      * @brief  Set the Button Released Callback object
@@ -46,14 +46,14 @@ public:
      * @param  callback: The callback to call
      * @retval None
      */
-    InputManagement& InputManagement::setButtonReleasedCallback(
+    InputManagement& setButtonReleasedCallback(
         const unsigned int& button, const callback_button_t& callback);
     /**
      * @brief  Set the Axis Callback object
      * @param  callback: The callback to call
      * @retval None
      */
-    InputManagement& InputManagement::setAxisCallback(
+    InputManagement& setAxisCallback(
         const callback_axis_t& callback);
 
 protected:

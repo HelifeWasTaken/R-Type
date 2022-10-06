@@ -86,14 +86,18 @@ include_directories(
     ${boost_endian_SOURCE_DIR}/include
 	${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/PileAA/include
+    ${CMAKE_SOURCE_DIR}/Client/include
+    ${CMAKE_SOURCE_DIR}/Server/include
+    ${CMAKE_SOURCE_DIR}/RServer/include
 )
 
-add_subdirectory(PileAA)
+add_subdirectory(RServer)
 
-add_subdirectory(server)
+add_subdirectory(PileAA)
+add_subdirectory(Server)
 
 add_compile_definitions(RTYPE_USING_POC_MAIN)
 add_subdirectory(POC)
 
 add_compile_definitions(RTYPE_BUILDING_CLIENT)
-add_subdirectory(client)
+add_subdirectory(Client)

@@ -1,5 +1,5 @@
 #include "poc.hpp"
-#include <Network/Server.hpp>
+#include <Server.hpp>
 #include <iostream>
 
 static rtype::net::server* ref_s;

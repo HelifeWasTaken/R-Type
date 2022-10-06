@@ -1,10 +1,15 @@
-project(r-type_server)
+project(r-type_client)
 
 file(GLOB_RECURSE SRC *.cpp *.hpp)
 
 add_executable(${PROJECT_NAME} ${SRC})
 
-target_link_libraries(${PROJECT_NAME} boost_system boost_thread)
+target_link_libraries(${PROJECT_NAME}
+    sfml-system sfml-audio sfml-graphics sfml-window
+    boost_system boost_thread
+    pileaa
+    rserver)
+
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 
 if(MSVC)

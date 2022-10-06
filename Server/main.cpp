@@ -1,4 +1,4 @@
-#include "Network/Server.hpp"
+#include "Server.hpp"
 #include "Network/Messages.hpp"
 #include <iostream>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Network/Server.hpp"
+#include <Server.hpp>
 #include <iostream>
 
 namespace rtype {

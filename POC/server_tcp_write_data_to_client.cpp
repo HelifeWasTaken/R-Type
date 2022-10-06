@@ -3,7 +3,7 @@
 #include <iostream>
 #include <unordered_set>
 #include <thread>
-#include <Network/Server.hpp>
+#include <Server.hpp>
 
 using namespace rtype::net;
 

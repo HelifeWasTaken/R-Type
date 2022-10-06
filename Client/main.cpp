@@ -1,4 +1,4 @@
-#include "Network/Server.hpp"
+#include <Server.hpp>
 #include <Client.hpp>
 #include <SFML/Graphics.hpp>
 #include <iostream>

@@ -92,9 +92,10 @@ include_directories(
     ${boost_endian_SOURCE_DIR}/include
 	${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/Client/include
-    )
+    ${CMAKE_SOURCE_DIR}/Server/include
+)
 
-add_subdirectory(server)
+add_subdirectory(Server)
 
 add_compile_definitions(RTYPE_USING_POC_MAIN)
 add_subdirectory(POC)

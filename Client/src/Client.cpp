@@ -1,5 +1,5 @@
 #include "Client.hpp"
-#include "Network/Server.hpp"
+#include <Server.hpp>
 #include <memory>
 
 namespace rtype {

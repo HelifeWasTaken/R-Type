@@ -1,5 +1,5 @@
 #include "poc.hpp"
-#include <Network/Server.hpp>
+#include <Server.hpp>
 #include <iostream>
 
 static rtype::net::udp_server* ref_s;

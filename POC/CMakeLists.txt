@@ -4,5 +4,5 @@ file(GLOB_RECURSE SRC *.cpp *.hpp)
 
 add_executable(${PROJECT_NAME} ${SRC})
 
-target_link_libraries(${PROJECT_NAME} sfml-graphics sfml-window sfml-system boost_system boost_thread r-type_client)
+target_link_libraries(${PROJECT_NAME} sfml-graphics sfml-window sfml-system boost_system boost_thread r-type_client r-type_server)
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})

@@ -11,6 +11,11 @@ namespace paa {
 
 HL_SINGLETON_IMPL(galbar::InputHandler, InputHandler);
 
+enum ControllerButtons {
+    BUTTON_COUNT = Joystick::ButtonCount,
+    AXIS_COUNT = Joystick::AxisCount
+};
+
 class IController {
 private:
 

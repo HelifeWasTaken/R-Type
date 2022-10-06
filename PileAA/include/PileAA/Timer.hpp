@@ -1,10 +1,9 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
 #include "Types.hpp"
 
 namespace paa {
-class Timer : public sf::Clock {
+class Timer : public Clock {
 public:
     using TimeUnit = f64;
 
@@ -25,10 +24,7 @@ public:
     /**
      * @brief Checks whether the target has been reached by the clock
      */
-    bool isFinished() const
-    {
-        return getElapsedTime().asMilliseconds() >= _targetTime;
-    }
+    bool isFinished() const;
 
     /**
      * @brief Set the Target object
@@ -36,11 +32,6 @@ public:
      * @param target
      * @return Timer&
      */
-    Timer& setTarget(const TimeUnit& target)
-    {
-        _targetTime = target;
-        restart();
-        return *this;
-    }
+    Timer& setTarget(const TimeUnit& target);
 };
 }

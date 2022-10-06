@@ -1,11 +1,11 @@
 #pragma once
 
-#include <SFML/Graphics.hpp>
-#include <SFML/Audio.hpp>
+#include <memory>
 #include <unordered_map>
 #include <variant>
 
 #include "Error.hpp"
+#include "Types.hpp"
 
 namespace paa {
 
@@ -17,7 +17,8 @@ HL_SUB_ERROR_IMPL(ResourceManagerError, AABaseError);
  */
 class ResourceManager {
 private:
-    using LoadableResource = std::variant<sf::Texture, sf::Font, sf::SoundBuffer, sf::Image>;
+    using LoadableResource = std::variant<Texture, Font,
+                                        SoundBuffer, Image>;
     using ResourceHolder    = std::unordered_map<std::string,
                             std::unique_ptr<LoadableResource>>;
 
@@ -37,7 +38,7 @@ public:
         const std::string& filename, const std::string& name, LoadArgs&&... loadArgs)
     {
         LoadableResource* resource = new LoadableResource(T());
-        T& ref = std::get<T&>(*resource);
+        T& ref = std::get<T>(*resource);
 
         if (!ref.loadFromFile(filename, std::forward<LoadArgs>(loadArgs)...))
             throw ResourceManagerError("ResourceHolder::load - Failed to load " + filename);
@@ -56,7 +57,7 @@ public:
         auto found = _resourceMap.find(name);
         if (found == _resourceMap.end())
             throw ResourceManagerError("ResourceHolder::get - Resource not found: " + name);
-        return get<T&>(*found->second);
+        return std::get<T>(*found->second);
     }
 
     /**
@@ -64,18 +65,15 @@ public:
      *
      * @param name The name of the resource
      */
-    void remove(const std::string& name)
-    {
-        auto found = _resourceMap.find(name);
-        if (found == _resourceMap.end())
-            throw ResourceManagerError("ResourceHolder::remove - Resource not found: " + name);
-        _resourceMap.erase(found);
-    }
+    void remove(const std::string& name);
 
     /**
      * @brief Clears the resource holder
      */
-    void clear() { _resourceMap.clear(); }
+    void clear();
+
 };
+
+HL_SINGLETON_IMPL(ResourceManager, ResourceManagerInstance);
 
 }

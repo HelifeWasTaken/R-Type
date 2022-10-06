@@ -1,8 +1,8 @@
-#include <Server.hpp>
-#include <Client.hpp>
-#include <SFML/Graphics.hpp>
 #include <iostream>
 /*
+#include "Network/Server.hpp"
+#include "Network/Client.hpp"
+#include <SFML/Graphics.hpp>
 #include <iostream>
 #include <exception>
 
@@ -31,7 +31,6 @@ int main()
     }
     return 0;
 }
-*/
 
 int main()
 {
@@ -63,3 +62,19 @@ int main()
     }
     return 0;
 }
+*/
+
+#include "PileAA/App.hpp"
+#include "PileAA/AnimatedSprite.hpp"
+
+PAA_SCENE(mystate) {
+
+    PAA_START(mystate) {
+        PAA_ENTITY e = PAA_NEW_ENTITY();
+        PAA_SET_SPRITE(e, "image");
+        PAA_GET_COMPONENT(e, paa::Sprite).useAnimation("idle");
+    }
+
+};
+
+PAA_PROGRAM_START(mystate, "../Resources.conf");

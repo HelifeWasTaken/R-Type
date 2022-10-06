@@ -2,7 +2,7 @@
 #include "Network/Messages.hpp"
 #include <iostream>
 
-using server = rtype::net::server;
+using namespace rtype::net;
 
 int main()
 {

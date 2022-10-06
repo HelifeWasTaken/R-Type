@@ -1,5 +1,5 @@
 #include "Network/Server.hpp"
-#include "Network/Client.hpp"
+#include <Client.hpp>
 #include <SFML/Graphics.hpp>
 #include <iostream>
 /*

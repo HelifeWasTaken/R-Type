@@ -1,4 +1,4 @@
-#include <Network/Client.hpp>
+#include <Client.hpp>
 #include <Network/Messages.hpp>
 #include <poc.hpp>
 

@@ -417,7 +417,8 @@ namespace net {
             std::vector<uint8_t> buff;
             buff.push_back(static_cast<uint8_t>(_code));
             buff.push_back(_status);
-            buff.insert(buff.end(), _data.begin(), _data.end());
+            for (const auto& it : _data)
+                buff.push_back(it);
             return buff;
         }
 

@@ -90,7 +90,8 @@
         "typeinfo": "cpp",
         "valarray": "cpp",
         "variant": "cpp",
-        "silva": "cpp"
+        "silva": "cpp",
+        "silvastate": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

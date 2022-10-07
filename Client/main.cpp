@@ -70,11 +70,11 @@ std::string(mes.begin(), mes.end()));
 
 PAA_SCENE(mystate) {
 
-    PAA_START(mystate) { PAA_ENTITY e = PAA_NEW_ENTITY();
-PAA_SET_SPRITE(e, "image");
-PAA_GET_COMPONENT(e, paa::Sprite).useAnimation("idle");
-}
-}
-;
+    PAA_START(mystate) {
+        PAA_ENTITY e = PAA_NEW_ENTITY();
+        PAA_SET_SPRITE(e, "image");
+        PAA_GET_COMPONENT(e, paa::Sprite).useAnimation("idle");
+    }
+};
 
 PAA_PROGRAM_START(mystate, "../Resources.conf");

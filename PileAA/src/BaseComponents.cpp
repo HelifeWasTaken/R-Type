@@ -13,6 +13,16 @@ static inline void animated_sprite_system(hl::silva::registry& r)
     }
 }
 
+static inline void controller_input_manager_system(hl::silva::registry& r)
+{
+    for (auto&& [e, input, controller] : r.view<InputManagement, ControllerJoystick>()) {
+        input.update(e, controller);
+    }
+    for (auto&& [e, input, controller] : r.view<InputManagement, ControllerKeyboard>()) {
+        input.update(e, controller);
+    }
+}
+
 void setup_ecs(hl::silva::registry& r)
 {
     r.register_component<Position, Velocity, Sprite, AnimatedSprite, Depth>();

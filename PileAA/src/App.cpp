@@ -40,7 +40,7 @@ bool App::run()
 
     while (isRunning()) {
         Event event;
-        // input.update();
+        input.update();
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
@@ -49,7 +49,7 @@ bool App::run()
                 && event.key.control) {
                 return true;
             }
-            // input.handleEvent(event);
+            input.handleEvent(event);
             scene.handleEvent();
         }
         window.clear();

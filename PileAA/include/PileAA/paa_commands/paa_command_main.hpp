@@ -5,6 +5,9 @@
 
 #include <spdlog/spdlog.h>
 
+/**
+ * @brief Main loop of the game
+ */
 #define PAA_PROGRAM_START(baseScene, resources_file)                           \
     int main()                                                                 \
     {                                                                          \

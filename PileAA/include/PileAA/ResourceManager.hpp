@@ -74,6 +74,9 @@ public:
     void clear();
 };
 
+/**
+ * @brief Construct a new hl singleton impl object
+ */
 HL_SINGLETON_IMPL(ResourceManager, ResourceManagerInstance);
 
 }

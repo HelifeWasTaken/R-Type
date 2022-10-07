@@ -1,7 +1,7 @@
 #pragma once
 
-#include "external/HelifeWasTaken/SilvaState"
 #include "external/HelifeWasTaken/Silva"
+#include "external/HelifeWasTaken/SilvaState"
 
 #include "AnimatedSprite.hpp"
 #include "AnimationRegister.hpp"
@@ -18,8 +18,22 @@
 
 namespace paa {
 
+/**
+ * @brief Construct a new hl singleton impl object
+ *
+ */
 HL_SINGLETON_IMPL(hl::silva::registry, EcsInstance);
+
+/**
+ * @brief Construct a new hl singleton impl object
+ *
+ */
 HL_SINGLETON_IMPL(hl::silva::StateManager, SceneManager);
+
+/**
+ * @brief Construct a new hl singleton impl object
+ *
+ */
 HL_SINGLETON_IMPL(RenderWindow, Screen);
 
 class App {
@@ -30,14 +44,39 @@ private:
 public:
     ~App() = default;
 
+    /**
+     * @brief Construct a new App object if not created yet and returns it
+     *
+     * @return App&
+     */
     static App& get();
+
+    /**
+     * @brief Frees the App instance if it exists
+     *
+     * @return App*
+     */
     static void release();
 
     HL_SUB_ERROR_IMPL(Error, AABaseError);
 
 public:
+    /**
+     * @brief Tells you if the app is running
+     *
+     * @return true
+     * @return false
+     */
     bool isRunning() const;
+
+    /**
+     * @brief Starts the app
+     */
     bool run();
+
+    /**
+     * @brief Stops the app
+     */
     void stop();
 };
 
@@ -50,27 +89,51 @@ protected:
     hl::silva::registry& ecs = PAA_ECS;
 
 public:
+    /**
+     * @brief Construct a new Game State object
+     */
     GameState() = default;
+
+    /**
+     * @brief Destroy the Game State object
+     */
     ~GameState() = default;
 
+    /**
+     * @brief Default update function
+     */
     void update() override { }
+
+    /**
+     * @brief Default handleEvent function
+     */
     void handleEvent() override { }
 };
 
+/**
+ * @brief Changes the current state of the app
+ *
+ * @tparam T The next scene
+ */
 template <typename T> static inline void scene_change_meta()
 {
     paa::SceneManager::get().changeState<T>();
 }
 
+/**
+ * @brief Push a new scene on the current state of the app
+ *
+ * @tparam T The next scene
+ */
 template <typename T> static inline void scene_push_meta()
 {
     paa::SceneManager::get().pushState<T>();
 }
 
-template <typename T> static inline void scene_pop_meta()
-{
-    paa::SceneManager::get().popState();
-}
+/**
+ * @brief Pop the current state of the app
+ */
+static inline void scene_pop_meta() { paa::SceneManager::get().popState(); }
 
 /**
  * @brief Load a configuration file and setup the system

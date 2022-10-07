@@ -1,6 +1,7 @@
 #pragma once
 
 #include "external/HelifeWasTaken/SilvaState"
+#include "external/HelifeWasTaken/Silva"
 
 #include "AnimatedSprite.hpp"
 #include "AnimationRegister.hpp"

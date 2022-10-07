@@ -62,7 +62,10 @@ namespace silva
          * @param  id: The id of the entity
          * @retval None
          */
-        Entity(Id id) : id(id) {}
+        Entity(const Id& id) : id(id) {}
+        Entity(Id&& id) : id(id) {}
+        Entity(const Entity& other) = default;
+        Entity(Entity&& other) = default;
         Entity() = default;
         ~Entity() = default;
         /**

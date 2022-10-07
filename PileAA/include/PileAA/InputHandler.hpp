@@ -36,11 +36,13 @@ public:
     virtual Vector2f getAxisZR() const = 0;
     virtual Vector2f getAxisUV() const = 0;
     virtual Vector2f getAxisPOV() const = 0;
+    
+    HL_AUTO_COMPLETE_CANONICAL_FORM(IController);
 };
 
 class ControllerJoystick : public IController {
 private:
-    const unsigned int _id;
+    const unsigned int _id = 0;
 
 public:
     ControllerJoystick(const unsigned int& id);
@@ -56,6 +58,8 @@ public:
     Vector2f getAxisZR() const override;
     Vector2f getAxisUV() const override;
     Vector2f getAxisPOV() const override;
+
+    HL_AUTO_COMPLETE_CANONICAL_FORM(ControllerJoystick);
 };
 
 class ControllerKeyboard : public IController {
@@ -84,6 +88,8 @@ public:
     Vector2f getAxisZR() const override;
     Vector2f getAxisUV() const override;
     Vector2f getAxisPOV() const override;
+
+    HL_AUTO_COMPLETE_CANONICAL_FORM(ControllerKeyboard);
 };
 
 using Controller = std::shared_ptr<IController>;

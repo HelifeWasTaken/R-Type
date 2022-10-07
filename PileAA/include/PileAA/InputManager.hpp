@@ -1,6 +1,5 @@
 #pragma once
 #include "PileAA/App.hpp"
-#include "PileAA/InputHandler.hpp"
 
 namespace paa {
 class InputManagement {
@@ -23,7 +22,7 @@ public:
      * @param  controller: The controller to use
      * @retval None
      */
-    void update(PAA_ENTITY& entity, IController& controller);
+    void update(PAA_ENTITY entity, IController& controller);
     /**
      * @brief  Set the Button Pressed Callback object
      * @param  button: The button to check

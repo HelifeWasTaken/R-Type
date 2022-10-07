@@ -2,7 +2,7 @@
 
 namespace paa {
 
-void InputManagement::update(PAA_ENTITY& entity, IController& controller)
+void InputManagement::update(PAA_ENTITY entity, IController& controller)
 {
     for (const auto& [button, callback] : _isButtonPressedCallbacks) {
         if (controller.isButtonPressed(button))

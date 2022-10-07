@@ -1,5 +1,6 @@
 #include "PileAA/BaseComponents.hpp"
 #include "PileAA/BatchRenderer.hpp"
+#include "PileAA/InputManager.hpp"
 
 namespace paa {
 
@@ -7,7 +8,7 @@ static inline void animated_sprite_system(hl::silva::registry& r)
 {
     auto& batch = BatchRendererInstance::get();
 
-    for (auto&& [_, sprite, depth] : r.view<Sprite, Depth>()) {
+    for (auto&& [_, sprite, depth] : r.view<AnimatedSprite, Depth>()) {
         sprite.update();
         batch.add(&sprite, depth);
     }

@@ -1,25 +1,25 @@
 #pragma once
 
+#include "BaseComponents.hpp"
 #include "Types.hpp"
 #include "meta.hpp"
-#include "BaseComponents.hpp"
 
 namespace paa {
 
-    class BatchRenderer {
-    private:
-        std::vector<std::pair<Depth, std::vector<Drawable *>>> _drawables;
+class BatchRenderer {
+private:
+    std::vector<std::pair<Depth, std::vector<Drawable*>>> _drawables;
 
-    public:
-        BatchRenderer() = default;
+public:
+    BatchRenderer() = default;
 
-        ~BatchRenderer() = default;
+    ~BatchRenderer() = default;
 
-        void add(Drawable *drawable, Depth depth);
+    void add(Drawable* drawable, Depth depth);
 
-        void render(RenderWindow& window);
-    };
+    void render(RenderWindow& window);
+};
 
-    HL_SINGLETON_IMPL(BatchRenderer, BatchRendererInstance);
+HL_SINGLETON_IMPL(BatchRenderer, BatchRendererInstance);
 
 }

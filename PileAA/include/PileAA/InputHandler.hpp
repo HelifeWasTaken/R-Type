@@ -1,10 +1,10 @@
 #pragma once
 
 #include "./external/Galbar/InputHandler.hpp"
+#include "Types.hpp"
 #include "meta.hpp"
 #include <array>
 #include <memory>
-#include "Types.hpp"
 #include <ostream>
 
 namespace paa {
@@ -18,7 +18,6 @@ enum ControllerButtons {
 
 class IController {
 private:
-
 public:
     virtual unsigned int id() const = 0;
 
@@ -61,12 +60,14 @@ public:
 
 class ControllerKeyboard : public IController {
 private:
-    std::array<Keyboard::Key, Joystick::ButtonCount>   _keys_to_button;
+    std::array<Keyboard::Key, Joystick::ButtonCount> _keys_to_button;
     std::array<Keyboard::Key, Joystick::AxisCount * 2> _keys_to_axis;
 
 public:
-    ControllerKeyboard& setKey(const unsigned int& button, const Keyboard::Key& key);
-    ControllerKeyboard& setAxis(const Joystick::Axis& axis, const Keyboard::Key& positiveAxis, const Keyboard::Key& negativeAxis);
+    ControllerKeyboard& setKey(
+        const unsigned int& button, const Keyboard::Key& key);
+    ControllerKeyboard& setAxis(const Joystick::Axis& axis,
+        const Keyboard::Key& positiveAxis, const Keyboard::Key& negativeAxis);
 
     unsigned int id() const override;
     bool isConnected() const override;

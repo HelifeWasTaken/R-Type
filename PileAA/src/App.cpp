@@ -25,8 +25,7 @@ void App::release()
 
 bool App::isRunning() const
 {
-    return Screen::get().isOpen() &&
-            SceneManager::get().canBeUpdated();
+    return Screen::get().isOpen() && SceneManager::get().canBeUpdated();
 }
 
 bool App::run()
@@ -45,9 +44,9 @@ bool App::run()
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
-            if (event.type == sf::Event::KeyPressed &&
-                event.key.code == sf::Keyboard::Key::R &&
-                event.key.control) {
+            if (event.type == sf::Event::KeyPressed
+                && event.key.code == sf::Keyboard::Key::R
+                && event.key.control) {
                 return true;
             }
             // input.handleEvent(event);
@@ -73,7 +72,7 @@ void App::stop()
     spdlog::info("PileAA: Scene manager stopped");
 }
 
-// CONFIGURATION FILE LOADER 
+// CONFIGURATION FILE LOADER
 
 static inline void load_configuration_file_resources(nlohmann::json& json)
 {
@@ -87,16 +86,27 @@ static inline void load_configuration_file_resources(nlohmann::json& json)
             const auto& path = it["path"].get<std::string>();
             const auto& name = it["name"].get<std::string>();
 
-            spdlog::info("PileAA: Loading resource: {} {} {}", type, path, name);
+            spdlog::info(
+                "PileAA: Loading resource: {} {} {}", type, path, name);
 
-            if (type == "texture") resourceManager.load<Texture>(path, name);
-            else if (type == "font") resourceManager.load<Font>(path, name);
-            else if (type == "sound") resourceManager.load<SoundBuffer>(path, name);
-            else if (type == "image") resourceManager.load<Image>(path, name);
+            if (type == "texture")
+                resourceManager.load<Texture>(path, name);
+            else if (type == "font")
+                resourceManager.load<Font>(path, name);
+            else if (type == "sound")
+                resourceManager.load<SoundBuffer>(path, name);
+            else if (type == "image")
+                resourceManager.load<Image>(path, name);
             else
-                throw App::Error(std::string("resources: load_configuration_file - Invalid type: ") + type);
+                throw App::Error(
+                    std::string(
+                        "resources: load_configuration_file - Invalid type: ")
+                    + type);
         } catch (const nlohmann::json::exception& e) {
-            throw App::Error(std::string("resources: load_configuration_file - Invalid json file: ") + e.what());
+            throw App::Error(
+                std::string(
+                    "resources: load_configuration_file - Invalid json file: ")
+                + e.what());
         }
     }
     spdlog::info("PileAA: Resources loaded");
@@ -111,30 +121,40 @@ static inline void load_configuration_file_animations(nlohmann::json& json)
 
     for (const auto& animation : json) {
         try {
-            const auto& spriteSheetName = animation["texture"].get<std::string>();
+            const auto& spriteSheetName
+                = animation["texture"].get<std::string>();
             spdlog::info("PileAA: Loading animation: {}", spriteSheetName);
             try {
-                resourceManager.get<Texture>(spriteSheetName); // Check if the texture exists
+                resourceManager.get<Texture>(
+                    spriteSheetName); // Check if the texture exists
                 spdlog::info("PileAA: Texture {} exists", spriteSheetName);
                 for (const auto& frames : animation["frames"]) {
-                    const auto& animationName = frames["name"].get<std::string>();
+                    const auto& animationName
+                        = frames["name"].get<std::string>();
                     const auto& rects = frames["rects"];
                     AnimationRegister::Frames currentFrames;
                     currentFrames.duration = frames["speed"].get<float>();
                     for (const auto& rect : rects) {
-                        currentFrames.frames.push_back(IntRect(
-                            rect[0].get<int>(), rect[1].get<int>(),
-                            rect[2].get<int>(), rect[3].get<int>())
-                        );
+                        currentFrames.frames.push_back(
+                            IntRect(rect[0].get<int>(), rect[1].get<int>(),
+                                rect[2].get<int>(), rect[3].get<int>()));
                     }
-                    spdlog::info("PileAA: Loading animation: {} {}", spriteSheetName, animationName);
-                    animationRegister.addAnimation(spriteSheetName, animationName, currentFrames);
+                    spdlog::info("PileAA: Loading animation: {} {}",
+                        spriteSheetName, animationName);
+                    animationRegister.addAnimation(
+                        spriteSheetName, animationName, currentFrames);
                 }
             } catch (const nlohmann::json::exception& e) {
-                throw App::Error(std::string("animations: load_configuration_file - Invalid json file: ") + e.what() + " in " + spriteSheetName + " spritesheet");
+                throw App::Error(
+                    std::string("animations: load_configuration_file - Invalid "
+                                "json file: ")
+                    + e.what() + " in " + spriteSheetName + " spritesheet");
             }
         } catch (const nlohmann::json::exception& e) {
-            throw App::Error(std::string("animations: load_configuration_file - Invalid json file: ") + e.what());
+            throw App::Error(
+                std::string(
+                    "animations: load_configuration_file - Invalid json file: ")
+                + e.what());
         }
     }
     spdlog::info("PileAA: Animations loaded");
@@ -146,14 +166,17 @@ static inline void load_configuration_file(const std::string& filename)
 
     std::ifstream file(filename);
     if (!file.is_open())
-        throw ResourceManagerError("load_configuration_file - Failed to open " + filename);
+        throw ResourceManagerError(
+            "load_configuration_file - Failed to open " + filename);
     try {
         nlohmann::json json;
         file >> json;
         load_configuration_file_resources(json["resources"]);
         load_configuration_file_animations(json["animations"]);
     } catch (const nlohmann::json::exception& e) {
-        throw ResourceManagerError("load_configuration_file - Invalid json file: " + std::string(e.what()));
+        throw ResourceManagerError(
+            "load_configuration_file - Invalid json file: "
+            + std::string(e.what()));
     }
 }
 

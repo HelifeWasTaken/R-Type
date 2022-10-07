@@ -34,7 +34,8 @@ void AnimatedSprite::useAnimation(const std::string& animationName)
     try {
         _currentAnimation = &_reg.at(animationName);
     } catch (...) {
-        throw Error(std::string("AnimatedSprite: Could not find animtion: [") + animationName + "]");
+        throw Error(std::string("AnimatedSprite: Could not find animtion: [")
+            + animationName + "]");
     }
     _timer.setTarget(_currentAnimation->speed);
     _setRect(0);
@@ -47,10 +48,9 @@ void AnimatedSprite::update()
     }
 }
 
-std::vector<IntRect> AnimatedSprite::determineRects(
-    const Vector2u& frameSize, const Texture& texture,
-    const unsigned int& frames, const Vector2u& startPos,
-    const Vector2u& spacing)
+std::vector<IntRect> AnimatedSprite::determineRects(const Vector2u& frameSize,
+    const Texture& texture, const unsigned int& frames,
+    const Vector2u& startPos, const Vector2u& spacing)
 {
     const Vector2u textureSize = texture.getSize();
     std::vector<IntRect> rects;

@@ -53,8 +53,7 @@ public:
      * @param  callback: The callback to call
      * @retval None
      */
-    InputManagement& setAxisCallback(
-        const callback_axis_t& callback);
+    InputManagement& setAxisCallback(const callback_axis_t& callback);
 
 protected:
 private:
@@ -67,8 +66,6 @@ private:
     callback_axis_t _callback_axis = nullptr;
 };
 }
-
-
 
 // InputManagent manager(controller, entity);
 

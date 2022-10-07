@@ -2,8 +2,8 @@
 
 #include <cstdint>
 
-#include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
+#include <SFML/Graphics.hpp>
 
 namespace paa {
 
@@ -55,11 +55,8 @@ using Transform = sf::Transform;
 using VideoMode = sf::VideoMode;
 using Clock = sf::Clock;
 
-template<typename T>
-using Vector2 = sf::Vector2<T>;
-template<typename T>
-using Vector3 = sf::Vector3<T>;
-template<typename T>
-using Rect = sf::Rect<T>;
+template <typename T> using Vector2 = sf::Vector2<T>;
+template <typename T> using Vector3 = sf::Vector3<T>;
+template <typename T> using Rect = sf::Rect<T>;
 
 } // namespace paa

@@ -17,10 +17,9 @@ HL_SUB_ERROR_IMPL(ResourceManagerError, AABaseError);
  */
 class ResourceManager {
 private:
-    using LoadableResource = std::variant<Texture, Font,
-                                        SoundBuffer, Image>;
-    using ResourceHolder    = std::unordered_map<std::string,
-                            std::unique_ptr<LoadableResource>>;
+    using LoadableResource = std::variant<Texture, Font, SoundBuffer, Image>;
+    using ResourceHolder
+        = std::unordered_map<std::string, std::unique_ptr<LoadableResource>>;
 
     ResourceHolder _resourceMap;
 
@@ -34,14 +33,15 @@ public:
      * @param loadArgs Additionals arguments
      */
     template <typename T, typename... LoadArgs>
-    void load(
-        const std::string& filename, const std::string& name, LoadArgs&&... loadArgs)
+    void load(const std::string& filename, const std::string& name,
+        LoadArgs&&... loadArgs)
     {
         LoadableResource* resource = new LoadableResource(T());
         T& ref = std::get<T>(*resource);
 
         if (!ref.loadFromFile(filename, std::forward<LoadArgs>(loadArgs)...))
-            throw ResourceManagerError("ResourceHolder::load - Failed to load " + filename);
+            throw ResourceManagerError(
+                "ResourceHolder::load - Failed to load " + filename);
         _resourceMap[name] = std::unique_ptr<LoadableResource>(resource);
     }
 
@@ -56,7 +56,8 @@ public:
     {
         auto found = _resourceMap.find(name);
         if (found == _resourceMap.end())
-            throw ResourceManagerError("ResourceHolder::get - Resource not found: " + name);
+            throw ResourceManagerError(
+                "ResourceHolder::get - Resource not found: " + name);
         return std::get<T>(*found->second);
     }
 
@@ -71,7 +72,6 @@ public:
      * @brief Clears the resource holder
      */
     void clear();
-
 };
 
 HL_SINGLETON_IMPL(ResourceManager, ResourceManagerInstance);

@@ -13,13 +13,10 @@ int main()
 
         if (server.poll(event)) {
             if (event.type == server::event_type::MainMessage
-                && event.message->code()
-                    == rtype::net::message_code::SYNC_MSG) {
+                && event.message->code() == message_code::SYNC_MSG) {
 
-                boost::shared_ptr<rtype::net::UpdateMessage> msg
-                    = rtype::net::parse_message<rtype::net::UpdateMessage>(
-                        event.message->to_vec());
-
+                boost::shared_ptr<UpdateMessage> msg
+                    = parse_message<UpdateMessage>(event.message->to_vec());
                 for (auto& it : server.clients()) {
                     auto& id = it.first;
                     auto& client = it.second;

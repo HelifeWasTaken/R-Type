@@ -393,7 +393,7 @@ namespace net {
         , _messages(new async_automated_sparse_array<message_info>)
         , _recv_queue(new async_queue<shared_message_info_t>)
     {
-        spdlog::info("udp_server: Starting server");
+        spdlog::info("udp_server: launched: 127.0.0.1:{}", port);
         start_receive();
     }
 
@@ -408,6 +408,7 @@ namespace net {
     {
         _main_channel = &main_channel;
         _main_id = main_id;
+        spdlog::info("remote_client: Main channel({}) initialized", _main_id);
     }
 
     void remote_client::init_feed_channel(
@@ -420,6 +421,7 @@ namespace net {
     void remote_client::send_main(tcp_connection::shared_message_info_t msg)
     {
         if (_main_channel) {
+            spdlog::info("remote_client: Sending message to main channel");
             _main_channel->send(_main_id, std::move(msg));
         } else {
             spdlog::error("remote_client: Cannot send to main channel: no "
@@ -452,6 +454,7 @@ namespace net {
     void remote_client::send_feed(udp_server::shared_message_info_t msg)
     {
         if (_feed_channel) {
+            spdlog::info("remote_client: Sending feed message");
             _feed_channel->send_to(_feed_endpoint, std::move(msg));
         } else {
             spdlog::error("remote_client: Cannot send to feed channel: no "
@@ -491,6 +494,7 @@ namespace net {
             , _udp_server(new udp_server(_io_context, udp_port))
             , _authenticate(authenticate)
     {
+        _is_running = true;
         run();
     }
 
@@ -529,68 +533,102 @@ namespace net {
 
     message_code server::feed_message::code() const { return _msg->code(); }
 
+    bool server::on_tcp_event_connexion(event& event, tcp_event& tcp_event)
+    {
+        auto conn = tcp_event.get<tcp_event_connexion>();
+        spdlog::info("server: on_tcp_connection: New client connected: {}", conn.get_id());
+
+        event.type = Connect;
+        event.client = _clients.insert_or_assign(conn.get_id(), remote_client::create()).first->second;
+        event.client->init_main_channel(*_tcp_server, conn.get_id());
+        return true;
+    }
+
+    bool server::on_tcp_event_disconnexion(event& event, tcp_event& tcp_event)
+    {
+        auto disconn = tcp_event.get<tcp_event_disconnexion>();
+        spdlog::info("server: on_tcp_disconnection: Client disconnected: {}", disconn.get_id());
+
+        event.type = Disconnect;
+        event.client = get_client(disconn.get_id());
+        return true;
+    }
+
+    bool server::on_tcp_event_message(event& event, tcp_event& tcp_event)
+    {
+        event.type = MainMessage;
+        {
+            tcp_event_message& msg_event = tcp_event.get<tcp_event_message>();
+            event.client = get_client(msg_event.get_id());
+            event.message = std::make_unique<main_message>(event.client, msg_event.get_message());
+        }
+        if (_authenticate) {
+            if (event.message->code() == message_code::CONN_INIT) {
+                spdlog::info("server: on_tcp_message: ConnectionInitReply sent to client: {}", event.client->id());
+                event.client->send_main(ConnectionInitReply(event.client->id(), 42));
+                return false;
+            } else {
+                // spdlog::info("server: on_tcp_message: Client {} could not be authenticated", event.client->id());
+                spdlog::info("server: on_tcp_message: New message from client: {}", event.client->id());
+                return true;
+            }
+        }
+        return true;
+    }
+
+    bool server::poll_tcp(event& event, tcp_event& tcp_event)
+    {
+        switch (tcp_event.get_type()) {
+        case tcp_event_type::Connexion:
+            return on_tcp_event_connexion(event, tcp_event);
+        case tcp_event_type::Disconnexion:
+            return on_tcp_event_disconnexion(event, tcp_event);
+        case tcp_event_type::Message:
+            return on_tcp_event_message(event, tcp_event);
+        default:
+            spdlog::error("server: poll_tcp: Invalid event type");
+            event.type = Invalid;
+            return false;
+        }
+        return true;
+    }
+
+    bool server::on_udp_event_message(event& event, udp_server::shared_message_info_t& msg)
+    {
+        spdlog::info("server: on_udp_message: New message from client: {}", msg->sender_id());
+        event.type = FeedMessage;
+        event.client = get_client(msg->sender_id());
+        event.message = std::make_unique<feed_message>(event.client, msg);
+        return true;
+    }
+
+    bool server::on_udp_feed_init(event& event, udp_server::shared_message_info_t& msg)
+    {
+        spdlog::info("server: on_udp_feed_init: New feed from client: {}", msg->sender_id());
+        event.client = get_client(msg->sender_id());
+        event.client->init_feed_channel(*_udp_server, msg->sender());
+        event.client->send_feed(FeedInitReply(84));
+        return false;
+    }
+
+    bool server::poll_udp(event& event, udp_server::shared_message_info_t& msg)
+    {
+        if (_authenticate && msg->code() == message_code::FEED_INIT) {
+            return on_udp_feed_init(event, msg);
+        } else {
+            return on_udp_event_message(event, msg);
+        }
+    }
+
     bool server::poll(event& event)
     {
         tcp_event tcp_event;
         udp_server::shared_message_info_t msg;
 
         if (_tcp_server->poll(tcp_event)) {
-            switch (tcp_event.get_type()) {
-            case tcp_event_type::Connexion:
-                event.type = Connect;
-                event.client
-                    = _clients
-                            .insert_or_assign(
-                                tcp_event.get<tcp_event_connexion>().get_id(),
-                                remote_client::create())
-                            .first->second;
-                event.client->init_main_channel(*_tcp_server,
-                    tcp_event.get<tcp_event_connexion>().get_id());
-                break;
-            case tcp_event_type::Disconnexion:
-                event.type = Disconnect;
-                event.client = get_client(
-                    tcp_event.get<tcp_event_disconnexion>().get_id());
-                break;
-            case tcp_event_type::Message:
-                event.type = MainMessage;
-                {
-                    tcp_event_message& msg_event
-                        = tcp_event.get<tcp_event_message>();
-                    event.client = get_client(msg_event.get_id());
-                    event.message = std::make_unique<main_message>(
-                        event.client, msg_event.get_message());
-                }
-                if (_authenticate) {
-                    if (event.message->code() == message_code::CONN_INIT) {
-                        event.client->send_main(
-                            ConnectionInitReply(event.client->id(), 42));
-                        return false;
-                    } else {
-                        return true;
-                    }
-                }
-                break;
-            default:
-                event.type = Invalid;
-                break;
-            }
-            return true;
+           return poll_tcp(event, tcp_event);
         } else if (_udp_server->poll(msg)) {
-            // handle connection to the feed channel
-            if (_authenticate && msg->code() == message_code::FEED_INIT) {
-                event.client = get_client(msg->sender_id());
-                event.client->init_feed_channel(
-                    *_udp_server, msg->sender());
-                event.client->send_feed(FeedInitReply(84));
-                return false;
-            }
-            // otherwise it's just a message
-            event.type = FeedMessage;
-            event.client = get_client(msg->sender_id());
-            event.message
-                = std::make_unique<feed_message>(event.client, msg);
-            return true;
+            return poll_udp(event, msg);
         }
         return false;
     }
@@ -607,8 +645,8 @@ namespace net {
     void server::run()
     {
         _thread_io_context_runner = boost::shared_ptr<boost::thread>(
-            new boost::thread([&io = _io_context]() {
-                while (true)
+            new boost::thread([&is_running=_is_running, &io = _io_context]() {
+                while (is_running)
                     io.run();
             }));
     }

@@ -445,6 +445,7 @@ namespace net {
     class server {
     public:
         server(int tcp_port, int udp_port, bool authenticate = false);
+        ~server() { _is_running = false; _thread_io_context_runner->join(); }
 
         enum event_type {
             Invalid,
@@ -524,6 +525,15 @@ namespace net {
     private:
         void run();
 
+        bool poll_tcp(event& event, tcp_event& tcp_event);
+        bool on_tcp_event_connexion(event& event, tcp_event& tcp_event);
+        bool on_tcp_event_disconnexion(event& event, tcp_event& tcp_event);
+        bool on_tcp_event_message(event& event, tcp_event& tcp_event);
+
+        bool poll_udp(event& event, udp_server::shared_message_info_t& msg);
+        bool on_udp_feed_init(event& event, udp_server::shared_message_info_t& msg);
+        bool on_udp_event_message(event& event, udp_server::shared_message_info_t& msg);
+
         remote_client::pointer get_client(uint16_t id);
 
         remote_client::pointer get_client(tcp_connection::pointer conn);
@@ -538,6 +548,8 @@ namespace net {
         std::unordered_map<uint16_t, remote_client::pointer> _clients;
 
         boost::shared_ptr<boost::thread> _thread_io_context_runner;
+
+        std::atomic_size_t _is_running = false;
     };
 }
 }

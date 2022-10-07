@@ -67,13 +67,22 @@ std::string(mes.begin(), mes.end()));
 
 #include "PileAA/AnimatedSprite.hpp"
 #include "PileAA/App.hpp"
+#include "Client.hpp"
 
 PAA_SCENE(mystate) {
+
+    rtype::net::UDP_TCP_Client client = rtype::net::UDP_TCP_Client("127.0.0.1", "127.0.0.1", "4242", "4243");
 
     PAA_START(mystate) {
         PAA_ENTITY e = PAA_NEW_ENTITY();
         PAA_SET_SPRITE(e, "image");
         PAA_GET_COMPONENT(e, paa::Sprite).useAnimation("idle");
+
+        uint8_t byte = (uint8_t)rtype::net::message_code::CONN_INIT;
+
+        client.tcp().send(
+            rtype::net::tcp_connection::new_message(&byte, sizeof(byte))->buffer, 1
+        );
     }
 };
 

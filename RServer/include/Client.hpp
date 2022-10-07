@@ -123,6 +123,11 @@ namespace net {
 
         void send(boost::shared_ptr<tcp_buffer_t> message, size_t size = -1);
 
+        void send(const tcp_buffer_t& message, size_t size = -1)
+        {
+            send(boost::make_shared<tcp_buffer_t>(message), size);
+        }
+
     private:
 
         boost::shared_ptr<tcp_buffer_t> _buf_recv;

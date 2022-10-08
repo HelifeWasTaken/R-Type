@@ -14,11 +14,27 @@ public:
     Room(server& server) : _server(server) {}
 
     void add_client(unsigned int id) {
+        spdlog::info("Room: Client {} connected adding to room", id);
+
+        auto conn1 = ConnectionMessage(id);
+        auto new_client = _server.get_client(id);
+
+        for (const auto& client : _connected_clients) {
+            auto conn2 = ConnectionMessage(client);
+            _server.get_client(client)->send_main(conn1);
+            new_client->send_main(conn2);
+        }
         _connected_clients.push_back(id);
     }
 
     void remove_client(unsigned int id) {
-        std::erase_if(_connected_clients, [id](unsigned int i) { return i == id; });
+        spdlog::info("Room: Client {} disconnected removing from room", id);
+        std::erase_if(_connected_clients,
+            [id](unsigned int i) { return i == id; });
+        auto conn = DisconnectMessage(id);
+        for (const auto& client : _connected_clients) {
+            _server.get_client(client)->send_main(conn);
+        }
     }
 
     bool has_client(unsigned int id) {
@@ -49,15 +65,16 @@ public:
 
 void handle_main_message(Room& room, server::event& event)
 {
+    spdlog::info("Server: Received message from client {} of code {}",
+        event.client->id(), (int)event.message->code());
     if (event.message->code() == message_code::CONN_INIT) {
-        spdlog::info("Server: Client {} connected adding to room", event.client->id());
-        room.send_to_all_by_main(*event.message->to_msg());
         room.add_client(event.client->id());
     }
 }
 
 void handle_feed_message(Room& room, server::event& event)
 {
+    spdlog::info("FeedMessage: {}", (int)event.message->code());
     if (event.message->code() == message_code::SYNC_MSG) {
         spdlog::info("Server: Client {} sent a sync message", event.client->id());
         room.send_to_all_by_feed(*event.message->to_msg(), {event.client->id()});
@@ -73,16 +90,13 @@ int main()
         server::event event;
         if (server.poll(event)) {
             spdlog::info("Server: Event received: {}", event.type);
-            if (event.type == server::event_type::FeedMessage)
+            if (event.type == server::event_type::FeedMessage) {
                 handle_feed_message(room, event);
-            else if (event.type == server::event_type::MainMessage)
+            } else if (event.type == server::event_type::MainMessage) {
                 handle_main_message(room, event);
-            else if (event.type == server::event_type::Disconnect) {
+            } else if (event.type == server::event_type::Disconnect) {
                 if (room.has_client(event.client->id())) {
-                    spdlog::info("Server: Client {} disconnected removing from room", event.client->id());
                     room.remove_client(event.client->id());
-                    DisconnectMessage msg(event.client->id());
-                    room.send_to_all_by_main(msg);
                 }
             }
         }

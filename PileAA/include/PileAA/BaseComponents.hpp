@@ -19,6 +19,10 @@ struct Depth {
     int z;
 };
 
+struct Id {
+    int id;
+};
+
 /**
  * @brief Setup the given ECS registry with the base components needed for any
  * game.

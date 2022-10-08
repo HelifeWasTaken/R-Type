@@ -91,7 +91,8 @@
         "valarray": "cpp",
         "variant": "cpp",
         "silva": "cpp",
-        "silvastate": "cpp"
+        "silvastate": "cpp",
+        "sparse_array": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

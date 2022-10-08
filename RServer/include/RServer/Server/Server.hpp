@@ -341,10 +341,10 @@ namespace net {
 
         enum event_type {
             Invalid,
-            Connect,
-            Disconnect,
             MainMessage,
-            FeedMessage
+            FeedMessage,
+            Connect,
+            Disconnect
         };
 
         class base_message {

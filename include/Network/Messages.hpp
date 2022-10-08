@@ -23,6 +23,8 @@ namespace net {
         FEED_INIT_REP,
         TEXT_REQ,
         TEXT_REP,
+
+        CONNECTION,
         DISCONNECTION,
 
         // signal markers
@@ -44,6 +46,7 @@ namespace net {
         QUERY_MESSAGE,
         REPLY_MESSAGE,
         CONNETION_INIT_REPLY,
+        CONNECTION_MESSAGE,
         DISCONNECTION_MESSAGE,
         FEED_INIT_REQUEST,
         FEED_INIT_REPLY
@@ -54,6 +57,7 @@ namespace net {
             { message_code::UPDATE_MSG, message_type::UPDATE_MESSAGE },
             { message_code::SYNC_MSG, message_type::SYNC_MESSAGE },
             { message_code::CONN_INIT_REP, message_type::CONNETION_INIT_REPLY },
+            { message_code::CONNECTION, message_type::CONNECTION_MESSAGE },
             { message_code::DISCONNECTION, message_type::DISCONNECTION_MESSAGE },
             { message_code::FEED_INIT, message_type::FEED_INIT_REQUEST },
             { message_code::FEED_INIT_REP, message_type::FEED_INIT_REPLY },
@@ -95,6 +99,15 @@ namespace net {
         virtual const std::vector<uint8_t> serialize() const = 0;
         virtual message_code code() const = 0;
     };
+
+    template<typename T>
+    T& get_message(boost::shared_ptr<IMessage> msg)
+    {
+        T *ptr = dynamic_cast<T*>(msg.get());
+        if (ptr == nullptr)
+            throw std::runtime_error("Invalid message type cast");
+        return *ptr;
+    }
 
     class SignalMarker : public IMessage {
     public:
@@ -528,9 +541,59 @@ namespace net {
         uint32_t _token;
     };
 
+    class ConnectionMessage : public IMessage {
+    public:
+        ConnectionMessage()
+             : _playerId(0)
+        {}
+
+        ConnectionMessage(int16_t playerId)
+            : _playerId(playerId)
+        {}
+
+        void from(const std::vector<uint8_t>& buff)
+        {
+            std::memcpy(&_playerId, buff.data() + 1, sizeof(_playerId));
+            _playerId = boost::endian::big_to_native(_playerId);
+        }
+
+        static boost::shared_ptr<ConnectionMessage> deserialize(
+            const uint8_t* buffer, size_t size)
+        {
+            auto msg = boost::make_shared<ConnectionMessage>();
+            msg->from(std::vector<uint8_t>(buffer, buffer + size));
+            return msg;
+        }
+
+        static boost::shared_ptr<ConnectionMessage> deserialize(
+            const std::vector<uint8_t>& buff)
+        { return deserialize(buff.data(), buff.size()); }
+
+        const std::vector<uint8_t> serialize() const
+        {
+            uint8_t* byteReader;
+            uint16_t playerId = boost::endian::native_to_big(_playerId);
+
+            std::vector<uint8_t> buff;
+            buff.push_back(static_cast<uint8_t>(code()));
+            byteReader = reinterpret_cast<uint8_t*>(&playerId);
+            buff.insert(buff.end(), byteReader, byteReader + sizeof(playerId));
+            return buff;
+        }
+
+        virtual message_code code() const { return message_code::CONNECTION; }
+
+        uint16_t playerId() const { return _playerId; }
+
+    protected:
+        uint16_t _playerId;
+    };
+
+
     class DisconnectMessage : public IMessage {
     public:
         DisconnectMessage()
+            : _playerId(0)
         {}
 
         DisconnectMessage(int16_t playerId)
@@ -540,9 +603,7 @@ namespace net {
         void from(const std::vector<uint8_t>& buff)
         {
             std::memcpy(&_playerId, buff.data() + 1, sizeof(_playerId));
-            uint16_t id = boost::endian::big_to_native(_playerId);
-
-            std::memcpy(&id, buff.data(), sizeof(_playerId));
+            _playerId = boost::endian::big_to_native(_playerId);
         }
 
         static boost::shared_ptr<DisconnectMessage> deserialize(
@@ -555,9 +616,7 @@ namespace net {
 
         static boost::shared_ptr<DisconnectMessage> deserialize(
             const std::vector<uint8_t>& buff)
-        {
-            return deserialize(buff.data(), buff.size());
-        }
+        { return deserialize(buff.data(), buff.size()); }
 
         const std::vector<uint8_t> serialize() const
         {
@@ -709,6 +768,8 @@ namespace net {
             return ReplyMessage::deserialize(buffer, size);
         case message_type::CONNETION_INIT_REPLY:
             return ConnectionInitReply::deserialize(buffer, size);
+        case message_type::CONNECTION_MESSAGE:
+            return ConnectionMessage::deserialize(buffer, size);
         case message_type::DISCONNECTION_MESSAGE:
             return DisconnectMessage::deserialize(buffer, size);
         case message_type::FEED_INIT_REQUEST:

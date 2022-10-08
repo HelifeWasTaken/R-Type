@@ -1,89 +1,23 @@
-#include <iostream>
-/*
-#include "Network/Client.hpp"
-#include "Network/Server.hpp"
-#include <SFML/Graphics.hpp>
-#include <exception>
-#include <iostream>
-
-int main()
-{
-    try {
-        // rtype::net::UDP_TCP_Client client("127.0.0.1", "127.0.0.1", "4242",
-"4243");
-        //
-        boost::asio::io_context context;
-        rtype::net::UDPClient client(context, "127.0.0.1", "13");
-
-        // sf::RenderWindow w(sf::VideoMode(800, 600), "SFML works!");
-        rtype::net::tcp_buffer_t ptr;
-
-        while (true) {
-            std::cout << "first" << std::endl;
-            client.send("lol", 3);
-            std::cout << "second" << std::endl;
-            //size_t readed_bytes = client.udp().receive(ptr.data(),
-ptr.size());
-
-            size_t readed_bytes = client.receive(ptr.data(), ptr.size());
-            std::cout << "hello world" << ptr.data() << std::endl;
-        }
-    } catch(...) {
-        std::cout << "RIP" << std::endl;
-    }
-    return 0;
-}
-
-int main()
-{
-    try {
-        boost::asio::io_context context;
-        rtype::net::UDPClient client(context, "127.0.0.1", "4243");
-        sf::RenderWindow w(sf::VideoMode(800, 600), "「R - タイプ」");
-
-        while (w.isOpen()) {
-            sf::Event event;
-            while (w.pollEvent(event)) {
-                if (event.type == sf::Event::Closed) {
-                    client.send(rtype::net::udp_server::new_message(0, "closing
-window")); w.close();
-                }
-            }
-            client.send(rtype::net::udp_server::new_message(0, "closing
-window")); rtype::net::shared_message_t msg; while (client.poll(msg)) { auto mes
-= msg->serialize(); spdlog::info("UDPClient::receive: {}",
-std::string(mes.begin(), mes.end()));
-            }
-            w.clear(sf::Color::Black);
-            w.display();
-            context.run_one();
-        }
-    } catch(...) {
-        std::cout << "RIP" << std::endl;
-    }
-    return 0;
-}
-*/
-
 #include "PileAA/AnimatedSprite.hpp"
 #include "PileAA/App.hpp"
-#include "Client.hpp"
+#include "RServer/Client/Client.hpp"
+#include "ClientWrapper.hpp"
 
 PAA_SCENE(mystate) {
 
-    rtype::net::UDP_TCP_Client client = rtype::net::UDP_TCP_Client("127.0.0.1", "127.0.0.1", "4242", "4243");
+    RTYPE_CLIENT client;
 
     PAA_START(mystate) {
         PAA_ENTITY e = PAA_NEW_ENTITY();
-        PAA_SET_SPRITE(e, "image");
+        PAA_SET_SPRITE(e, "spaceship");
         PAA_GET_COMPONENT(e, paa::Sprite).useAnimation("idle");
 
-        uint8_t byte = (uint8_t)rtype::net::message_code::CONN_INIT;
+        client.run("../Client.conf");
+    }
 
-        client.tcp().send(
-            rtype::net::tcp_connection::new_message(&byte, sizeof(byte))->buffer, 1
-        );
+    PAA_UPDATE {
+        client.restart_if_necessary();
     }
 };
 
-PAA_PROGRAM_START(mystate, "../Resources.conf");
+PAA_PROGRAM_START(mystate, "../Resources.conf", true);

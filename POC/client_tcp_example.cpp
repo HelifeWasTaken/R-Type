@@ -1,6 +1,7 @@
-#include <Client.hpp>
+#include "RServer/Client/Client.hpp"
 #include <Network/Messages.hpp>
-#include <poc.hpp>
+#include "poc.hpp"
+#include <iostream>
 
 using TCPClient = rtype::net::TCPClient;
 

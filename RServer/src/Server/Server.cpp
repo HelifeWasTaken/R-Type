@@ -1,4 +1,4 @@
-#include "Server.hpp"
+#include "RServer/Server/Server.hpp"
 #include <vector>
 #include <assert.h>
 #include <boost/endian.hpp>
@@ -566,11 +566,8 @@ namespace net {
             if (event.message->code() == message_code::CONN_INIT) {
                 spdlog::info("server: on_tcp_message: ConnectionInitReply sent to client: {}", event.client->id());
                 event.client->send_main(ConnectionInitReply(event.client->id(), 42));
-                return false;
             } else {
-                // spdlog::info("server: on_tcp_message: Client {} could not be authenticated", event.client->id());
                 spdlog::info("server: on_tcp_message: New message from client: {}", event.client->id());
-                return true;
             }
         }
         return true;

@@ -1,127 +1,19 @@
 #pragma once
 
-#include "PileAA/meta.hpp"
-#include <Network/Messages.hpp>
-#include <boost/array.hpp>
-#include <boost/asio.hpp>
-#include <boost/bind/bind.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <boost/thread.hpp>
-#include <queue>
 #include <spdlog/spdlog.h>
+
 #include <variant>
+
+#include <Network/Messages.hpp>
+
+#include "RServer/utils.hpp"
+
+#include "PileAA/meta.hpp"
 
 #define MAGIC_NUMBER 0xff1cec0ffeedefec
 
-// TODO: Use proper logging library vs std::fprintf stderr
-
-// using namespace boost::placeholders;
-
 namespace rtype {
 namespace net {
-
-    template <typename T> class async_queue : public std::queue<T> {
-    public:
-        HL_AUTO_COMPLETE_CANONICAL_FORM(async_queue);
-
-        bool async_empty()
-        {
-            std::lock_guard<std::mutex> lock(_mutex);
-            return this->empty();
-        }
-
-        bool async_pop(T& value)
-        {
-            std::lock_guard<std::mutex> lock(_mutex);
-            if (this->empty())
-                return false;
-            value = std::move(this->front());
-            this->pop();
-            return true;
-        }
-
-        void async_push(const T& value)
-        {
-            std::lock_guard<std::mutex> lock(_mutex);
-            this->push(value);
-        }
-
-        void async_push(T&& value)
-        {
-            std::lock_guard<std::mutex> lock(_mutex);
-            this->push(std::move(value));
-        }
-
-        template <typename... Args> void async_emplace(Args&&... args)
-        {
-            std::lock_guard<std::mutex> lock(_mutex);
-            this->emplace(std::forward<Args>(args)...);
-        }
-
-    private:
-        std::mutex _mutex;
-    };
-
-    template <typename T> class async_automated_sparse_array {
-    private:
-        std::mutex _mut;
-        async_queue<size_t> _unused_indexes;
-        std::vector<boost::shared_ptr<T>> _array;
-
-    public:
-        HL_AUTO_COMPLETE_CANONICAL_FORM(async_automated_sparse_array);
-
-        boost::shared_ptr<T> async_get(size_t index)
-        {
-            std::lock_guard<std::mutex> lock(this->_mut);
-            if (index >= this->_array.size())
-                return nullptr;
-            return this->_array.at(index);
-        }
-
-        size_t async_set(boost::shared_ptr<T> value)
-        {
-            std::lock_guard<std::mutex> lock(this->_mut);
-            size_t index;
-
-            if (this->_unused_indexes.async_pop(index)) {
-                this->_array.at(index) = value;
-                return index;
-            }
-            this->_array.push_back(value);
-            return this->_array.size() - 1;
-        }
-
-        void async_remove(size_t index)
-        {
-            std::lock_guard<std::mutex> lock(_mut);
-            if (index >= this->_array.size())
-                return;
-            this->_array.at(index) = nullptr;
-            this->_unused_indexes.async_push(index);
-        }
-
-        // TODO: Optimize size by avoiding unused indexes
-        size_t async_size()
-        {
-            std::lock_guard<std::mutex> lock(this->_mut);
-            return this->_array.size();
-        }
-    };
-
-#ifndef RTYPE_TCP_BUFFER_SIZE
-#define RTYPE_TCP_BUFFER_SIZE 1024
-#endif
-
-#ifndef RTYPE_UDP_BUFFER_SIZE
-#define RTYPE_UDP_BUFFER_SIZE 1024
-#endif
-
-    using tcp = boost::asio::ip::tcp;
-    using udp = boost::asio::ip::udp;
-
-    using tcp_buffer_t = boost::array<char, RTYPE_TCP_BUFFER_SIZE>;
-    using udp_buffer_t = boost::array<char, RTYPE_UDP_BUFFER_SIZE>;
 
     template <typename BufferType, int StartOffset = 0>
     struct base_message_info {
@@ -534,11 +426,13 @@ namespace net {
         bool on_udp_feed_init(event& event, udp_server::shared_message_info_t& msg);
         bool on_udp_event_message(event& event, udp_server::shared_message_info_t& msg);
 
+    public:
         remote_client::pointer get_client(uint16_t id);
 
         remote_client::pointer get_client(tcp_connection::pointer conn);
         remote_client::pointer get_client(const udp::endpoint& endpoint);
 
+    private:
         bool _authenticate = false;
         boost::asio::io_context _io_context;
 

@@ -160,6 +160,30 @@ static inline void load_configuration_file_animations(nlohmann::json& json)
     spdlog::info("PileAA: Animations loaded");
 }
 
+static inline void load_configuration_file_window(nlohmann::json& json)
+{
+    spdlog::info("PileAA: Loading window from configuration file");
+
+    if (json.find("window") == json.end()) {
+        spdlog::info("PileAA: No window configuration found using default (800,600)");
+        Screen::get().create(VideoMode(800, 600), "PileAA");
+    } else {
+        try {
+            const auto& window = json["window"];
+            const auto& width = window["width"].get<int>();
+            const auto& height = window["height"].get<int>();
+            const auto& title = window["title"].get<std::string>();
+            Screen::get().create(VideoMode(width, height), title);
+            spdlog::info("PileAA: Window created: {} {}x{}", title, width, height);
+        } catch (const nlohmann::json::exception& e) {
+            throw App::Error(
+                std::string("window: load_configuration_file - Invalid json file: ")
+                + e.what()
+            );
+        }
+    }
+}
+
 static inline void load_configuration_file(const std::string& filename)
 {
     spdlog::info("PileAA: Loading configuration file: {}", filename);
@@ -173,6 +197,7 @@ static inline void load_configuration_file(const std::string& filename)
         file >> json;
         load_configuration_file_resources(json["resources"]);
         load_configuration_file_animations(json["animations"]);
+        load_configuration_file_window(json);
     } catch (const nlohmann::json::exception& e) {
         throw ResourceManagerError(
             "load_configuration_file - Invalid json file: "
@@ -198,9 +223,6 @@ void setup_paa_system(const std::string& configuration_filename)
 
     SceneManager::get();
     spdlog::info("PileAA: SceneManager created");
-
-    Screen::get().create(VideoMode(800, 600), "PileAA");
-    spdlog::info("PileAA: Screen created");
 
     BatchRendererInstance::get();
     spdlog::info("PileAA: BatchRenderer created");

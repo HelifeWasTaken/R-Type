@@ -3,9 +3,9 @@
 #include <iostream>
 #include <algorithm>
 
-/*
 using namespace rtype::net;
 
+/*
 class Room {
 private:
     std::vector<int> _connected_clients;
@@ -109,5 +109,10 @@ int main()
 
 int main()
 {
+    server server(4242, 4243, true);
+    while (true) {
+        server::event event;
+        server.poll(event);
+    }
     return 0; 
 }

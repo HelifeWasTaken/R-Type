@@ -18,7 +18,9 @@ static void display_event(rtype::net::tcp_event& event)
             ref.get_message()->to_string());
         ref_s->send(ref.get_id(),
             rtype::net::tcp_connection::new_message(
-                rtype::net::TextReplyMessage(0, "pong\n")));
+                rtype::net::TextMessage("pong\n")
+            )
+        );
     }
 }
 

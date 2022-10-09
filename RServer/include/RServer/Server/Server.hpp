@@ -4,7 +4,7 @@
 
 #include <variant>
 
-#include <Network/Messages.hpp>
+#include "RServer/Messages/Messages.hpp"
 
 #include "RServer/utils.hpp"
 

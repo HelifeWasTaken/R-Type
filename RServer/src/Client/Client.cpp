@@ -1,5 +1,5 @@
 #include "RServer/Client/Client.hpp"
-#include "Network/Messages.hpp"
+#include "RServer/Messages/Messages.hpp"
 
 namespace rtype {
 namespace net {

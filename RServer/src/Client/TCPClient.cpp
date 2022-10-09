@@ -29,9 +29,9 @@ namespace net {
 
         receive();
 
+        auto msg = tcp_connection::new_message(SignalMarker(message_code::CONN_INIT));
         // CONN_INIT
-        uint8_t byte = (uint8_t)rtype::net::message_code::CONN_INIT;
-        send(tcp_connection::new_message(&byte, sizeof(byte))->buffer, 1);
+        send(msg->buffer, msg->size);
     }
 
     void TCPClient::_add_event(shared_message_t message)

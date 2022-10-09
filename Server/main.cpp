@@ -1,8 +1,9 @@
-#include "Network/Messages.hpp"
+#include "RServer/Messages/Types.hpp"
 #include "RServer/Server/Server.hpp"
 #include <iostream>
 #include <algorithm>
 
+/*
 using namespace rtype::net;
 
 class Room {
@@ -102,4 +103,11 @@ int main()
         }
     }
     return 0;
+}
+
+*/
+
+int main()
+{
+    return 0; 
 }

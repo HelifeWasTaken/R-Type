@@ -4,34 +4,19 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/Window.hpp>
 #include <unordered_map>
+#include <PileAA/App.hpp>
+
+PAA_SCENE(poc_scene_animated_sprite) {
+    PAA_START(poc_scene_animated_sprite) {
+        PAA_ENTITY e = PAA_NEW_ENTITY();
+        PAA_SET_SPRITE(e, "spaceship").useAnimation("idle");
+    }
+};
 
 void poc_animated_sprite(void)
 {
-    /*
-    sf::Texture tex;
-    tex.loadFromFile("../assets/r-typesheet5.png");
-    sf::RenderWindow window(sf::VideoMode(800, 800), "lol");
-
-    paa::AnimatedSprite sprite;
-
-    sprite.setTexture(tex);
-    sprite.registerAnimation("speedy",
-        { paa::AnimatedSprite::determineRects(sf::Vector2u(33, 36), tex, 16), 100 });
-    sprite.useAnimation("speedy");
-    sprite.setPosition(sf::Vector2f(400, 400));
-    sprite.setScale(8.0, 8.0);
-
-    while (window.isOpen()) {
-        sf::Event evt;
-        while (window.pollEvent(evt)) {
-            if (evt.type == sf::Event::Closed)
-                window.close();
-        }
-        window.clear();
-        sprite.update();
-        window.draw(sprite);
-        window.display();
-    }
-    */
-   abort();
+    paa::setup_paa_system("../Resources.conf");
+    PAA_SCENE_MANAGER.pushState<poc_scene_animated_sprite>();
+    PAA_APP.run();
+    paa::stop_paa_system();
 }

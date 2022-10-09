@@ -3,10 +3,9 @@
 #include "Types.hpp"
 
 namespace paa {
-class Timer : public Clock {
-public:
-    using TimeUnit = f64;
+using TimeUnit = f64;
 
+class Timer : public Clock {
 protected:
     TimeUnit _targetTime = 0.0;
 
@@ -34,4 +33,49 @@ public:
      */
     Timer& setTarget(const TimeUnit& target);
 };
-}
+
+class DeltaTimer : public Clock {
+private:
+    TimeUnit _deltaTime = 0.0;
+    TimeUnit _lastTime = 0.0;
+    float _fpsTarget = 1000.f / 60.f;
+
+public:
+    /**
+     * @brief Construct a new Delta Timer object
+     */
+    DeltaTimer() = default;
+
+    /**
+     * @brief Destroy the Delta Timer object
+     */
+    ~DeltaTimer() = default;
+
+    /**
+     * @brief Get the Delta Time object
+     *
+     * @return TimeUnit
+     */
+    TimeUnit getDeltaTime() const;
+
+    /**
+     * @brief Get the Fps Target object
+     *
+     * @return unsigned int
+     */
+    unsigned int getFpsTarget() const;
+
+    /**
+     * @brief Set the Fps Target object
+     *
+     * @param fpsTarget
+     */
+    void setFpsTarget(const unsigned int& fpsTarget);
+
+    /**
+     * @brief Update the Delta Time object
+     */
+    void update();
+};
+
+} // namespace paa

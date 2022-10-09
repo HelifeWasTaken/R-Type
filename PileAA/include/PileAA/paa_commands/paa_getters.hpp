@@ -39,3 +39,8 @@
  * @brief Gets the batch renderer
  */
 #define PAA_BATCH_RENDERER paa::BatchRendererInstance::get()
+
+/**
+ * @brief Gets the delta timer
+ */
+#define PAA_DELTA_TIMER paa::DeltaTimerInstance::get()

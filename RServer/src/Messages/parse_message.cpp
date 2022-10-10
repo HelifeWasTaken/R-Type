@@ -53,7 +53,6 @@ namespace net {
             return Message::deserialize<TextMessage>(buffer, size);
         default:
             return nullptr;
-        }
     }
 
     boost::shared_ptr<IMessage> parse_message(const std::vector<uint8_t>& buff)

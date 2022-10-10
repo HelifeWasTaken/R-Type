@@ -47,6 +47,10 @@ namespace net {
         Serializer& add_bytes(const std::vector<uint8_t>& bytes) {
             return add_bytes(bytes.data(), bytes.size());
         }
+
+        Serializer& add_bytes(const std::string& str) {
+            return add_bytes(reinterpret_cast<const uint8_t*>(str.c_str()), str.size());
+        }
     };
 
     class Serializable {
@@ -86,7 +90,8 @@ namespace net {
         FEED_INIT_REP,
         SYNC_MESSAGE,
         UPDATE_MESSAGE,
-        TEXT_MESSAGE
+        TEXT_MESSAGE,
+        REQUEST_CONNECT_ROOM
     };
 
     // All classes that inherit from IMessage
@@ -99,7 +104,8 @@ namespace net {
         CONNECTION_INIT_REPLY,
         FEED_INIT_REQUEST,
         FEED_INIT_REPLY,
-        TEXT_MESSAGE
+        TEXT_MESSAGE,
+        REQUEST_CONNECT_ROOM
     };
 
     class IMessage {
@@ -263,6 +269,38 @@ namespace net {
         const std::string& text() const;
     private:
         std::string _text;
+    };
+
+    class RequestConnectRoom : public Message {
+    public:
+        RequestConnectRoom() = default;
+        RequestConnectRoom(const std::string& roomID);
+
+        void from(const uint8_t *data, const size_t size) override;
+        std::vector<uint8_t> serialize() const override;
+
+        const std::string& roomID() const;
+    private:
+        std::string _roomID;
+    };
+
+    #define RTYPE_INVALID_PLAYER_ID 0xFF
+    /**
+     * @brief If _playerID is 0xFF then the room is full
+     *        or room does not exists
+     */
+    class RequestConnectRoomReply : public Message {
+    public:
+        RequestConnectRoomReply() = default;
+        RequestConnectRoomReply(uint8_t playerID);
+
+        void from(const uint8_t *data, const size_t size) override;
+        std::vector<uint8_t> serialize() const override;
+
+        uint8_t playerID() const;
+
+    private:
+        uint8_t _playerID = RTYPE_INVALID_PLAYER_ID;
     };
 
 }

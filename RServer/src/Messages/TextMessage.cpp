@@ -16,7 +16,7 @@ namespace net {
     std::vector<uint8_t> TextMessage::serialize() const {
         Serializer s;
         s << _message_code;
-        s.add_bytes(reinterpret_cast<const uint8_t *>(_text.c_str()), _text.size());
+        s.add_bytes(_text);
         return s.data;
     }
 

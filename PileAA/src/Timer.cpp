@@ -24,7 +24,7 @@ void DeltaTimer::setFpsTarget(const unsigned int& fpsTarget)
     _fpsTarget = 1000.f / static_cast<float>(fpsTarget);
 }
 
-void DeltaTimer::getFpsTarget() const
+unsigned int DeltaTimer::getFpsTarget() const
 {
     return _fpsTarget;
 }
@@ -32,7 +32,7 @@ void DeltaTimer::getFpsTarget() const
 void DeltaTimer::update()
 {
     const TimeUnit currentTime = getElapsedTime().asMilliseconds();
-    _deltaTime = _fpsTarget * (_currentTime - _lastTime);
+    _deltaTime = _fpsTarget * (currentTime - _lastTime);
     _lastTime = currentTime;
 }
 

@@ -89,6 +89,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/Client/include
     ${CMAKE_SOURCE_DIR}/Server/include
     ${CMAKE_SOURCE_DIR}/RServer/include
+    ${CMAKE_SOURCE_DIR}/RServer/include/RServer
 )
 
 add_subdirectory(RServer)

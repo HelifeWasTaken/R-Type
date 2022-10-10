@@ -11,7 +11,7 @@ namespace rtype {
 namespace game {
 struct ClientWrapper {
 
-    std::shared_ptr<UDP_TCP_Client> client = nullptr;
+    std::shared_ptr<rtype::net::UDP_TCP_Client> client = nullptr;
 
     ClientWrapper() = default;
     ~ClientWrapper() = default;

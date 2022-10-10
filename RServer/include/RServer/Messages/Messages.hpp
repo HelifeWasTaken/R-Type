@@ -8,6 +8,7 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
+#include <cstdlib>
 
 namespace rtype {
 namespace net {
@@ -83,6 +84,7 @@ namespace net {
 
         // signal markers
         CONN_INIT,
+        CREATE_ROOM,
 
         // special messages
         CONN_INIT_REP,
@@ -91,7 +93,10 @@ namespace net {
         SYNC_MESSAGE,
         UPDATE_MESSAGE,
         TEXT_MESSAGE,
-        REQUEST_CONNECT_ROOM
+        REQUEST_CONNECT_ROOM,
+        CREATE_ROOM_REPLY,
+        CONNECT_ROOM_REQ_REP,
+        ROOM_CLIENT_DISCONNECT,
     };
 
     // All classes that inherit from IMessage
@@ -105,7 +110,10 @@ namespace net {
         FEED_INIT_REQUEST,
         FEED_INIT_REPLY,
         TEXT_MESSAGE,
-        REQUEST_CONNECT_ROOM
+        REQUEST_CONNECT_ROOM,
+        CREATE_ROOM_REPLY,
+        CONNECT_ROOM_REQ_REP,
+        ROOM_CLIENT_DISCONNECT
     };
 
     class IMessage {
@@ -138,6 +146,13 @@ namespace net {
 
     message_type message_code_to_type(const message_code& code);
     message_code message_type_to_code(const message_type& type);
+
+    namespace token {
+        #ifndef RTYPE_TOKEN_SIZE
+            #define RTYPE_TOKEN_SIZE 6
+        #endif
+        std::string generate_token(void);
+    }
 
     // Start of the different messages
 
@@ -285,6 +300,7 @@ namespace net {
     };
 
     #define RTYPE_INVALID_PLAYER_ID 0xFF
+
     /**
      * @brief If _playerID is 0xFF then the room is full
      *        or room does not exists
@@ -301,6 +317,31 @@ namespace net {
 
     private:
         uint8_t _playerID = RTYPE_INVALID_PLAYER_ID;
+    };
+
+    class CreateRoomReply : public Message {
+    public:
+        CreateRoomReply() = default;
+        CreateRoomReply(const std::string& token);
+
+        void from(const uint8_t *data, const size_t size) override;
+        std::vector<uint8_t> serialize() const override;
+
+    private:
+        std::string _token = "";
+    };
+
+    class UserDisconnectFromRoom : public Message {
+    public:
+        UserDisconnectFromRoom() = default;
+        UserDisconnectFromRoom(size_t dc_user, size_t new_host);
+
+        void from(const uint8_t *data, const size_t size) override;
+        std::vector<uint8_t> serialize() const override;
+
+    private:
+        size_t _dc_user_id = 0;
+        size_t _new_host_id = 0;
     };
 
 }

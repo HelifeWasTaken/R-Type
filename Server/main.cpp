@@ -114,5 +114,5 @@ int main()
         server::event event;
         server.poll(event);
     }
-    return 0; 
+    return 0;
 }

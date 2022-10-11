@@ -5,15 +5,34 @@
 namespace rtype {
 namespace net {
 
+    namespace token {
+        std::string generate_token(void)
+        {
+            std::string available = "azertyuiopqsdfghjklmwxcvbn";
+            std::string token = "#";
+
+            for (std::size_t size = 0; size < RTYPE_TOKEN_SIZE; size++) {
+                std::size_t index = std::rand() % available.size();
+                token += available[index];
+            }
+            return token;
+        }
+    }
+
     // message_code to message_type
     static std::unordered_map<message_code, message_type> message_code_to_type_map = {
         {message_code::CONN_INIT, message_type::SIGNAL_MARKER},
+        {message_code::CREATE_ROOM, message_type::SIGNAL_MARKER},
         {message_code::CONN_INIT_REP, message_type::CONNECTION_INIT_REPLY},
         {message_code::FEED_INIT, message_type::FEED_INIT_REQUEST},
         {message_code::FEED_INIT_REP, message_type::FEED_INIT_REPLY},
         {message_code::SYNC_MESSAGE, message_type::SYNC_MESSAGE},
         {message_code::UPDATE_MESSAGE, message_type::UPDATE_MESSAGE},
-        {message_code::TEXT_MESSAGE, message_type::TEXT_MESSAGE}
+        {message_code::TEXT_MESSAGE, message_type::TEXT_MESSAGE},
+        {message_code::REQUEST_CONNECT_ROOM, message_type::REQUEST_CONNECT_ROOM},
+        {message_code::CREATE_ROOM_REPLY, message_type::CREATE_ROOM_REPLY},
+        {message_code::CONNECT_ROOM_REQ_REP, message_type::CONNECT_ROOM_REQ_REP},
+        {message_code::ROOM_CLIENT_DISCONNECT, message_type::ROOM_CLIENT_DISCONNECT}
     };
 
     message_type message_code_to_type(const message_code& code) {
@@ -51,8 +70,17 @@ namespace net {
             return Message::deserialize<FeedInitReply>(buffer, size);
         case message_type::TEXT_MESSAGE:
             return Message::deserialize<TextMessage>(buffer, size);
+        case message_type::CONNECT_ROOM_REQ_REP:
+            return Message::deserialize<RequestConnectRoom>(buffer, size);
+        case message_type::CREATE_ROOM_REPLY:
+            return Message::deserialize<RequestConnectRoomReply>(buffer, size);
+        case message_type::REQUEST_CONNECT_ROOM:
+            return Message::deserialize<CreateRoomReply>(buffer, size);
+        case message_type::ROOM_CLIENT_DISCONNECT:
+            return Message::deserialize<UserDisconnectFromRoom>(buffer, size);
         default:
             return nullptr;
+        }
     }
 
     boost::shared_ptr<IMessage> parse_message(const std::vector<uint8_t>& buff)

@@ -144,12 +144,22 @@ namespace net {
         return boost::dynamic_pointer_cast<T>(msg);
     }
 
+    template<typename T>
+    T *parse_message(IMessage *msg) {
+        return dynamic_cast<T*>(msg);
+    }
+
+    template<typename T>
+    const T* parse_message(const IMessage *msg) {
+        return dynamic_cast<const T*>(msg);
+    }
+
     message_type message_code_to_type(const message_code& code);
     message_code message_type_to_code(const message_type& type);
 
     namespace token {
         #ifndef RTYPE_TOKEN_SIZE
-            #define RTYPE_TOKEN_SIZE 6
+            #define RTYPE_TOKEN_SIZE 6 
         #endif
         std::string generate_token(void);
     }

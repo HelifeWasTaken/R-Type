@@ -22,5 +22,15 @@ namespace net {
         s << _message_code << _dc_user_id << _new_host_id;
         return s.data;
     }
+
+    const size_t UserDisconnectFromRoom::get_disconnected_user_id() const
+    {
+        return _dc_user_id;
+    }
+
+    const size_t UserDisconnectFromRoom::get_new_host_id() const
+    {
+        return _new_host_id;
+    }
 }
 }

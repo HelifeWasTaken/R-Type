@@ -23,5 +23,11 @@ namespace net {
         s.add_bytes(_token);
         return s.data;
     }
+
+    const std::string& CreateRoomReply::token() const
+    {
+        return _token;
+    }
+
 }
 }

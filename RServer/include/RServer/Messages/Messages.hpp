@@ -337,6 +337,8 @@ namespace net {
         void from(const uint8_t *data, const size_t size) override;
         std::vector<uint8_t> serialize() const override;
 
+        const std::string& token() const;
+
     private:
         std::string _token = "";
     };
@@ -348,6 +350,9 @@ namespace net {
 
         void from(const uint8_t *data, const size_t size) override;
         std::vector<uint8_t> serialize() const override;
+
+        const size_t get_disconnected_user_id() const;
+        const size_t get_new_host_id() const;
 
     private:
         size_t _dc_user_id = 0;

@@ -22,5 +22,10 @@ namespace net {
         return s.data;
     }
 
+    uint8_t RequestConnectRoomReply::playerID() const
+    {
+        return _playerID;
+    }
+
 }
 }

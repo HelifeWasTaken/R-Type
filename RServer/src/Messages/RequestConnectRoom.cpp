@@ -23,5 +23,10 @@ namespace net {
         s.add_bytes(_roomID);
         return s.data;
     }
+
+    const std::string& RequestConnectRoom::roomID() const
+    {
+        return _roomID;
+    }
 }
 }

@@ -37,6 +37,7 @@ namespace net {
                                     , _receiver_endpoint(*_resolver.resolve({ host, port }))
                                     , _socket(io_context)
                                     , _sender_endpoint()
+									, _buf_recv(new udp_buffer_t)
     {
         _socket.open(boost::asio::ip::udp::v4());
         _stopped = false;

@@ -1,9 +1,14 @@
 #pragma once
 
 /**
+ * @brief 
+ */
+#define PAA_SCENE_DECL(name) struct name
+
+/**
  * @brief Base for a new scene
  */
-#define PAA_SCENE(name) struct name : public paa::GameState
+#define PAA_SCENE(name) PAA_SCENE_DECL(name) : public paa::GameState
 
 /**
  * @brief Entry point of the scene

@@ -1,5 +1,7 @@
 #include "RServer/Messages/Messages.hpp"
 
+#include <iostream>
+
 namespace rtype {
 namespace net {
 
@@ -12,6 +14,12 @@ namespace net {
     void CreateRoomReply::from(const uint8_t *data, const size_t size)
     {
         Serializer s(data, size);
+
+        std::cout << "[";
+        for (size_t i = 0; i < size; i++)
+            std::cout << " " << (int)data[i] << ", ";
+        std::cout << "]" << std::endl;
+
         s >> _message_code;
         _token = std::string(s.data.begin(), s.data.end());
     }

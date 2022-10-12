@@ -92,7 +92,9 @@
         "variant": "cpp",
         "silva": "cpp",
         "silvastate": "cpp",
-        "sparse_array": "cpp"
+        "sparse_array": "cpp",
+        "udpclient.hpp": "c",
+        "poc.hpp": "c"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

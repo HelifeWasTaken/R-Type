@@ -2,6 +2,7 @@
 #include <vector>
 #include <assert.h>
 #include <boost/endian.hpp>
+#include <iostream>
 
 namespace rtype {
 namespace net {
@@ -291,32 +292,26 @@ namespace net {
     uint16_t udp_server::message_info::sender_id() { return _sender_id; }
 
     udp_server::shared_message_info_t udp_server::new_message(
-            int sender, const void* data, size_t size)
+            int32_t sender, const void* data, size_t size)
     {
+        static const uint64_t magic = MAGIC_NUMBER;
         static uint64_t seq_num = 0; // for now, it will do
 
-        uint64_t big_magic
-            = boost::endian::native_to_big<uint64_t>(MAGIC_NUMBER);
-        uint64_t big_seq_num
-            = boost::endian::native_to_big<uint64_t>(seq_num++);
-        uint16_t big_sender
-            = boost::endian::native_to_big<uint16_t>(sender);
-        constexpr int header_size = 2 * sizeof(uint64_t) - sizeof(uint16_t);
+        Serializer s;
 
-        assert(size < udp_buffer_t::size() - header_size);
+        s << magic << seq_num << sender;
+        s.add_bytes(reinterpret_cast<const uint8_t*>(data), size);
 
-        message_info* mesg = new message_info;
-        char* pos = mesg->buffer.c_array();
+        assert(s.data.size() < udp_buffer_t::size() - RTYPE_UDP_MESSAGE_HEADER);
+
+        udp_server::shared_message_info_t mesg(new message_info);
+
+        std::memcpy(mesg->buffer.c_array(), s.data.data(), s.data.size());
+
         mesg->set_msg(mesg->buffer.c_array());
-        std::memcpy(pos, &big_magic, sizeof(big_magic));
-        pos += sizeof(big_magic);
-        std::memcpy(pos, &big_seq_num, sizeof(big_seq_num));
-        pos += sizeof(big_seq_num);
-        std::memcpy(pos, &big_sender, sizeof(big_sender));
-        pos += sizeof(big_sender);
-        std::memcpy(pos, data, size);
-        mesg->set_size(size + header_size);
-        return udp_server::shared_message_info_t(mesg);
+        mesg->set_size(s.data.size());
+
+        return mesg;
     }
 
     udp_server::shared_message_info_t udp_server::new_message(
@@ -367,22 +362,21 @@ namespace net {
     {
         size_t index = _messages->async_set(message);
 
+        spdlog::info("udp_server: Sending bytes({}) to {}:{}", message->size(),
+            target.address().to_string(), target.port());
         _socket.async_send_to(
             boost::asio::buffer(message->buffer, message->size()), target,
             [index, buffer_copy = message, messages = _messages](
                 const boost::system::error_code& error,
                 std::size_t bytes_transferred) {
-                // Might need to check bytes_transferred
-                (void)buffer_copy; // Make sure that the buffer lifetime is
-                                    // up until the end of the async function
-                                    // (passed as copy)
                 (void)bytes_transferred;
                 if (!error) {
-                    messages->async_remove(index);
+                    spdlog::info("udp_server: Successfully seneded a message of size({})", buffer_copy->size());
                 } else {
                     spdlog::error("udp_server: Cannot write: error {}: {}",
                         error.value(), error.message());
                 }
+                messages->async_remove(index);
             }
         );
     }
@@ -592,7 +586,7 @@ namespace net {
 
     bool server::on_udp_event_message(event& event, udp_server::shared_message_info_t& msg)
     {
-        spdlog::info("server: on_udp_message: New message from client: {}", msg->sender_id());
+        spdlog::info("server: on_udp_message: New message from client: {} of code {}", msg->sender_id(), (int8_t)msg->code());
         event.type = FeedMessage;
         event.client = get_client(msg->sender_id());
         event.message = std::make_unique<feed_message>(event.client, msg);
@@ -619,13 +613,18 @@ namespace net {
 
     bool server::poll(event& event)
     {
-        tcp_event tcp_event;
-        udp_server::shared_message_info_t msg;
+        {
+            tcp_event tcp_event;
+            if (_tcp_server->poll(tcp_event)) {
+                return poll_tcp(event, tcp_event);
+            }
+        }
 
-        if (_tcp_server->poll(tcp_event)) {
-           return poll_tcp(event, tcp_event);
-        } else if (_udp_server->poll(msg)) {
-            return poll_udp(event, msg);
+        {
+            udp_server::shared_message_info_t msg;
+            if (_udp_server->poll(msg)) {
+                return poll_udp(event, msg);
+            }
         }
         return false;
     }

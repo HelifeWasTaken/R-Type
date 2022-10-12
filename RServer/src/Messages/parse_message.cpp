@@ -1,6 +1,8 @@
 #include "RServer/Messages/Messages.hpp"
 
 #include <unordered_map>
+#include <iostream>
+#include <spdlog/spdlog.h>
 
 namespace rtype {
 namespace net {
@@ -50,37 +52,41 @@ namespace net {
 
     boost::shared_ptr<IMessage> parse_message(const uint8_t* buffer, size_t size)
     {
-        assert(size > 0);
+        try {
+            assert(size > 0);
 
-        const message_code code = static_cast<message_code>(buffer[0]);
-        const message_type type = message_code_to_type(code);
+            const message_code code = static_cast<message_code>(buffer[0]);
+            const message_type type = message_code_to_type(code);
 
-        switch (type) {
-        case message_type::UPDATE_MESSAGE:
-            return Message::deserialize<UpdateMessage>(buffer, size);
-        case message_type::SIGNAL_MARKER:
-            return Message::deserialize<SignalMarker>(buffer, size);
-        case message_type::SYNC_MESSAGE:
-            return Message::deserialize<SyncMessage>(buffer, size);
-        case message_type::CONNECTION_INIT_REPLY:
-            return Message::deserialize<ConnectionInitReply>(buffer, size);
-        case message_type::FEED_INIT_REQUEST:
-            return Message::deserialize<FeedInitRequest>(buffer, size);
-        case message_type::FEED_INIT_REPLY:
-            return Message::deserialize<FeedInitReply>(buffer, size);
-        case message_type::TEXT_MESSAGE:
-            return Message::deserialize<TextMessage>(buffer, size);
-        case message_type::CONNECT_ROOM_REQ_REP:
-            return Message::deserialize<RequestConnectRoom>(buffer, size);
-        case message_type::CREATE_ROOM_REPLY:
-            return Message::deserialize<RequestConnectRoomReply>(buffer, size);
-        case message_type::REQUEST_CONNECT_ROOM:
-            return Message::deserialize<CreateRoomReply>(buffer, size);
-        case message_type::ROOM_CLIENT_DISCONNECT:
-            return Message::deserialize<UserDisconnectFromRoom>(buffer, size);
-        default:
-            return nullptr;
+            switch (type) {
+            case message_type::UPDATE_MESSAGE:
+                return Message::deserialize<UpdateMessage>(buffer, size);
+            case message_type::SIGNAL_MARKER:
+                return Message::deserialize<SignalMarker>(buffer, size);
+            case message_type::SYNC_MESSAGE:
+                return Message::deserialize<SyncMessage>(buffer, size);
+            case message_type::CONNECTION_INIT_REPLY:
+                return Message::deserialize<ConnectionInitReply>(buffer, size);
+            case message_type::FEED_INIT_REQUEST:
+                return Message::deserialize<FeedInitRequest>(buffer, size);
+            case message_type::FEED_INIT_REPLY:
+                return Message::deserialize<FeedInitReply>(buffer, size);
+            case message_type::TEXT_MESSAGE:
+                return Message::deserialize<TextMessage>(buffer, size);
+            case message_type::CONNECT_ROOM_REQ_REP:
+                return Message::deserialize<RequestConnectRoomReply>(buffer, size);
+            case message_type::REQUEST_CONNECT_ROOM:
+                return Message::deserialize<RequestConnectRoom>(buffer, size);
+            case message_type::CREATE_ROOM_REPLY:
+                return Message::deserialize<CreateRoomReply>(buffer, size);
+            case message_type::ROOM_CLIENT_DISCONNECT:
+                return Message::deserialize<UserDisconnectFromRoom>(buffer, size);
+            default:
+                spdlog::error("Unknown message type");
+            }
+        } catch (...) {
         }
+        return nullptr;
     }
 
     boost::shared_ptr<IMessage> parse_message(const std::vector<uint8_t>& buff)

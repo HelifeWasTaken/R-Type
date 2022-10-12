@@ -5,15 +5,9 @@ namespace net {
 
     UDPClient::HeaderMessage::HeaderMessage(udp_buffer_t& buffer)
     {
-        unsigned char* msg
-            = reinterpret_cast<unsigned char*>(buffer.c_array());
-        std::memcpy(&_magic, msg, sizeof(uint64_t));
-        std::memcpy(&_seq, msg + sizeof(uint64_t), sizeof(uint64_t));
-        std::memcpy(
-            &_id, msg + (2 * sizeof(uint64_t)), sizeof(uint16_t));
-        _magic = boost::endian::big_to_native(_magic);
-        _seq = boost::endian::big_to_native(_seq);
-        _id = boost::endian::big_to_native(_id);
+        Serializer s(reinterpret_cast<uint8_t *>(buffer.data()), buffer.size());
+
+        s >> _magic >> _seq >> _id;
     }
 
     bool UDPClient::HeaderMessage::is_valid() const
@@ -46,7 +40,29 @@ namespace net {
     {
         _socket.open(boost::asio::ip::udp::v4());
         _stopped = false;
+
         receive();
+    }
+
+    void UDPClient::feed_request(int32_t token, int16_t playerId)
+    {
+        auto msg = FeedInitRequest(playerId, token);
+        auto shared_message = udp_server::new_message(playerId, msg);
+        this->send(shared_message, shared_message->size());
+    }
+
+    void UDPClient::_add_event(shared_message_t& message)
+    {
+        if (message->code() == message_code::FEED_INIT_REP) {
+            auto feedinit = parse_message<FeedInitReply>(message);
+            _token = feedinit->token();
+            _connected = true;
+            spdlog::info("UDPClient::receive: "
+                        "You are Sync with the server now: token({})",
+                        feedinit->token());
+        } else {
+            add_event(message);
+        }
     }
 
     void UDPClient::receive()
@@ -56,29 +72,28 @@ namespace net {
         _sender_endpoint,
         [this, buf_recv = _buf_recv](
             const boost::system::error_code& ec, size_t bytes) {
-            spdlog::info("UDPClient::receive: try to send message");
-                if (!ec) {
-                    HeaderMessage header(*buf_recv);
-                    if (!header.is_valid()) {
-                        spdlog::info("UDPClient::receive: Invalid Magic !");
-                        return;
-                    }
-                    std::size_t header_size = header.size();
-                    auto msg = parse_message(
-                        reinterpret_cast<uint8_t*>(
-                            _buf_recv->c_array() + header_size),
-                        bytes - header_size);
-                    if (msg == nullptr) {
-                        spdlog::error(
-                            "UDPClient::receive: Invalid message");
-                    } else {
-                        add_event(msg);
-                    }
-                    receive();
-                } else {
+                spdlog::info("UDPClient::receive: readed a message of size: {}", bytes);
+                if (ec) {
                     spdlog::error("UDPClient::receive: {}", ec.message());
                     _stopped = true;
+                    return;
                 }
+                HeaderMessage header(*buf_recv);
+                if (!header.is_valid()) {
+                    spdlog::info("UDPClient::receive: Invalid Magic !");
+                    return;
+                }
+                auto msg = parse_message(
+                    reinterpret_cast<uint8_t*>(
+                        _buf_recv->c_array() + RTYPE_UDP_MESSAGE_HEADER),
+                    bytes - RTYPE_UDP_MESSAGE_HEADER);
+                if (msg == nullptr) {
+                    spdlog::error(
+                        "UDPClient::receive: Invalid message");
+                } else {
+                    _add_event(msg);
+                }
+                receive();
             }
         );
     }
@@ -100,6 +115,16 @@ namespace net {
                 }
             }
         );
+    }
+
+    bool UDPClient::is_connected() const
+    {
+        return _connected;
+    }
+
+    int32_t UDPClient::token() const
+    {
+        return _token;
     }
 
 }

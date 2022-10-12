@@ -72,11 +72,12 @@ namespace net {
         }
 
         Serializable(int8_t type) : _type(type) {}
+        Serializable() = default;
 
-        int8_t type() const { return _type; }
+        uint8_t type() const { return _type; }
 
-    private:
-        int8_t _type;
+    protected:
+        uint8_t _type = 0xFF;
     };
 
     enum class message_code : uint8_t {
@@ -131,12 +132,20 @@ namespace net {
 
     template<typename T>
     boost::shared_ptr<T> parse_message(const uint8_t* buffer, size_t size) {
-        return boost::dynamic_pointer_cast<T>(parse_message(buffer, size));
+        try {
+            return boost::dynamic_pointer_cast<T>(parse_message(buffer, size));
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     template<typename T>
     boost::shared_ptr<T> parse_message(const std::vector<uint8_t>& buff) {
-        return boost::dynamic_pointer_cast<T>(parse_message(buff));
+        try {
+            return boost::dynamic_pointer_cast<T>(parse_message(buff));
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     template<typename T>

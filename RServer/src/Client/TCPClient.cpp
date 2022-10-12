@@ -95,5 +95,17 @@ namespace net {
         send(boost::make_shared<tcp_buffer_t>(message), size);
     }
 
+    void TCPClient::send(const IMessage& message)
+    {
+        auto msg = tcp_connection::new_message(message);
+        send(msg->buffer, msg->size);
+    }
+
+    bool TCPClient::is_connected() const { return _is_connected; }
+
+    int32_t TCPClient::token() const { return _token; }
+
+    int16_t TCPClient::id() const { return _id; }
+
 }
 }

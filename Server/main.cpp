@@ -295,8 +295,16 @@ public:
 };
 
 
+#include <PileAA/external/nlohmann/json.hpp>
+#include <fstream>
+
 int main()
 {
-    RTypeServer(4242, 4243, true).run();
+    std::ifstream ifs("../Client.conf");
+    nlohmann::json json;
+
+    ifs >> json;
+
+    RTypeServer(json["tcp_port"], json["udp_port"], json["authentificate"]).run();
     return 0; 
 }

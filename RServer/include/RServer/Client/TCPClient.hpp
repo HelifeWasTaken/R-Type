@@ -37,6 +37,29 @@ namespace net {
          */
         void send(const tcp_buffer_t& message, size_t size = -1);
 
+        /**
+         * @brief Sends a message to the server (async)
+         * 
+         * @param message The message to send
+         */
+        void send(const IMessage& message);
+
+        /**
+         * @brief Tells you whether the client is sync with the server
+         * 
+         */
+        bool is_connected() const;
+
+        /**
+         * @brief Gives you the client token
+         */
+        int32_t token() const;
+
+        /**
+         * @brief Gives you the client id
+         */
+        int16_t id() const;
+
     private:
 
         /**

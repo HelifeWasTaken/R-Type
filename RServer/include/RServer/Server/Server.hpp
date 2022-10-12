@@ -55,8 +55,8 @@ namespace net {
 
         message_code code()
         {
-            if (buffer.size() > 0)
-                return static_cast<message_code>(buffer[0]);
+            if (buffer.size() > StartOffset)
+                return static_cast<message_code>(buffer[StartOffset]);
             return message_code::DUMMY;
         }
     };
@@ -218,10 +218,11 @@ namespace net {
         async_queue<tcp_event> _events;
     };
 
+#define RTYPE_UDP_MESSAGE_HEADER (2 * sizeof(uint64_t) + sizeof(int32_t))
+
     class udp_server {
     public:
-        class message_info : public base_message_info<udp_buffer_t,
-                                 2 * sizeof(uint64_t) + sizeof(uint16_t)> {
+        class message_info : public base_message_info<udp_buffer_t, RTYPE_UDP_MESSAGE_HEADER> {
         public:
             message_info(
                 udp::endpoint sender, udp_buffer_t&& buffer, size_t size);
@@ -247,7 +248,7 @@ namespace net {
             size_t _size;
             udp::endpoint _sender;
             uint16_t _sender_id;
-            uint16_t _seq_num;
+            uint64_t _seq_num;
         };
 
         using shared_message_info_t = boost::shared_ptr<message_info>;

@@ -33,11 +33,23 @@ namespace net {
     {
         os << "Size: " << size << " bytes: [";
         for (size_t i = 0; i < size; ++i) {
-            os << "0x" << (uint32_t)data[i];
+            std::printf("0x%hhx", data[i]);
             if (i != size - 1)
                 os << ", ";
         }
         os << "]";
+    }
+
+    template<typename T>
+    static inline void dump_memory(std::ostream& os, const T& data)
+    {
+        dump_memory(os, reinterpret_cast<const uint8_t*>(&data), sizeof(T));
+    }
+
+    template<typename T>
+    static inline void dump_memory(std::ostream& os, const std::vector<T>& data)
+    {
+        dump_memory(os, reinterpret_cast<const uint8_t*>(data.data()), data.size() * sizeof(T));
     }
 
 }

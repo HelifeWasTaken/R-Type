@@ -267,14 +267,20 @@ namespace net {
     {
         char* pos = this->buffer.c_array();
         _size = buffer.size();
+
+        dump_memory(std::cout, reinterpret_cast<uint8_t *>(this->buffer.data()), size);
+
+        uint64_t big_magic;
         uint64_t big_seq_num;
         uint16_t big_sender;
-        std::memcpy(
-            &big_seq_num, pos + sizeof(uint64_t), sizeof(uint64_t));
-        std::memcpy(
-            &big_sender, pos + 2 * sizeof(uint64_t), sizeof(uint16_t));
+        std::memcpy(&big_magic, pos, sizeof(big_magic));
+        std::memcpy(&big_seq_num, pos + sizeof(big_magic), sizeof(uint64_t));
+        std::memcpy(&big_sender, pos + 2 * sizeof(uint64_t), sizeof(uint16_t));
         _seq_num = boost::endian::big_to_native(big_seq_num);
         _sender_id = boost::endian::big_to_native(big_sender);
+        _magic = boost::endian::big_to_native(big_magic);
+
+        std::printf("magic: %lx, seq_num: %lx, sender: %x\n", _magic, _seq_num, _sender_id);
     }
 
     char *udp_server::message_info::msg() const { return _msg; }
@@ -292,7 +298,7 @@ namespace net {
     uint16_t udp_server::message_info::sender_id() { return _sender_id; }
 
     udp_server::shared_message_info_t udp_server::new_message(
-            int32_t sender, const void* data, size_t size)
+            int16_t sender, const void* data, size_t size)
     {
         static const uint64_t magic = MAGIC_NUMBER;
         static uint64_t seq_num = 0; // for now, it will do
@@ -315,14 +321,14 @@ namespace net {
     }
 
     udp_server::shared_message_info_t udp_server::new_message(
-        int sender, const IMessage& msg)
+        int16_t sender, const IMessage& msg)
     {
         auto buffer = msg.serialize();
         return new_message(sender, buffer.data(), buffer.size());
     }
 
     udp_server::shared_message_info_t udp_server::new_message(
-        int sender, const std::string& s)
+        int16_t sender, const std::string& s)
     {
         return new_message(
             sender, reinterpret_cast<const void*>(s.c_str()), s.size());

@@ -23,18 +23,27 @@ namespace net {
 
     // message_code to message_type
     static std::unordered_map<message_code, message_type> message_code_to_type_map = {
+        // Signal Markers
         {message_code::CONN_INIT, message_type::SIGNAL_MARKER},
         {message_code::CREATE_ROOM, message_type::SIGNAL_MARKER},
+
+        // Special messages
         {message_code::CONN_INIT_REP, message_type::CONNECTION_INIT_REPLY},
         {message_code::FEED_INIT, message_type::FEED_INIT_REQUEST},
         {message_code::FEED_INIT_REP, message_type::FEED_INIT_REPLY},
-        {message_code::SYNC_MESSAGE, message_type::SYNC_MESSAGE},
-        {message_code::UPDATE_MESSAGE, message_type::UPDATE_MESSAGE},
+
         {message_code::TEXT_MESSAGE, message_type::TEXT_MESSAGE},
         {message_code::REQUEST_CONNECT_ROOM, message_type::REQUEST_CONNECT_ROOM},
         {message_code::CREATE_ROOM_REPLY, message_type::CREATE_ROOM_REPLY},
         {message_code::CONNECT_ROOM_REQ_REP, message_type::CONNECT_ROOM_REQ_REP},
-        {message_code::ROOM_CLIENT_DISCONNECT, message_type::ROOM_CLIENT_DISCONNECT}
+        {message_code::ROOM_CLIENT_DISCONNECT, message_type::ROOM_CLIENT_DISCONNECT},
+        {message_code::ROOM_CLIENT_CONNECT, message_type::ROOM_CLIENT_CONNECT},
+
+        // Sync messages
+        {message_code::SYNC_VECTOR2_POSITION, message_type::SYNC_MESSAGE},
+
+        // Update messages
+        {message_code::UPDATE_VECTOR2_MOVEMENT, message_type::UPDATE_MESSAGE},
     };
 
     message_type message_code_to_type(const message_code& code) {
@@ -79,12 +88,15 @@ namespace net {
                 return Message::deserialize<RequestConnectRoom>(buffer, size);
             case message_type::CREATE_ROOM_REPLY:
                 return Message::deserialize<CreateRoomReply>(buffer, size);
+            case message_type::ROOM_CLIENT_CONNECT:
+                return Message::deserialize<UserConnectRoom>(buffer, size);
             case message_type::ROOM_CLIENT_DISCONNECT:
                 return Message::deserialize<UserDisconnectFromRoom>(buffer, size);
             default:
-                spdlog::error("Unknown message type");
+                spdlog::error("Unknown message type of code/type: {}/{}", (int)code, (int)type);
             }
         } catch (...) {
+            spdlog::error("Error while parsing message");
         }
         return nullptr;
     }

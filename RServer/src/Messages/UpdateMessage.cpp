@@ -3,8 +3,8 @@
 namespace rtype {
 namespace net {
     UpdateMessage::UpdateMessage(
-        const int16_t &sid, const Serializable& data)
-        : Message(message_code::UPDATE_MESSAGE)
+        const uint8_t &sid, const Serializable& data, const message_code& code)
+        : Message(code)
         , _sid(sid)
         , _data(data.serialize())
     {}
@@ -22,7 +22,7 @@ namespace net {
         return s.data;
     }
 
-    uint16_t UpdateMessage::sid() const { return _sid; }
+    uint8_t UpdateMessage::sid() const { return _sid; }
 
     const std::vector<uint8_t>& UpdateMessage::data() const { return _data; }
 

@@ -5,6 +5,7 @@
 
 void poc_message_parser()
 {
+    /*
     // sid may be the entity or component id, or any other id,
     // here 42 is used just for example
     rtype::net::vector2i v(12.34f, 56.78f);
@@ -36,4 +37,5 @@ void poc_message_parser()
     assert(msg3 == nullptr);
 
     std::cout << "poc_message_parser: OK" << std::endl;
+    */
 }

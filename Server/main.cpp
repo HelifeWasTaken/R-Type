@@ -1,149 +1,48 @@
-#include "RServer/Messages/Types.hpp"
-#include "RServer/Server/Server.hpp"
-#include <iostream>
-#include <algorithm>
-#include <unordered_map>
-#include <functional>
 
-#define RTYPE_PLAYER_COUNT 4
+#include "RoomManager.hpp"
 
-class Room {
-private:
-    uint8_t _hostID = 0;
-
-    std::array<bool, RTYPE_PLAYER_COUNT> _connected_players;
-    std::unordered_map<uint8_t, int> _client_to_index;
-
-    rtype::net::server& _server;
-
-    using IMessage = rtype::net::IMessage;
-
-public:
-    Room(rtype::net::server& server, uint16_t client)
-        : _server(server)
-    {
-        memset(_connected_players.data(), 0, _connected_players.size());
-        _client_to_index[client] = 0;
-        _connected_players[0] = true;
+#define RTYPE_SERVER_ANY_SHOULD_NOT_HANDLE_THIS_CODE(type, code) \
+    { \
+        code, \
+        [](uint16_t client, rtype::net::IMessage& message) { \
+            spdlog::error("Server {}: Received message of type {} but should not handle it", type, #code); \
+        } \
     }
 
-    ~Room() = default;
-
-    uint8_t getHostID() const { return _hostID; }
-    void setHostID(uint8_t id) { _hostID = id; }
-
-    uint8_t addPlayer(uint16_t client) {
-        for (uint8_t i = 0; i < RTYPE_PLAYER_COUNT; i++) {
-            if (!_connected_players[i]) {
-                _connected_players[i] = true;
-                _client_to_index[client] = i;
-                return i;
-            }
-        }
-        return RTYPE_INVALID_PLAYER_ID;
+#define RTYPE_SERVER_ANY_GOT_THIS_MESSAGE_INFO(type, code) \
+    { \
+        code, \
+        [](uint16_t client, rtype::net::IMessage& message) { \
+            spdlog::info("RTypeServer {}: Info: Received {} message", type, #code); \
+        } \
     }
 
-    void removePlayer(uint16_t client) {
-        auto index = _client_to_index[client];
-
-        if (index == _hostID) {
-            _hostID = RTYPE_INVALID_PLAYER_ID;
-            for (uint8_t i = 0; i < RTYPE_PLAYER_COUNT; i++) {
-                if (_connected_players[i]) {
-                    _hostID = i;
-                    break;
-                }
-            }
-        }
-        _connected_players[_client_to_index[client]] = false;
-        _client_to_index.erase(client);
+#define RTYPE_SERVER_ANY_HANDLE_THIS_MESSAGE(type, code, handler) \
+    { \
+        code, \
+        [this](uint16_t client, rtype::net::IMessage& message) { \
+            spdlog::info("RTypeServer {}: Received {} message", type, #code); \
+            handler; \
+        } \
     }
 
-    bool clientIsInRoom(uint16_t client) const {
-        return _client_to_index.find(client) != _client_to_index.end();
-    }
+#define RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(code) \
+    RTYPE_SERVER_ANY_SHOULD_NOT_HANDLE_THIS_CODE("main", code)
 
-    bool isFull() const {
-        return std::all_of(_connected_players.begin(),
-                            _connected_players.end(),
-                            [](bool b) { return b; });
-    }
+#define RTYPE_SERVER_MAIN_GOT_THIS_MESSAGE_INFO(code) \
+    RTYPE_SERVER_ANY_GOT_THIS_MESSAGE_INFO("main", code)
 
-    bool isEmpty() const {
-        return _hostID == RTYPE_INVALID_PLAYER_ID;
-    }
+#define RTYPE_SERVER_MAIN_HANDLE_THIS_MESSAGE(code, handler) \
+    RTYPE_SERVER_ANY_HANDLE_THIS_MESSAGE("main", code, handler)
 
-    void main_broadcast(const IMessage& message) {
-        auto buffer = message.serialize();
-        for (auto& client : _client_to_index) {
-            _server.get_client(client.first)->send_main(buffer.data(), buffer.size());
-        }
-    }
+#define RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(code) \
+    RTYPE_SERVER_ANY_SHOULD_NOT_HANDLE_THIS_CODE("feed", code)
 
-    void feed_broadcast(const IMessage& message) {
-        auto buffer = message.serialize();
-        for (auto& client : _client_to_index) {
-            _server.get_client(client.first)->send_feed(buffer.data(), buffer.size());
-        }
-    }
-};
+#define RTYPE_SERVER_FEED_GOT_THIS_MESSAGE_INFO(code) \
+    RTYPE_SERVER_ANY_GOT_THIS_MESSAGE_INFO("feed", code)
 
-class RoomManager {
-private:
-    std::unordered_map<std::string, std::unique_ptr<Room>> _rooms;
-    rtype::net::server& _server;
-
-    std::unordered_map<uint16_t, std::string> _client_to_room_id;
-
-public:
-    RoomManager(rtype::net::server& server)
-        : _server(server)
-    {}
-
-    ~RoomManager() = default;
-
-public:
-    void newRoom(uint16_t client) {
-        std::string roomID = rtype::net::token::generate_token();
-        while (_rooms.find(roomID) != _rooms.end()) {
-            roomID = rtype::net::token::generate_token();
-        }
-        _rooms[roomID] = std::make_unique<Room>(_server, client);
-        _client_to_room_id[client] = roomID;
-
-        _server.get_client(client)->send_main(rtype::net::CreateRoomReply(roomID));
-    }
-
-    bool roomExists(const std::string& roomID) const {
-        return _rooms.find(roomID) != _rooms.end();
-    }
-
-    void addPlayerToRoom(const std::string& roomID, uint16_t client) {
-        if (_rooms.find(roomID) == _rooms.end()) {
-            _server.get_client(client)->send_main(rtype::net::RequestConnectRoomReply(RTYPE_INVALID_PLAYER_ID));
-            return;
-        }
-        uint16_t id = _rooms[roomID]->addPlayer(client);
-        if (id != RTYPE_INVALID_PLAYER_ID) {
-            _client_to_room_id[client] = roomID;
-        }
-        _server.get_client(client)->send_main(rtype::net::RequestConnectRoomReply(id));
-    }
-
-    void removePlayerIfInRoom(uint16_t client) {
-        auto it = _client_to_room_id.find(client);
-        if (it != _client_to_room_id.end()) {
-            auto &room = _rooms[it->second];
-            room->removePlayer(client);
-            if (room->isEmpty()) {
-                _rooms.erase(it->second);
-            } else {
-                room->main_broadcast(rtype::net::UserDisconnectFromRoom(client, room->getHostID()));
-            }
-        }
-    }
-
-};
+#define RTYPE_SERVER_FEED_HANDLE_THIS_MESSAGE(code, handler) \
+    RTYPE_SERVER_ANY_HANDLE_THIS_MESSAGE("feed", code, handler)
 
 class RTypeServer {
 private:
@@ -154,75 +53,77 @@ private:
         rtype::net::message_code,
         std::function<void(uint16_t, rtype::net::IMessage&)>
     > _main_message_handlers = {
-        {
-            rtype::net::message_code::DUMMY,
-            [](uint16_t client, rtype::net::IMessage& message) {
-                spdlog::error("RTypeServer: Received DUMMY message");
-            }
-        },
+        RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::DUMMY),
+        RTYPE_SERVER_MAIN_GOT_THIS_MESSAGE_INFO(rtype::net::message_code::CONN_INIT),
 
-        {
-            rtype::net::message_code::CONN_INIT,
-            [](uint16_t client, rtype::net::IMessage& message) {
-                spdlog::info("RTypeServer: Received CONN_INIT message");
-            }
-        },
+        RTYPE_SERVER_MAIN_HANDLE_THIS_MESSAGE(rtype::net::message_code::CREATE_ROOM, {
+            this->_roomManager.newRoom(client);
+        }),
 
-        {
-            rtype::net::message_code::CREATE_ROOM,
-            [this](uint16_t client, rtype::net::IMessage& message) {
-                spdlog::info("RTypeServer: Received CREATE_ROOM message");
-                this->_roomManager.newRoom(client);
-            }
-        },
+        RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CONN_INIT_REP),
+        RTYPE_SERVER_MAIN_GOT_THIS_MESSAGE_INFO(rtype::net::message_code::FEED_INIT),
+        RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::FEED_INIT_REP),
 
-        {
-            rtype::net::message_code::CONN_INIT_REP,
-            [](uint16_t client, rtype::net::IMessage& message) {
-                spdlog::error("RTypeServer: Received CONN_INIT_REP message");
-            }
-        },
+        RTYPE_SERVER_MAIN_GOT_THIS_MESSAGE_INFO(rtype::net::message_code::TEXT_MESSAGE),
 
-        {
-            rtype::net::message_code::FEED_INIT,
-            [](uint16_t client, rtype::net::IMessage& message) {
-                spdlog::info("RTypeServer: Received FEED_INIT message");
+        RTYPE_SERVER_MAIN_HANDLE_THIS_MESSAGE(rtype::net::message_code::REQUEST_CONNECT_ROOM, {
+            auto msg = parse_message<rtype::net::RequestConnectRoom>(message);
+            if (msg) {
+                this->_roomManager.addPlayerToRoom(msg->roomID(), client);
+            } else {
+                spdlog::error("RTypeServer main: Failed to parse REQUEST_CONNECT_ROOM message");
             }
-        },
+        }),
 
-        {
-            rtype::net::message_code::FEED_INIT_REP,
-            [](uint16_t client, rtype::net::IMessage& message) {
-                spdlog::error("RTypeServer: Received FEED_INIT_REP message");
-            }
-        },
+        RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CREATE_ROOM_REPLY),
+        RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CONNECT_ROOM_REQ_REP),
+        RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::ROOM_CLIENT_DISCONNECT),
 
-        {
-            rtype::net::message_code::REQUEST_CONNECT_ROOM,
-            [this](uint16_t client, rtype::net::IMessage& message) {
-                spdlog::info("RTypeServer: Received REQUEST_CONNECT_ROOM message");
-                auto msg = parse_message<rtype::net::RequestConnectRoom>(&message);
-                if (msg) {
-                    this->_roomManager.addPlayerToRoom(msg->roomID(), client);
-                } else {
-                    spdlog::error("RTypeServer: Failed to parse REQUEST_CONNECT_ROOM message");
-                }
+        // Thoses should be used in feed but are there for
+        // completeness and debug
+        RTYPE_SERVER_MAIN_HANDLE_THIS_MESSAGE(rtype::net::message_code::SYNC_VECTOR2_POSITION, {
+            Room *room = this->_roomManager.getRoom(client);
+            if (room) {
+                room->main_broadcast(message, client);
             }
-        },
+        }),
 
-        {
-            rtype::net::message_code::CONNECT_ROOM_REQ_REP,
-            [](uint16_t client, rtype::net::IMessage& message) {
-                spdlog::error("RTypeServer: Received REQUEST_CONNECT_ROOM_REP message");
+        RTYPE_SERVER_MAIN_HANDLE_THIS_MESSAGE(rtype::net::message_code::UPDATE_VECTOR2_MOVEMENT, {
+            Room *room = this->_roomManager.getRoom(client);
+            if (room) {
+                room->main_broadcast(message, client);
             }
-        },
+        })
+    };
 
-        {
-            rtype::net::message_code::ROOM_CLIENT_DISCONNECT,
-            [](uint16_t client, rtype::net::IMessage& message) {
-                spdlog::error("RTypeServer: Received USER_DISCONNECT_FROM_ROOM message");
+    std::unordered_map<
+        rtype::net::message_code,
+        std::function<void(uint16_t, rtype::net::IMessage&)>
+    > _feed_message_handler = {
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::DUMMY),
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CONN_INIT),
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CONN_INIT_REP),
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::FEED_INIT),
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::FEED_INIT_REP),
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::TEXT_MESSAGE),
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CREATE_ROOM),
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CREATE_ROOM_REPLY),
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::REQUEST_CONNECT_ROOM),
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CONNECT_ROOM_REQ_REP),
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::ROOM_CLIENT_DISCONNECT),
+
+        RTYPE_SERVER_FEED_HANDLE_THIS_MESSAGE(rtype::net::message_code::SYNC_VECTOR2_POSITION, {
+            Room *room = this->_roomManager.getRoom(client);
+            if (room) {
+                room->feed_broadcast(message, client);
             }
-        }
+        }),
+        RTYPE_SERVER_FEED_HANDLE_THIS_MESSAGE(rtype::net::message_code::UPDATE_VECTOR2_MOVEMENT, {
+            Room *room = this->_roomManager.getRoom(client);
+            if (room) {
+                room->feed_broadcast(message, client);
+            }
+        })
     };
 
     std::unordered_map<
@@ -240,12 +141,23 @@ private:
             rtype::net::server::event_type::MainMessage,
             [this](rtype::net::server::event& event) {
                 auto msg = event.message->to_msg();
-
                 if (!msg) {
                     spdlog::error("RTypeServer: Failed to parse Main Message");
                     return;
                 }
-                this->_main_message_handlers[event.message->code()](
+                this->_main_message_handlers[event.message->code()](event.client->id(), *msg);
+            }
+        },
+
+        {
+            rtype::net::server::event_type::FeedMessage,
+            [this](rtype::net::server::event& event) {
+                auto msg = event.message->to_msg();
+                if (!msg) {
+                    spdlog::error("RTypeServer: Failed to parse Feed Message");
+                    return;
+                }
+                this->_feed_message_handler[event.message->code()](
                     event.client->id(),
                     *msg
                 );
@@ -253,17 +165,9 @@ private:
         },
 
         {
-            rtype::net::server::event_type::FeedMessage,
-            [this](rtype::net::server::event& event) {
-                spdlog::info("RTypeServer: Received Feed Message (non handeled yet)");
-            }
-        },
-
-        {
             rtype::net::server::event_type::Connect,
-            [](rtype::net::server::event& event) {
-                spdlog::info("RTypeServer: Client connected");
-            }
+            [](rtype::net::server::event& event)
+            { spdlog::info("RTypeServer: Client connected"); }
         },
 
         {

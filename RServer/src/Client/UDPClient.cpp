@@ -37,7 +37,7 @@ namespace net {
                                     , _receiver_endpoint(*_resolver.resolve({ host, port }))
                                     , _socket(io_context)
                                     , _sender_endpoint()
-									, _buf_recv(new udp_buffer_t)
+                                    , _buf_recv(new udp_buffer_t)
     {
         _socket.open(boost::asio::ip::udp::v4());
         _stopped = false;
@@ -45,10 +45,11 @@ namespace net {
         receive();
     }
 
-    void UDPClient::feed_request(int32_t token, int16_t playerId)
+    void UDPClient::feed_request(int32_t token, uint16_t playerId)
     {
         auto msg = FeedInitRequest(playerId, token);
         auto shared_message = udp_server::new_message(playerId, msg);
+        _id = playerId;
         this->send(shared_message, shared_message->size());
     }
 
@@ -116,6 +117,12 @@ namespace net {
                 }
             }
         );
+    }
+
+    void UDPClient::send(const IMessage& msg)
+    {
+        auto shared_message = udp_server::new_message(_id, msg);
+        this->send(shared_message, shared_message->size());
     }
 
     bool UDPClient::is_connected() const

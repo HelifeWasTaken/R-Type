@@ -10,6 +10,8 @@
 #include <vector>
 #include <cstdlib>
 
+#define RTYPE_PLAYER_COUNT 4
+
 namespace rtype {
 namespace net {
 
@@ -91,30 +93,54 @@ namespace net {
         CONN_INIT_REP,
         FEED_INIT,
         FEED_INIT_REP,
-        SYNC_MESSAGE,
-        UPDATE_MESSAGE,
+
         TEXT_MESSAGE,
         REQUEST_CONNECT_ROOM,
         CREATE_ROOM_REPLY,
         CONNECT_ROOM_REQ_REP,
+        ROOM_CLIENT_CONNECT,
         ROOM_CLIENT_DISCONNECT,
+
+        // Sync messages
+        SYNC_VECTOR2_POSITION,
+
+        // Update messages
+        UPDATE_VECTOR2_MOVEMENT,
     };
 
     // All classes that inherit from IMessage
     // Is only used to cast the message to the right type
     enum message_type : uint8_t {
         INVALID = 0,
+
+        // Signal markers
         SIGNAL_MARKER,
-        UPDATE_MESSAGE,
-        SYNC_MESSAGE,
+        CONN_INIT = SIGNAL_MARKER,
+        CREATE_ROOM = SIGNAL_MARKER,
+
         CONNECTION_INIT_REPLY,
+        CONN_INIT_REP = CONNECTION_INIT_REPLY,
+
         FEED_INIT_REQUEST,
+        FEED_INIT = FEED_INIT_REQUEST,
+
         FEED_INIT_REPLY,
+        FEED_INIT_REP = FEED_INIT_REPLY,
+
         TEXT_MESSAGE,
         REQUEST_CONNECT_ROOM,
         CREATE_ROOM_REPLY,
         CONNECT_ROOM_REQ_REP,
-        ROOM_CLIENT_DISCONNECT
+        ROOM_CLIENT_CONNECT,
+        ROOM_CLIENT_DISCONNECT,
+
+        // Sync messages
+        SYNC_MESSAGE,
+        SYNC_VECTOR2_POSITION = SYNC_MESSAGE,
+
+        // Special messages
+        UPDATE_MESSAGE,
+        UPDATE_VECTOR2_MOVEMENT = UPDATE_MESSAGE,
     };
 
     class IMessage {
@@ -161,6 +187,16 @@ namespace net {
     template<typename T>
     const T* parse_message(const IMessage *msg) {
         return dynamic_cast<const T*>(msg);
+    }
+
+    template<typename T>
+    T *parse_message(IMessage &msg) {
+        return parse_message<T>(&msg);
+    }
+
+    template<typename T>
+    const T* parse_message(const IMessage &msg) {
+        return parse_message<T>(&msg);
     }
 
     message_type message_code_to_type(const message_code& code);
@@ -217,33 +253,33 @@ namespace net {
     class UpdateMessage : public Message {
     public:
         UpdateMessage() = default;
-        UpdateMessage(const int16_t& sid, const Serializable& data);
+        UpdateMessage(const uint8_t& sid, const Serializable& data, const message_code& code);
 
         void from(const uint8_t *data, const size_t size) override;
         std::vector<uint8_t> serialize() const override;
 
-        uint16_t sid() const;
+        uint8_t sid() const;
         const std::vector<uint8_t>& data() const;
 
     private:
-        uint16_t _sid = 0;
+        uint8_t _sid = 0;
         std::vector<uint8_t> _data;
     };
 
     class SyncMessage : public Message {
     public:
         SyncMessage() = default;
-        SyncMessage(int16_t sid, const Serializable& serializable);
+        SyncMessage(uint8_t sid, const Serializable& serializable, const message_code& code);
 
         void from(const uint8_t *data, const size_t size) override;
         std::vector<uint8_t> serialize() const override;
 
-        uint16_t sid() const;
+        uint8_t sid() const;
         const std::vector<uint8_t>& data() const;
 
     private:
         std::vector<uint8_t> _data;
-        uint16_t _sid = 0;
+        uint8_t _sid = 0;
     };
 
     class ConnectionInitReply : public Message {
@@ -350,6 +386,19 @@ namespace net {
 
     private:
         std::string _token = "";
+    };
+
+    class UserConnectRoom : public Message {
+    public:
+        UserConnectRoom() = default;
+        UserConnectRoom(uint8_t playerID);
+
+        void from(const uint8_t *data, const size_t size) override;
+        std::vector<uint8_t> serialize() const override;
+
+        uint8_t playerID() const;
+    private:
+        uint8_t _playerID = 0;
     };
 
     class UserDisconnectFromRoom : public Message {

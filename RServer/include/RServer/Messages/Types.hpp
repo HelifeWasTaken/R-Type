@@ -28,6 +28,12 @@ namespace net {
             , x(other.x) , y(other.y)
         {}
 
+        vector2i(const std::vector<uint8_t>& data)
+            : Serializable((int8_t)serializable_type::VECTOR2I)
+        {
+            from(data.data(), data.size());
+        }
+
         vector2i& operator=(const vector2i& other) = default;
 
         std::vector<uint8_t> serialize() const override

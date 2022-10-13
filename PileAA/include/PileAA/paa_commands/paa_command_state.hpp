@@ -21,6 +21,13 @@
 #define PAA_END(name) ~name()
 
 /**
+ * @brief Default declarations for a scene
+ */
+#define PAA_SCENE_DEFAULT(name) \
+    PAA_START(name); \
+    PAA_END(name) = default;
+
+/**
  * @brief Update section of the scene
  */
 #define PAA_UPDATE void update() override
@@ -29,6 +36,26 @@
  * @brief Event section of the scene
  */
 #define PAA_EVENTS void handleEvent() override
+
+/**
+ * @brief Entry point of the scene for cpp
+ */
+#define PAA_START_CPP(name) name::name()
+
+/**
+ * @brief End point of the scene for cpp
+ */
+#define PAA_END_CPP(name) name::~name()
+
+/**
+ * @brief Update section of the scene for cpp
+ */
+#define PAA_UPDATE_CPP(name) void name::update()
+
+/**
+ * @brief Event section of the scene for cpp
+ */
+#define PAA_EVENTS_CPP(name) void name::handleEvent()
 
 /**
  * @brief Set the current scene

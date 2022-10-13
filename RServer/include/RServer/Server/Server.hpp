@@ -218,7 +218,7 @@ namespace net {
         async_queue<tcp_event> _events;
     };
 
-#define RTYPE_UDP_MESSAGE_HEADER (2 * sizeof(uint64_t) + sizeof(int32_t))
+#define RTYPE_UDP_MESSAGE_HEADER (2 * sizeof(uint64_t) + sizeof(int16_t))
 
     class udp_server {
     public:
@@ -249,18 +249,19 @@ namespace net {
             udp::endpoint _sender;
             uint16_t _sender_id;
             uint64_t _seq_num;
+            uint64_t _magic;
         };
 
         using shared_message_info_t = boost::shared_ptr<message_info>;
 
         static shared_message_info_t new_message(
-            int sender, const void* data, size_t size);
+            int16_t sender, const void* data, size_t size);
 
         static shared_message_info_t new_message(
-            int sender, const IMessage& msg);
+            int16_t sender, const IMessage& msg);
 
         static shared_message_info_t new_message(
-            int sender, const std::string& s);
+            int16_t sender, const std::string& s);
 
     private:
         void handle_receive_from(const boost::system::error_code& error,

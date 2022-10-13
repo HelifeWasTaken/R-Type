@@ -21,7 +21,7 @@ namespace net {
         public:
             /**
              * @brief Construct a new Header Message object
-             * 
+             *
              * @param buffer The buffer to read from
              */
             HeaderMessage(udp_buffer_t& buffer);
@@ -70,7 +70,7 @@ namespace net {
 
         /**
          * @brief Add a new event or handles it
-         * 
+         *
          * @param message The message to handle
          */
         void _add_event(shared_message_t& message);
@@ -84,12 +84,18 @@ namespace net {
         void send(rtype::net::udp_server::shared_message_info_t message, size_t size=-1);
 
         /**
+         * @brief Send a message to the server asynchronously
+         * @param message The message to send
+         */
+        void send(const IMessage& message);
+
+        /**
          * @brief Request connection init from feed
-         * 
+         *
          * @param token The token
          * @param playerId The player ID
          */
-        void feed_request(int32_t token, int16_t playerId);
+        void feed_request(int32_t token, uint16_t playerId);
 
         /**
          * @brief Tells you wheter you are connected on the server or not
@@ -103,6 +109,7 @@ namespace net {
 
     private:
         boost::shared_ptr<udp_buffer_t> _buf_recv;
+        uint16_t _id;
     };
 }
 }

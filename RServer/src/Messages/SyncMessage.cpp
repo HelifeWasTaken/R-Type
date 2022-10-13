@@ -3,8 +3,8 @@
 namespace rtype {
     namespace net {
 
-        SyncMessage::SyncMessage(int16_t sid, const Serializable& serializable)
-            : Message(message_code::SYNC_MESSAGE)
+        SyncMessage::SyncMessage(uint8_t sid, const Serializable& serializable, const message_code& code)
+            : Message(code)
             , _sid(sid)
             , _data(serializable.serialize())
         {}
@@ -22,7 +22,7 @@ namespace rtype {
             return s.data;
         }
 
-        uint16_t SyncMessage::sid() const { return _sid; }
+        uint8_t SyncMessage::sid() const { return _sid; }
 
         const std::vector<uint8_t>& SyncMessage::data() const { return _data; }
 

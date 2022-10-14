@@ -27,6 +27,9 @@ namespace net {
         {message_code::CONN_INIT, message_type::SIGNAL_MARKER},
         {message_code::CREATE_ROOM, message_type::SIGNAL_MARKER},
 
+        // YesNo messages
+        {message_code::REQUEST_CONNECT_ROOM, message_type::YES_NO_MESSAGES},
+
         // Special messages
         {message_code::CONN_INIT_REP, message_type::CONNECTION_INIT_REPLY},
         {message_code::FEED_INIT, message_type::FEED_INIT_REQUEST},

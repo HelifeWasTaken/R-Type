@@ -16,7 +16,7 @@ PAA_SCENE(poc_scene_animated_sprite) {
 void poc_animated_sprite(void)
 {
     paa::setup_paa_system("../Resources.conf");
-    PAA_SCENE_MANAGER.pushState<poc_scene_animated_sprite>();
+    PAA_SCENE_MANAGER.pushState<PAA_FUN_NAMESPACE(poc_scene_animated_sprite)>();
     PAA_APP.run();
     paa::stop_paa_system();
 }

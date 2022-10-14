@@ -14,13 +14,13 @@ PAA_ENTITY new_player()
     return e;
 }
 
-PAA_START_CPP(game_scene) {
+PAA_START_CPP(game_scene)
+{
     players[g_game.id] = new_player();
-
-    // Add input component
 }
 
-PAA_UPDATE_CPP(game_scene) {
+PAA_UPDATE_CPP(game_scene)
+{
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
 
     auto& tcp = g_game.service.tcp();
@@ -40,17 +40,14 @@ PAA_UPDATE_CPP(game_scene) {
                 g_game.is_host = true;
             }
             PAA_DESTROY_ENTITY(players[rep->get_disconnected_user_id()]);
-        } else if (msg->code() == rtype::net::message_code::ROOM_CLIENT_CONNECT) {
-            auto rep = parse_message<UserConnectRoom>(msg.get());
-            spdlog::info("Client: Player {} connected to room", rep->playerID());
-            players[rep->playerID()] = new_player();
         } else {
             spdlog::info("Client game_scene: Received message of type {}", msg->type());
         }
     }
 }
 
-PAA_EVENTS_CPP(game_scene) {
+PAA_EVENTS_CPP(game_scene)
+{
     const vector2i pos(
         input.isKeyDown(paa::Keyboard::Key::Right) - input.isKeyDown(paa::Keyboard::Key::Left),
         input.isKeyDown(paa::Keyboard::Key::Down) - input.isKeyDown(paa::Keyboard::Key::Up)

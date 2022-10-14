@@ -76,4 +76,17 @@ public:
         }
         return nullptr;
     }
+
+    void launchGame(uint16_t client) {
+        auto it = _client_to_room_id.find(client);
+        if (it != _client_to_room_id.end() && _rooms[it->second]->launchGame()) {
+            _rooms[it->second]->main_broadcast(
+                rtype::net::YesNoMarker(rtype::net::message_code::LAUNCH_GAME_REP, true)
+            );
+        } else {
+            _server.get_client(client)->send_main(
+                rtype::net::YesNoMarker(rtype::net::message_code::LAUNCH_GAME_REP, false)
+            );
+        }
+    }
 };

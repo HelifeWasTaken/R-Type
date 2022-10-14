@@ -13,6 +13,7 @@ struct Game {
     RTYPE_CLIENT service;
     bool is_host = false;
     int8_t id = 0;
+    std::array<bool, RTYPE_PLAYER_COUNT> connected_players;
 };
 
 extern Game g_game;
@@ -30,3 +31,4 @@ extern Game g_game;
 #include "Scenes/SceneClientConnect.hpp"
 #include "Scenes/SceneConnectRoom.hpp"
 #include "Scenes/SceneCreateRoom.hpp"
+#include "Scenes/SceneRoomWait.hpp"

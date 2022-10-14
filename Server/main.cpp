@@ -54,11 +54,16 @@ private:
         std::function<void(uint16_t, rtype::net::IMessage&)>
     > _main_message_handlers = {
         RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::DUMMY),
-        RTYPE_SERVER_MAIN_GOT_THIS_MESSAGE_INFO(rtype::net::message_code::CONN_INIT),
 
+        RTYPE_SERVER_MAIN_GOT_THIS_MESSAGE_INFO(rtype::net::message_code::CONN_INIT),
         RTYPE_SERVER_MAIN_HANDLE_THIS_MESSAGE(rtype::net::message_code::CREATE_ROOM, {
             this->_roomManager.newRoom(client);
         }),
+        RTYPE_SERVER_MAIN_HANDLE_THIS_MESSAGE(rtype::net::message_code::LAUNCH_GAME, {
+            this->_roomManager.launchGame(client);
+        }),
+
+        RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::LAUNCH_GAME_REP),
 
         RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CONN_INIT_REP),
         RTYPE_SERVER_MAIN_GOT_THIS_MESSAGE_INFO(rtype::net::message_code::FEED_INIT),
@@ -101,15 +106,22 @@ private:
         std::function<void(uint16_t, rtype::net::IMessage&)>
     > _feed_message_handler = {
         RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::DUMMY),
+
         RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CONN_INIT),
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CREATE_ROOM),
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::LAUNCH_GAME),
+
+        RTYPE_SERVER_FEED_GOT_THIS_MESSAGE_INFO(rtype::net::message_code::LAUNCH_GAME_REP),
+
         RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CONN_INIT_REP),
         RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::FEED_INIT),
         RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::FEED_INIT_REP),
+
         RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::TEXT_MESSAGE),
-        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CREATE_ROOM),
-        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CREATE_ROOM_REPLY),
         RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::REQUEST_CONNECT_ROOM),
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CREATE_ROOM_REPLY),
         RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CONNECT_ROOM_REQ_REP),
+        RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::ROOM_CLIENT_CONNECT),
         RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::ROOM_CLIENT_DISCONNECT),
 
         RTYPE_SERVER_FEED_HANDLE_THIS_MESSAGE(rtype::net::message_code::SYNC_VECTOR2_POSITION, {

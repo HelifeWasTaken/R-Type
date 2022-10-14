@@ -88,6 +88,10 @@ namespace net {
         // signal markers
         CONN_INIT,
         CREATE_ROOM,
+        LAUNCH_GAME,
+
+        // YesNo messages
+        LAUNCH_GAME_REP,
 
         // special messages
         CONN_INIT_REP,
@@ -117,7 +121,13 @@ namespace net {
         SIGNAL_MARKER,
         CONN_INIT = SIGNAL_MARKER,
         CREATE_ROOM = SIGNAL_MARKER,
+        LAUNCH_GAME = SIGNAL_MARKER,
 
+        // YesNo messages
+        YES_NO_MESSAGES,
+        LAUNCH_GAME_REP = YES_NO_MESSAGES,
+
+        // special messages
         CONNECTION_INIT_REPLY,
         CONN_INIT_REP = CONNECTION_INIT_REPLY,
 
@@ -138,7 +148,7 @@ namespace net {
         SYNC_MESSAGE,
         SYNC_VECTOR2_POSITION = SYNC_MESSAGE,
 
-        // Special messages
+        // Update messages
         UPDATE_MESSAGE,
         UPDATE_VECTOR2_MOVEMENT = UPDATE_MESSAGE,
     };
@@ -204,7 +214,7 @@ namespace net {
 
     namespace token {
         #ifndef RTYPE_TOKEN_SIZE
-            #define RTYPE_TOKEN_SIZE 6 
+            #define RTYPE_TOKEN_SIZE 6
         #endif
         std::string generate_token(void);
     }
@@ -248,6 +258,20 @@ namespace net {
 
         void from(const uint8_t *data, const size_t size) override;
         std::vector<uint8_t> serialize() const override;
+    };
+
+    class YesNoMarker : public Message {
+    public:
+        YesNoMarker() = default;
+        YesNoMarker(const message_code& code, const bool& yes);
+
+        void from(const uint8_t *data, const size_t size) override;
+        std::vector<uint8_t> serialize() const override;
+
+        bool yes() const { return _yes; }
+
+    private:
+        bool _yes = false;
     };
 
     class UpdateMessage : public Message {

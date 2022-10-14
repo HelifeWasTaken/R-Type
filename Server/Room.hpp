@@ -13,6 +13,8 @@ private:
 
     rtype::net::server& _server;
 
+    bool _started = false;
+
     using IMessage = rtype::net::IMessage;
 
 public:
@@ -30,6 +32,9 @@ public:
     void setHostID(uint8_t id) { _hostID = id; }
 
     uint8_t addPlayer(uint16_t client) {
+        if (hasStarted()) {
+            return RTYPE_INVALID_PLAYER_ID;
+        }
         for (uint8_t i = 0; i < RTYPE_PLAYER_COUNT; i++) {
             if (!_connected_players[i]) {
                 _connected_players[i] = true;
@@ -70,7 +75,27 @@ public:
         return _hostID == RTYPE_INVALID_PLAYER_ID || _client_to_index.empty();
     }
 
-    void main_broadcast(const IMessage& message, uint16_t except = 0xFFFF) {
+    bool launchGame() {
+        if (isEmpty()) {
+            return false;
+        }
+        _started = true;
+        return true;
+    }
+
+    bool hasStarted() const {
+        return _started;
+    }
+
+    bool stop() {
+        if (isEmpty()) {
+            return false;
+        }
+        _started = false;
+        return true;
+    }
+
+    void main_broadcast(const rtype::net::IMessage& message, uint16_t except = 0xFFFF) {
         auto buffer = message.serialize();
         for (auto& client : _client_to_index) {
             if (client.first != except) {
@@ -80,7 +105,7 @@ public:
         }
     }
 
-    void feed_broadcast(const IMessage& message, uint16_t except = 0xFFFF) {
+    void feed_broadcast(const rtype::net::IMessage& message, uint16_t except = 0xFFFF) {
         auto buffer = message.serialize();
         for (auto& client : _client_to_index) {
             if (client.first != except) {

@@ -2,6 +2,7 @@ project(rtype)
 cmake_minimum_required(VERSION 3.15)
 
 add_compile_definitions(SILVA_STATE_HANDLE_EVENT)
+add_compile_definitions(USE_RTYPE_MAGIC_NUMBER_32_BITS)
 
 add_compile_definitions(_WIN32_WINNT=0x0601)
 

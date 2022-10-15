@@ -4,7 +4,7 @@
 #define RTYPE_SERVER_ANY_SHOULD_NOT_HANDLE_THIS_CODE(type, code) \
     { \
         code, \
-        [](uint16_t client, rtype::net::IMessage& message) { \
+        [](rtype::net::ClientID client, rtype::net::IMessage& message) { \
             spdlog::error("Server {}: Received message of type {} but should not handle it", type, #code); \
         } \
     }
@@ -12,7 +12,7 @@
 #define RTYPE_SERVER_ANY_GOT_THIS_MESSAGE_INFO(type, code) \
     { \
         code, \
-        [](uint16_t client, rtype::net::IMessage& message) { \
+        [](rtype::net::ClientID client, rtype::net::IMessage& message) { \
             spdlog::info("RTypeServer {}: Info: Received {} message", type, #code); \
         } \
     }
@@ -20,7 +20,7 @@
 #define RTYPE_SERVER_ANY_HANDLE_THIS_MESSAGE(type, code, handler) \
     { \
         code, \
-        [this](uint16_t client, rtype::net::IMessage& message) { \
+        [this](rtype::net::ClientID client, rtype::net::IMessage& message) { \
             spdlog::info("RTypeServer {}: Received {} message", type, #code); \
             handler; \
         } \
@@ -51,7 +51,7 @@ private:
 
     std::unordered_map<
         rtype::net::message_code,
-        std::function<void(uint16_t, rtype::net::IMessage&)>
+        std::function<void(rtype::net::ClientID, rtype::net::IMessage&)>
     > _main_message_handlers = {
         RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::DUMMY),
 
@@ -103,7 +103,7 @@ private:
 
     std::unordered_map<
         rtype::net::message_code,
-        std::function<void(uint16_t, rtype::net::IMessage&)>
+        std::function<void(rtype::net::ClientID, rtype::net::IMessage&)>
     > _feed_message_handler = {
         RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::DUMMY),
 
@@ -192,7 +192,9 @@ private:
     };
 
 public:
-    RTypeServer(const int tcp_port, const int udp_port, bool authentificate)
+    RTypeServer(const rtype::net::PortType tcp_port,
+                const rtype::net::PortType udp_port,
+                const rtype::net::Bool authentificate)
         : _server(tcp_port, udp_port, authentificate)
         , _roomManager(_server)
     {}

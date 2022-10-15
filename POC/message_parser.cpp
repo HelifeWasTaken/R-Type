@@ -17,7 +17,7 @@ void poc_message_parser()
     assert(sync_msg.get<rtype::net::vector2f>().x == 12.34f);
     assert(sync_msg.get<rtype::net::vector2f>().y == 56.78f);
 
-    std::vector<uint8_t> buffer = sync_msg.serialize();
+    std::vector<Byte> buffer = sync_msg.serialize();
     std::cout << "serialized length: " << buffer.size() << std::endl;
 
     boost::shared_ptr<rtype::net::SyncMessage> sync_msg2 = rtype::net::Message::deserialize<rtype::net::SyncMessage>(buffer);

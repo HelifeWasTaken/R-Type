@@ -6,19 +6,19 @@
 
 class Room {
 private:
-    uint8_t _hostID = 0;
+    rtype::net::PlayerID _hostID = 0;
 
-    std::array<bool, RTYPE_PLAYER_COUNT> _connected_players;
-    std::unordered_map<uint8_t, int> _client_to_index;
+    std::array<rtype::net::Bool, RTYPE_PLAYER_COUNT> _connected_players;
+    std::unordered_map<rtype::net::ClientID, rtype::net::PlayerID> _client_to_index;
 
     rtype::net::server& _server;
 
-    bool _started = false;
+    rtype::net::Bool _started = false;
 
     using IMessage = rtype::net::IMessage;
 
 public:
-    Room(rtype::net::server& server, uint16_t client)
+    Room(rtype::net::server& server, rtype::net::ClientID client)
         : _server(server)
     {
         memset(_connected_players.data(), 0, _connected_players.size());
@@ -28,14 +28,14 @@ public:
 
     ~Room() = default;
 
-    uint8_t getHostID() const { return _hostID; }
-    void setHostID(uint8_t id) { _hostID = id; }
+    rtype::net::PlayerID getHostID() const { return _hostID; }
+    void setHostID(rtype::net::PlayerID id) { _hostID = id; }
 
-    uint8_t addPlayer(uint16_t client) {
+    rtype::net::PlayerID addPlayer(rtype::net::ClientID client) {
         if (hasStarted()) {
             return RTYPE_INVALID_PLAYER_ID;
         }
-        for (uint8_t i = 0; i < RTYPE_PLAYER_COUNT; i++) {
+        for (rtype::net::PlayerID i = 0; i < RTYPE_PLAYER_COUNT; i++) {
             if (!_connected_players[i]) {
                 _connected_players[i] = true;
                 _client_to_index[client] = i;
@@ -45,12 +45,12 @@ public:
         return RTYPE_INVALID_PLAYER_ID;
     }
 
-    void removePlayer(uint16_t client) {
+    void removePlayer(rtype::net::ClientID client) {
         auto index = _client_to_index[client];
 
         if (index == _hostID) {
             _hostID = RTYPE_INVALID_PLAYER_ID;
-            for (uint8_t i = 0; i < RTYPE_PLAYER_COUNT; i++) {
+            for (rtype::net::PlayerID i = 0; i < RTYPE_PLAYER_COUNT; i++) {
                 if (_connected_players[i]) {
                     _hostID = i;
                     break;
@@ -61,7 +61,7 @@ public:
         _client_to_index.erase(client);
     }
 
-    bool clientIsInRoom(uint16_t client) const {
+    bool clientIsInRoom(rtype::net::ClientID client) const {
         return _client_to_index.find(client) != _client_to_index.end();
     }
 
@@ -95,7 +95,7 @@ public:
         return true;
     }
 
-    void main_broadcast(const rtype::net::IMessage& message, uint16_t except = 0xFFFF) {
+    void main_broadcast(const rtype::net::IMessage& message, rtype::net::ClientID except = 0xFFFF) {
         auto buffer = message.serialize();
         for (auto& client : _client_to_index) {
             if (client.first != except) {
@@ -105,7 +105,7 @@ public:
         }
     }
 
-    void feed_broadcast(const rtype::net::IMessage& message, uint16_t except = 0xFFFF) {
+    void feed_broadcast(const rtype::net::IMessage& message, rtype::net::ClientID except = 0xFFFF) {
         auto buffer = message.serialize();
         for (auto& client : _client_to_index) {
             if (client.first != except) {
@@ -115,7 +115,7 @@ public:
         }
     }
 
-    std::unordered_map<uint8_t, int> get_clients() const {
+    std::unordered_map<rtype::net::ClientID, rtype::net::PlayerID> get_clients() const {
         return _client_to_index;
     }
 };

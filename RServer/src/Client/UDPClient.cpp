@@ -5,27 +5,22 @@ namespace net {
 
     UDPClient::HeaderMessage::HeaderMessage(udp_buffer_t& buffer)
     {
-        Serializer s(reinterpret_cast<uint8_t *>(buffer.data()), buffer.size());
+        Serializer s(buffer.data(), buffer.size());
 
-        s >> _magic >> _seq >> _id;
+        s >> _magic >> _id;
     }
 
     bool UDPClient::HeaderMessage::is_valid() const
     {
-        return _magic == MAGIC_NUMBER;
+        return _magic == RTYPE_MAGIC_NUMBER;
     }
 
-    std::size_t UDPClient::HeaderMessage::size() const
+    BufferSizeType UDPClient::HeaderMessage::size() const
     {
-        return sizeof(_magic) + sizeof(_seq) + sizeof(_id);
+        return sizeof(_magic) + sizeof(_id);
     }
 
-    uint64_t UDPClient::HeaderMessage::get_msg_sequence() const
-    {
-        return _seq;
-    }
-
-    uint16_t UDPClient::HeaderMessage::get_sender_id() const
+    ClientID UDPClient::HeaderMessage::get_sender_id() const
     {
         return _id;
     }
@@ -45,7 +40,7 @@ namespace net {
         receive();
     }
 
-    void UDPClient::feed_request(int32_t token, uint16_t playerId)
+    void UDPClient::feed_request(TokenType token, ClientID playerId)
     {
         auto msg = FeedInitRequest(playerId, token);
         auto shared_message = udp_server::new_message(playerId, msg);
@@ -73,7 +68,7 @@ namespace net {
         _socket.async_receive_from(boost::asio::buffer(*_buf_recv),
         _sender_endpoint,
         [this, buf_recv = _buf_recv](
-            const boost::system::error_code& ec, size_t bytes) {
+            const boost::system::error_code& ec, BufferSizeType bytes) {
                 spdlog::info("UDPClient::receive: readed a message of size: {}", bytes);
                 if (ec) {
                     spdlog::error("UDPClient::receive: {}", ec.message());
@@ -86,7 +81,7 @@ namespace net {
                     return;
                 }
                 auto msg = parse_message(
-                    reinterpret_cast<uint8_t*>(
+                    reinterpret_cast<Byte*>(
                         _buf_recv->c_array() + RTYPE_UDP_MESSAGE_HEADER),
                     bytes - RTYPE_UDP_MESSAGE_HEADER);
                 if (msg == nullptr) {
@@ -100,15 +95,15 @@ namespace net {
         );
     }
 
-    void UDPClient::send(rtype::net::udp_server::shared_message_info_t message, size_t size)
+    void UDPClient::send(rtype::net::udp_server::shared_message_info_t message, BufferSizeType size)
     {
         spdlog::info("UDPClient::send: Sending message");
-        if (size == (size_t)-1)
+        if (size == (BufferSizeType)-1)
             size = message->size();
         _socket.async_send_to(
         boost::asio::buffer(message->msg(), size),
         _receiver_endpoint,
-            [message](const boost::system::error_code& ec, size_t bytes) {
+            [message](const boost::system::error_code& ec, BufferSizeType bytes) {
                 (void)bytes;
                 if (!ec) {
                     spdlog::info("UDPClient::send: Sent {} bytes", bytes);
@@ -130,7 +125,7 @@ namespace net {
         return _connected;
     }
 
-    int32_t UDPClient::token() const
+    TokenType UDPClient::token() const
     {
         return _token;
     }

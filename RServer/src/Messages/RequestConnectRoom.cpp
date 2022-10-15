@@ -9,14 +9,14 @@ namespace net {
     {
     }
 
-    void RequestConnectRoom::from(const uint8_t *data, const size_t size)
+    void RequestConnectRoom::from(const Byte *data, const BufferSizeType size)
     {
         Serializer s(data, size);
         s >> _message_code;
         _roomID = std::string(s.data.begin(), s.data.end());
     }
 
-    std::vector<uint8_t> RequestConnectRoom::serialize() const
+    std::vector<Byte> RequestConnectRoom::serialize() const
     {
         Serializer s;
         s << _message_code;

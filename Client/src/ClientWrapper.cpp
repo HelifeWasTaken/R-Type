@@ -5,8 +5,8 @@ namespace rtype {
 namespace game {
 
     bool ClientWrapper::run(const std::string& host,
-                            const unsigned int& tcp_port,
-                            const unsigned int& udp_port)
+                            const rtype::net::PortType& tcp_port,
+                            const rtype::net::PortType& udp_port)
     {
         try {
             this->host = host;

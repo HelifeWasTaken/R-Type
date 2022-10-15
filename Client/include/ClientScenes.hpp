@@ -11,9 +11,9 @@
 
 struct Game {
     RTYPE_CLIENT service;
-    bool is_host = false;
-    int8_t id = 0;
-    std::array<bool, RTYPE_PLAYER_COUNT> connected_players;
+    rtype::net::Bool is_host = false;
+    rtype::net::ClientID id = 0;
+    std::array<rtype::net::Bool, RTYPE_PLAYER_COUNT> connected_players;
     std::string room_token = "";
 };
 

@@ -10,15 +10,15 @@
 #include <vector>
 #include <cstdlib>
 
-#define RTYPE_PLAYER_COUNT 4
+#include "RServer/utils.hpp"
 
 namespace rtype {
 namespace net {
 
     struct Serializer {
-        std::vector<uint8_t> data;
+        std::vector<Byte> data;
 
-        Serializer(const uint8_t *bytes, size_t size)
+        Serializer(const Byte *bytes, BufferSizeType size)
             : data(bytes, bytes + size)
         {}
 
@@ -27,7 +27,7 @@ namespace net {
         template<typename T>
         Serializer& operator<<(const T& value) {
             const T big_value = boost::endian::native_to_big(value);
-            const uint8_t* byteReader = reinterpret_cast<const uint8_t*>(&big_value);
+            const Byte* byteReader = reinterpret_cast<const Byte*>(&big_value);
             data.insert(data.end(), byteReader, byteReader + sizeof(T));
             return *this;
         }
@@ -42,47 +42,47 @@ namespace net {
             return *this;
         }
 
-        Serializer& add_bytes(const uint8_t *bytes, size_t size) {
+        Serializer& add_bytes(const Byte *bytes, BufferSizeType size) {
             data.insert(data.end(), bytes, bytes + size);
             return *this;
         }
 
-        Serializer& add_bytes(const std::vector<uint8_t>& bytes) {
+        Serializer& add_bytes(const std::vector<Byte>& bytes) {
             return add_bytes(bytes.data(), bytes.size());
         }
 
         Serializer& add_bytes(const std::string& str) {
-            return add_bytes(reinterpret_cast<const uint8_t*>(str.c_str()), str.size());
+            return add_bytes(reinterpret_cast<const Byte*>(str.c_str()), str.size());
         }
     };
 
     class Serializable {
     public:
-        virtual std::vector<uint8_t> serialize() const = 0;
-        virtual void from(const uint8_t *data, const size_t size) = 0;
+        virtual std::vector<Byte> serialize() const = 0;
+        virtual void from(const Byte *data, const BufferSizeType size) = 0;
 
         template<typename T>
-        static T deserialize(const uint8_t *data, const size_t size) {
+        static T deserialize(const Byte *data, const BufferSizeType size) {
             T t;
             t.from(data, size);
             return t;
         }
 
         template<typename T>
-        static T deserialize(const std::vector<uint8_t>& data) {
+        static T deserialize(const std::vector<Byte>& data) {
             return from<T>(data.data(), data.size());
         }
 
-        Serializable(int8_t type) : _type(type) {}
+        Serializable(Byte type) : _type(type) {}
         Serializable() = default;
 
-        uint8_t type() const { return _type; }
+        Byte type() const { return _type; }
 
     protected:
-        uint8_t _type = 0xFF;
+        Byte _type = 0xFF;
     };
 
-    enum class message_code : uint8_t {
+    enum class message_code : Byte {
         DUMMY = 0,
 
         // signal markers
@@ -114,7 +114,7 @@ namespace net {
 
     // All classes that inherit from IMessage
     // Is only used to cast the message to the right type
-    enum message_type : uint8_t {
+    enum message_type : Byte {
         INVALID = 0,
 
         // Signal markers
@@ -155,19 +155,19 @@ namespace net {
 
     class IMessage {
     public:
-        virtual void from(const uint8_t *data, const size_t size) = 0;
-        // virtual void from(const std::vector<uint8_t>& buff) = 0;
-        virtual std::vector<uint8_t> serialize() const = 0;
+        virtual void from(const Byte *data, const BufferSizeType size) = 0;
+        // virtual void from(const std::vector<Byte>& buff) = 0;
+        virtual std::vector<Byte> serialize() const = 0;
         virtual message_type type() const = 0;
         virtual message_code code() const = 0;
     };
 
     // ParseMessage file content
-    boost::shared_ptr<IMessage> parse_message(const uint8_t* buffer, size_t size);
-    boost::shared_ptr<IMessage> parse_message(const std::vector<uint8_t>& buff);
+    boost::shared_ptr<IMessage> parse_message(const Byte* buffer, BufferSizeType size);
+    boost::shared_ptr<IMessage> parse_message(const std::vector<Byte>& buff);
 
     template<typename T>
-    boost::shared_ptr<T> parse_message(const uint8_t* buffer, size_t size) {
+    boost::shared_ptr<T> parse_message(const Byte* buffer, BufferSizeType size) {
         try {
             return boost::dynamic_pointer_cast<T>(parse_message(buffer, size));
         } catch (...) {
@@ -176,7 +176,7 @@ namespace net {
     }
 
     template<typename T>
-    boost::shared_ptr<T> parse_message(const std::vector<uint8_t>& buff) {
+    boost::shared_ptr<T> parse_message(const std::vector<Byte>& buff) {
         try {
             return boost::dynamic_pointer_cast<T>(parse_message(buff));
         } catch (...) {
@@ -230,7 +230,7 @@ namespace net {
         ~Message() = default;
 
         template<typename T>
-        static boost::shared_ptr<T> deserialize(const uint8_t *data, const size_t size)
+        static boost::shared_ptr<T> deserialize(const Byte *data, const BufferSizeType size)
         {
             boost::shared_ptr<T> msg = boost::make_shared<T>();
             msg->from(data, size);
@@ -238,7 +238,7 @@ namespace net {
         }
 
         template<typename T>
-        static boost::shared_ptr<T> deserialize(const std::vector<uint8_t>& buff)
+        static boost::shared_ptr<T> deserialize(const std::vector<Byte>& buff)
         { return deserialize<T>(buff.data(), buff.size()); }
 
         message_type type() const override final
@@ -256,100 +256,100 @@ namespace net {
         SignalMarker() = default;
         SignalMarker(const message_code& code);
 
-        void from(const uint8_t *data, const size_t size) override;
-        std::vector<uint8_t> serialize() const override;
+        void from(const Byte *data, const BufferSizeType size) override;
+        std::vector<Byte> serialize() const override;
     };
 
     class YesNoMarker : public Message {
     public:
         YesNoMarker() = default;
-        YesNoMarker(const message_code& code, const bool& yes);
+        YesNoMarker(const message_code& code, const Bool& yes);
 
-        void from(const uint8_t *data, const size_t size) override;
-        std::vector<uint8_t> serialize() const override;
+        void from(const Byte *data, const BufferSizeType size) override;
+        std::vector<Byte> serialize() const override;
 
-        bool yes() const { return _yes; }
+        Bool yes() const { return _yes; }
 
     private:
-        bool _yes = false;
+        Bool _yes = false;
     };
 
     class UpdateMessage : public Message {
     public:
         UpdateMessage() = default;
-        UpdateMessage(const uint8_t& sid, const Serializable& data, const message_code& code);
+        UpdateMessage(const PlayerID& sid, const Serializable& data, const message_code& code);
 
-        void from(const uint8_t *data, const size_t size) override;
-        std::vector<uint8_t> serialize() const override;
+        void from(const Byte *data, const BufferSizeType size) override;
+        std::vector<Byte> serialize() const override;
 
-        uint8_t sid() const;
-        const std::vector<uint8_t>& data() const;
+        PlayerID sid() const;
+        const std::vector<Byte>& data() const;
 
     private:
-        uint8_t _sid = 0;
-        std::vector<uint8_t> _data;
+        PlayerID _sid = 0;
+        std::vector<Byte> _data;
     };
 
     class SyncMessage : public Message {
     public:
         SyncMessage() = default;
-        SyncMessage(uint8_t sid, const Serializable& serializable, const message_code& code);
+        SyncMessage(PlayerID sid, const Serializable& serializable, const message_code& code);
 
-        void from(const uint8_t *data, const size_t size) override;
-        std::vector<uint8_t> serialize() const override;
+        void from(const Byte *data, const BufferSizeType size) override;
+        std::vector<Byte> serialize() const override;
 
-        uint8_t sid() const;
-        const std::vector<uint8_t>& data() const;
+        PlayerID sid() const;
+        const std::vector<Byte>& data() const;
 
     private:
-        std::vector<uint8_t> _data;
-        uint8_t _sid = 0;
+        std::vector<Byte> _data;
+        PlayerID _sid = 0;
     };
 
     class ConnectionInitReply : public Message {
     public:
         ConnectionInitReply() = default;
-        ConnectionInitReply(int16_t playerId, int32_t token);
+        ConnectionInitReply(PlayerID playerId, TokenType token);
 
-        void from(const uint8_t *data, const size_t size) override;
-        std::vector<uint8_t> serialize() const override;
+        void from(const Byte *data, const BufferSizeType size) override;
+        std::vector<Byte> serialize() const override;
 
-        uint16_t playerId() const;
-        uint32_t token() const;
+        PlayerID playerId() const;
+        TokenType token() const;
 
     private:
-        uint16_t _playerId = 0;
-        uint32_t _token = 0;
+        PlayerID _playerId = 0;
+        TokenType _token = 0;
     };
 
     class FeedInitRequest : public Message {
     public:
         FeedInitRequest() = default;
-        FeedInitRequest(int16_t playerId, int32_t token);
+        FeedInitRequest(ClientID playerId, TokenType token);
 
-        void from(const uint8_t *data, const size_t size) override;
-        std::vector<uint8_t> serialize() const override;
+        void from(const Byte *data, const BufferSizeType size) override;
+        std::vector<Byte> serialize() const override;
 
-        uint16_t playerId() const;
-        uint32_t token() const;
+        ClientID playerId() const;
+        TokenType token() const;
 
     private:
-        uint16_t _playerId = 0;
-        uint32_t _token = 0;
+        ClientID _playerId = 0;
+        TokenType _token = 0;
     };
 
     class FeedInitReply : public Message {
     public:
         FeedInitReply() = default;
-        FeedInitReply(int32_t token);
+        FeedInitReply(TokenType token);
 
-        void from(const uint8_t *data, const size_t size) override;
-        std::vector<uint8_t> serialize() const override;
+        void from(const Byte *data, const BufferSizeType size) override;
+        std::vector<Byte> serialize() const override;
 
-        uint32_t token() const;
+        TokenType token() const;
 
     private:
-        uint32_t _token = 0;
+        TokenType _token = 0;
     };
 
     class TextMessage : public Message {
@@ -357,10 +357,11 @@ namespace net {
         TextMessage() = default;
         TextMessage(const std::string& text);
 
-        void from(const uint8_t *data, const size_t size) override;
-        std::vector<uint8_t> serialize() const override;
+        void from(const Byte *data, const BufferSizeType size) override;
+        std::vector<Byte> serialize() const override;
 
         const std::string& text() const;
+
     private:
         std::string _text;
     };
@@ -370,10 +371,11 @@ namespace net {
         RequestConnectRoom() = default;
         RequestConnectRoom(const std::string& roomID);
 
-        void from(const uint8_t *data, const size_t size) override;
-        std::vector<uint8_t> serialize() const override;
+        void from(const Byte *data, const BufferSizeType size) override;
+        std::vector<Byte> serialize() const override;
 
         const std::string& roomID() const;
+
     private:
         std::string _roomID;
     };
@@ -387,15 +389,15 @@ namespace net {
     class RequestConnectRoomReply : public Message {
     public:
         RequestConnectRoomReply() = default;
-        RequestConnectRoomReply(uint8_t playerID);
+        RequestConnectRoomReply(PlayerID playerID);
 
-        void from(const uint8_t *data, const size_t size) override;
-        std::vector<uint8_t> serialize() const override;
+        void from(const Byte *data, const BufferSizeType size) override;
+        std::vector<Byte> serialize() const override;
 
-        uint8_t playerID() const;
+        PlayerID playerID() const;
 
     private:
-        uint8_t _playerID = RTYPE_INVALID_PLAYER_ID;
+        PlayerID _playerID = RTYPE_INVALID_PLAYER_ID;
     };
 
     class CreateRoomReply : public Message {
@@ -403,8 +405,8 @@ namespace net {
         CreateRoomReply() = default;
         CreateRoomReply(const std::string& token);
 
-        void from(const uint8_t *data, const size_t size) override;
-        std::vector<uint8_t> serialize() const override;
+        void from(const Byte *data, const BufferSizeType size) override;
+        std::vector<Byte> serialize() const override;
 
         const std::string& token() const;
 
@@ -415,30 +417,31 @@ namespace net {
     class UserConnectRoom : public Message {
     public:
         UserConnectRoom() = default;
-        UserConnectRoom(uint8_t playerID);
+        UserConnectRoom(PlayerID playerID);
 
-        void from(const uint8_t *data, const size_t size) override;
-        std::vector<uint8_t> serialize() const override;
+        void from(const Byte *data, const BufferSizeType size) override;
+        std::vector<Byte> serialize() const override;
 
-        uint8_t playerID() const;
+        PlayerID playerID() const;
+
     private:
-        uint8_t _playerID = 0;
+        Byte _playerID = 0;
     };
 
     class UserDisconnectFromRoom : public Message {
     public:
         UserDisconnectFromRoom() = default;
-        UserDisconnectFromRoom(size_t dc_user, size_t new_host);
+        UserDisconnectFromRoom(PlayerID dc_user, PlayerID new_host);
 
-        void from(const uint8_t *data, const size_t size) override;
-        std::vector<uint8_t> serialize() const override;
+        void from(const Byte *data, const BufferSizeType size) override;
+        std::vector<Byte> serialize() const override;
 
-        const size_t get_disconnected_user_id() const;
-        const size_t get_new_host_id() const;
+        const PlayerID get_disconnected_user_id() const;
+        const PlayerID get_new_host_id() const;
 
     private:
-        size_t _dc_user_id = 0;
-        size_t _new_host_id = 0;
+        PlayerID _dc_user_id = 0;
+        PlayerID _new_host_id = 0;
     };
 
 }

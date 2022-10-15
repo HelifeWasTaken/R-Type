@@ -5,10 +5,7 @@
 PAA_SCENE(client_connect) {
 
     paa::Timer timer;
-    std::string choice;
-
     paa::Gui gui;
-
     paa::shared_gui_text text = paa::GuiFactory::new_gui_text("No log from server yet");
 
     PAA_START(client_connect);

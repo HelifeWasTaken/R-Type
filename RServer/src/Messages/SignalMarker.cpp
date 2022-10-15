@@ -6,12 +6,12 @@ namespace net {
         : Message(code)
     {}
 
-    void SignalMarker::from(const uint8_t *data, const size_t size) {
+    void SignalMarker::from(const Byte *data, const BufferSizeType size) {
         Serializer s(data, size);
         s >> _message_code;
     }
 
-    std::vector<uint8_t> SignalMarker::serialize() const {
+    std::vector<Byte> SignalMarker::serialize() const {
         Serializer s;
         s << _message_code;
         return s.data;

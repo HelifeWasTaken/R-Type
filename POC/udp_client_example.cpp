@@ -20,7 +20,7 @@ void poc_udp_client_example(void)
             while (client.udp().poll(s)) {
                 std::cout << "Received: ";
                 auto data = s->serialize();
-                rtype::net::dump_memory(std::cout, data.data(), data.size());
+                rtype::net::dump_memory(data.data(), data.size());
             }
 
         } else {

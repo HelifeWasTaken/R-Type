@@ -8,7 +8,7 @@
 namespace rtype {
 namespace net {
 
-    enum class serializable_type : uint8_t {
+    enum class serializable_type : Byte {
         VECTOR2I
     };
 
@@ -28,7 +28,7 @@ namespace net {
             , x(other.x) , y(other.y)
         {}
 
-        vector2i(const std::vector<uint8_t>& data)
+        vector2i(const std::vector<Byte>& data)
             : Serializable((int8_t)serializable_type::VECTOR2I)
         {
             from(data.data(), data.size());
@@ -36,14 +36,14 @@ namespace net {
 
         vector2i& operator=(const vector2i& other) = default;
 
-        std::vector<uint8_t> serialize() const override
+        std::vector<Byte> serialize() const override
         {
             Serializer s;
             s << _type << x << y;
             return s.data;
         }
 
-        void from(const uint8_t *data, const size_t size) override
+        void from(const Byte *data, const BufferSizeType size) override
         {
             Serializer s(data, size);
             s >> _type >> x >> y;

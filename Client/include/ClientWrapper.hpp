@@ -17,8 +17,8 @@ struct ClientWrapper {
     ~ClientWrapper() = default;
 
     bool run(const std::string& host,
-            const unsigned int& tcp_port,
-            const unsigned int& udp_port);
+            const rtype::net::PortType& tcp_port,
+            const rtype::net::PortType& udp_port);
 
     bool run(const std::string& configuration_file);
     bool run();
@@ -36,8 +36,8 @@ struct ClientWrapper {
     rtype::net::UDPClient& udp() { return client->udp(); }
 
     std::string host = "127.0.0.1";
-    unsigned int tcp_port = 4242;
-    unsigned int udp_port = 4243;
+    rtype::net::PortType tcp_port = 4242;
+    rtype::net::PortType udp_port = 4243;
 };
 
 #define RTYPE_CLIENT rtype::game::ClientWrapper

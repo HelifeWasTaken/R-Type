@@ -13,7 +13,7 @@ namespace net {
             std::string available = "azertyuiopqsdfghjklmwxcvbn";
             std::string token = "#";
 
-            for (std::size_t size = 0; size < RTYPE_TOKEN_SIZE; size++) {
+            for (size_t size = 0; size < RTYPE_TOKEN_SIZE; size++) {
                 std::size_t index = std::rand() % available.size();
                 token += available[index];
             }
@@ -63,7 +63,7 @@ namespace net {
         return message_code::DUMMY;
     }
 
-    boost::shared_ptr<IMessage> parse_message(const uint8_t* buffer, size_t size)
+    boost::shared_ptr<IMessage> parse_message(const Byte* buffer, BufferSizeType size)
     {
         try {
             assert(size > 0);
@@ -107,7 +107,7 @@ namespace net {
         return nullptr;
     }
 
-    boost::shared_ptr<IMessage> parse_message(const std::vector<uint8_t>& buff)
+    boost::shared_ptr<IMessage> parse_message(const std::vector<Byte>& buff)
     {
         return parse_message(buff.data(), buff.size());
     }

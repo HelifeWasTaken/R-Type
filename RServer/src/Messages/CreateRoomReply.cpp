@@ -11,12 +11,12 @@ namespace net {
     {
     }
 
-    void CreateRoomReply::from(const uint8_t *data, const size_t size)
+    void CreateRoomReply::from(const Byte *data, const BufferSizeType size)
     {
         Serializer s(data, size);
 
         std::cout << "[";
-        for (size_t i = 0; i < size; i++)
+        for (BufferSizeType i = 0; i < size; i++)
             std::cout << " " << (int)data[i] << ", ";
         std::cout << "]" << std::endl;
 
@@ -24,7 +24,7 @@ namespace net {
         _token = std::string(s.data.begin(), s.data.end());
     }
 
-    std::vector<uint8_t> CreateRoomReply::serialize() const
+    std::vector<Byte> CreateRoomReply::serialize() const
     {
         Serializer s;
         s << _message_code;

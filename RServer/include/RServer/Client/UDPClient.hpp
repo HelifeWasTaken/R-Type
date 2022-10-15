@@ -14,7 +14,7 @@ namespace net {
         boost::asio::ip::udp::endpoint _sender_endpoint;
 
         std::atomic_bool _connected;
-        int32_t _token;
+        TokenType _token;
 
     public:
         class HeaderMessage {
@@ -34,23 +34,17 @@ namespace net {
             /**
              * @brief Gets the size of the header
              */
-            std::size_t size() const;
-
-            /**
-             * @brief Gets the message sequence
-             */
-            uint64_t get_msg_sequence() const;
+            BufferSizeType size() const;
 
             /**
              * @brief Gets the sender id
              */
-            uint16_t get_sender_id() const;
+            ClientID get_sender_id() const;
 
 
         private:
-            uint64_t _magic;
-            uint64_t _seq;
-            uint16_t _id;
+            MagicNumber _magic;
+            ClientID _id;
         };
 
         /**
@@ -81,7 +75,7 @@ namespace net {
          * @param shared_message_t The message to send
          * @param size The size of the message (if -1 size is udp_buffer_t::size)
          */
-        void send(rtype::net::udp_server::shared_message_info_t message, size_t size=-1);
+        void send(rtype::net::udp_server::shared_message_info_t message, BufferSizeType size=-1);
 
         /**
          * @brief Send a message to the server asynchronously
@@ -95,7 +89,7 @@ namespace net {
          * @param token The token
          * @param playerId The player ID
          */
-        void feed_request(int32_t token, uint16_t playerId);
+        void feed_request(TokenType token, ClientID playerId);
 
         /**
          * @brief Tells you wheter you are connected on the server or not
@@ -105,11 +99,11 @@ namespace net {
         /**
          * @brief Returns the token id of the user
          */
-        int32_t token() const;
+        TokenType token() const;
 
     private:
         boost::shared_ptr<udp_buffer_t> _buf_recv;
-        uint16_t _id;
+        ClientID _id;
     };
 }
 }

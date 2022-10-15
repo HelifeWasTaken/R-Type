@@ -28,14 +28,14 @@ namespace net {
          * @param message The message to send
          * @param size The size of the message (if -1 size is tcp_buffer_t::size)
          */
-        void send(boost::shared_ptr<tcp_buffer_t> message, size_t size = -1);
+        void send(boost::shared_ptr<tcp_buffer_t> message, BufferSizeType size = -1);
 
         /**
          * @brief Sends a message to the server (async)
          * @param message The message to send
          * @param size The size of the message (if -1 size is tcp_buffer_t::size)
          */
-        void send(const tcp_buffer_t& message, size_t size = -1);
+        void send(const tcp_buffer_t& message, BufferSizeType size = -1);
 
         /**
          * @brief Sends a message to the server (async)
@@ -53,12 +53,12 @@ namespace net {
         /**
          * @brief Gives you the client token
          */
-        int32_t token() const;
+        TokenType token() const;
 
         /**
          * @brief Gives you the client id
          */
-        int16_t id() const;
+        ClientID id() const;
 
     private:
 
@@ -75,8 +75,8 @@ namespace net {
 
         boost::shared_ptr<tcp_buffer_t> _buf_recv;
 
-        int32_t _token = -1;
-        int16_t _id = -1;
+        TokenType _token = -1;
+        ClientID _id = -1;
         std::atomic_bool _is_connected;
     };
 

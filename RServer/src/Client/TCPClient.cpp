@@ -52,10 +52,10 @@ namespace net {
         spdlog::info("TCPClient::receive: Start receiving");
         _socket.async_receive(boost::asio::buffer(*_buf_recv),
             [this, buf_recv = _buf_recv](
-                const boost::system::error_code& ec, size_t bytes) {
+                const boost::system::error_code& ec, BufferSizeType bytes) {
                 if (!ec) {
                     auto msg = parse_message(
-                        reinterpret_cast<uint8_t*>(_buf_recv->c_array()),
+                        reinterpret_cast<Byte*>(_buf_recv->c_array()),
                         bytes);
                     if (msg) {
                         spdlog::info("TCPClient::receive: Received {} bytes", bytes);
@@ -72,14 +72,14 @@ namespace net {
         );
     }
 
-    void TCPClient::send(boost::shared_ptr<tcp_buffer_t> message, size_t size)
+    void TCPClient::send(boost::shared_ptr<tcp_buffer_t> message, BufferSizeType size)
     {
-        if (size == (size_t)-1)
+        if (size == (BufferSizeType)-1)
             size = message->size();
         spdlog::info("TCPClient::send: Sending {} bytes", size);
         _socket.async_send(boost::asio::buffer(*message, size),
             [this, message](
-                const boost::system::error_code& ec, size_t bytes) {
+                const boost::system::error_code& ec, BufferSizeType bytes) {
                 (void)bytes;
                 if (!ec) {
                     spdlog::info("TCPClient::send: Sent {} bytes", bytes);
@@ -90,7 +90,7 @@ namespace net {
         );
     }
 
-    void TCPClient::send(const tcp_buffer_t& message, size_t size)
+    void TCPClient::send(const tcp_buffer_t& message, BufferSizeType size)
     {
         send(boost::make_shared<tcp_buffer_t>(message), size);
     }
@@ -103,9 +103,9 @@ namespace net {
 
     bool TCPClient::is_connected() const { return _is_connected; }
 
-    int32_t TCPClient::token() const { return _token; }
+    TokenType TCPClient::token() const { return _token; }
 
-    int16_t TCPClient::id() const { return _id; }
+    ClientID TCPClient::id() const { return _id; }
 
 }
 }

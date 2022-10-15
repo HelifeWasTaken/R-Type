@@ -13,7 +13,7 @@ void logging_system(hl::silva::registry &r)
     // deprecated version:
     // auto const &positions = r.get_components<cposition>();
     // auto const &velocities = r.get_components<cvelocity>();
-    // for (size_t i = 0; i < positions.size() && i < velocities.size(); ++i)
+    // for (BufferSizeType i = 0; i < positions.size() && i < velocities.size(); ++i)
     // {
     //     auto const &pos = positions[i];
     //     auto const &vel = velocities[i];

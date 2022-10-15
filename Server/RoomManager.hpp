@@ -5,7 +5,7 @@ private:
     std::unordered_map<std::string, std::unique_ptr<Room>> _rooms;
     rtype::net::server& _server;
 
-    std::unordered_map<uint16_t, std::string> _client_to_room_id;
+    std::unordered_map<rtype::net::ClientID, std::string> _client_to_room_id;
 
 public:
     RoomManager(rtype::net::server& server)
@@ -15,7 +15,7 @@ public:
     ~RoomManager() = default;
 
 public:
-    void newRoom(uint16_t client) {
+    void newRoom(rtype::net::ClientID client) {
         std::string roomID = rtype::net::token::generate_token();
         while (_rooms.find(roomID) != _rooms.end()) {
             roomID = rtype::net::token::generate_token();
@@ -30,12 +30,12 @@ public:
         return _rooms.find(roomID) != _rooms.end();
     }
 
-    void addPlayerToRoom(const std::string& roomID, uint16_t client) {
+    void addPlayerToRoom(const std::string& roomID, rtype::net::ClientID client) {
         if (_rooms.find(roomID) == _rooms.end()) {
             _server.get_client(client)->send_main(rtype::net::RequestConnectRoomReply(RTYPE_INVALID_PLAYER_ID));
             return;
         }
-        uint16_t id = _rooms[roomID]->addPlayer(client);
+        rtype::net::ClientID id = _rooms[roomID]->addPlayer(client);
         if (id != RTYPE_INVALID_PLAYER_ID) {
             _client_to_room_id[client] = roomID;
         }
@@ -55,7 +55,7 @@ public:
         }
     }
 
-    void removePlayerIfInRoom(uint16_t client) {
+    void removePlayerIfInRoom(rtype::net::ClientID client) {
         auto it = _client_to_room_id.find(client);
         if (it != _client_to_room_id.end()) {
             auto &room = _rooms[it->second];
@@ -69,7 +69,7 @@ public:
         }
     }
 
-    Room* getRoom(uint16_t client) {
+    Room* getRoom(rtype::net::ClientID client) {
         auto it = _client_to_room_id.find(client);
         if (it != _client_to_room_id.end()) {
             return _rooms[it->second].get();
@@ -77,7 +77,7 @@ public:
         return nullptr;
     }
 
-    void launchGame(uint16_t client) {
+    void launchGame(rtype::net::ClientID client) {
         auto it = _client_to_room_id.find(client);
         if (it != _client_to_room_id.end() && _rooms[it->second]->launchGame()) {
             _rooms[it->second]->main_broadcast(

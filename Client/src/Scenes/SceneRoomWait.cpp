@@ -71,16 +71,23 @@ PAA_START_CPP(waiting_room)
     std::memset(g_game.connected_players.data(), 0, g_game.connected_players.size());
     g_game.connected_players[g_game.id] = true;
 
-    button = paa::GuiFactory::new_button("Launch game", []() {
-        if (g_game.is_host) {
-            g_game.service.tcp().send(SignalMarker(message_code::LAUNCH_GAME));
-            self->text->setText("Requested the server to launch the game...");
-        } else {
-            self->text->setText("You are not the host of the room");
-        }
-    });
-    gui.addObject(button);
-    gui.addObject(text);
+    gui.addObject(
+        paa::GuiFactory::new_button("Launch game", []() {
+            if (g_game.is_host) {
+                g_game.service.tcp().send(SignalMarker(message_code::LAUNCH_GAME));
+                self->server_log->setText("Requested the server to launch the game...");
+            } else {
+                self->server_log->setText("You are not the host of the room");
+            }
+        })
+    );
+    gui.addObject(server_log);
+    gui.addObject(paa::GuiFactory::new_gui_text("Token: " + g_game.room_token));
+    gui.addObject(
+        paa::GuiFactory::new_button("Disconnect", []() {
+            PAA_SET_SCENE(client_connect);
+        })
+    );
 }
 
 PAA_UPDATE_CPP(waiting_room)
@@ -89,9 +96,4 @@ PAA_UPDATE_CPP(waiting_room)
     manage_server_events();
 
     gui.update();
-
-    // Display clients connected to the room
-    // If the client is the host, display a button to launch the game
-    // If the client is not the host,
-    // display a message saying that the host must launch the game
 }

@@ -2,6 +2,8 @@
 
 #include "PileAA/external/nlohmann/json.hpp"
 
+#include "PileAA/GUI.hpp"
+
 #include <fstream>
 
 #include <spdlog/spdlog.h>
@@ -37,11 +39,14 @@ bool App::run()
     auto& batch = paa::BatchRendererInstance::get();
     auto& delta = paa::DeltaTimerInstance::get();
 
+    sf::Clock imGUIDeltaClock;
+
     spdlog::info("PileAA: Starting main loop");
 
     while (isRunning()) {
         Event event;
-        input.update();
+
+        input.update(); // TODO: Should it be here?
         delta.update();
 
         // TODO: Maybe change this to an if statement instead of a while
@@ -53,13 +58,20 @@ bool App::run()
                 && event.key.control) {
                 return true;
             }
-            input.handleEvent(event);
+
+            ImGui::SFML::ProcessEvent(event);
+
+            input.handleEvent(event); // TODO: Have a better input manager
+
             scene.handleEvent();
         }
+
+        ImGui::SFML::Update(window, imGUIDeltaClock.restart());
 
         window.clear();
         ecs.update();
         scene.update();
+        ImGui::SFML::Render(window);
         batch.render(window);
         window.display();
     }
@@ -246,6 +258,9 @@ void setup_paa_system(const std::string& configuration_filename)
 
     load_configuration_file(configuration_filename);
 
+    ImGui::SFML::Init(Screen::get());
+    spdlog::info("PileAA: ImGui created");
+
     spdlog::info("PileAA: system setup complete");
 }
 
@@ -268,6 +283,8 @@ void stop_paa_system()
     SceneManager::release();
     spdlog::info("PileAA: SceneManager released");
 
+    BatchRendererInstance::release();
+
     Screen::release();
     spdlog::info("PileAA: Screen released");
 
@@ -279,6 +296,9 @@ void stop_paa_system()
 
     App::release();
     spdlog::info("PileAA: App released");
+
+    ImGui::SFML::Shutdown();
+    spdlog::info("PileAA: ImGui released");
 }
 
 }

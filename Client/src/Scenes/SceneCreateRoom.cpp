@@ -10,6 +10,7 @@ static void manage_create_room_reply(shared_message_t msg)
         PAA_SET_SCENE(connect_room); // Go back to choice between host and connect
     }
     spdlog::info("Client create_room: Created room with token {}", rep->token());
+    g_game.room_token = rep->token();
     g_game.id = 0;
     g_game.is_host = true;
     PAA_SET_SCENE(waiting_room);

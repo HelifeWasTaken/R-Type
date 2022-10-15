@@ -63,5 +63,20 @@ namespace game {
         return run();
     }
 
+    bool ClientWrapper::tcp_is_connected() const
+    {
+        return client && client->tcp().is_connected();
+    }
+
+    bool ClientWrapper::udp_is_connected() const
+    {
+        return client && client->udp().is_connected();
+    }
+
+    bool ClientWrapper::connected() const
+    {
+        return tcp_is_connected() && udp_is_connected();
+    }
+
 };
 }

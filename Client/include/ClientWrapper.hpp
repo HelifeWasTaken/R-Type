@@ -28,6 +28,9 @@ struct ClientWrapper {
     bool is_service_on() const;
 
     bool restart_if_necessary();
+    bool connected() const;
+    bool tcp_is_connected() const;
+    bool udp_is_connected() const;
 
     rtype::net::TCPClient& tcp() { return client->tcp(); }
     rtype::net::UDPClient& udp() { return client->udp(); }

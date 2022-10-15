@@ -2,9 +2,14 @@ RSERVER_PATH="./RServer/include/RServer"
 RSERVER_MESSAGES_PATH="${RSERVER_PATH}/Messages"
 RSERVER_CLIENT_PATH="${RSERVER_PATH}/Client"
 RSERVER_SERVER_PATH="${RSERVER_PATH}/Server"
+
 PILEAA_PATH="./PileAA/include/PileAA"
 PILEAA_EXTERNAL_PATH="${PILEAA_PATH}/external"
+
 CLIENT_PATH="./Client/include"
+CLIENT_SCENE_PATH="${CLIENT_PATH}/Scenes"
+
+SERVER_PATH="./Server"
 
 hpp2plantuml \
     \
@@ -49,5 +54,15 @@ hpp2plantuml \
     -i ${PILEAA_PAA_COMMANDS_PATH}/paa_utilities.hpp \
     \
     -i ${CLIENT_PATH}/ClientWrapper.hpp \
+    -i ${CLIENT_PATH}/ClientScenes.hpp \
+    \
+    -i ${CLIENT_SCENE_PATH}/SceneClientConnect.hpp \
+    -i ${CLIENT_SCENE_PATH}/SceneConnectRoom.hpp \
+    -i ${CLIENT_SCENE_PATH}/SceneCreateRoom.hpp \
+    -i ${CLIENT_SCENE_PATH}/SceneGame.hpp \
+    -i ${CLIENT_SCENE_PATH}/SceneRoomWait.hpp \
+    \
+    -i ${SERVER_PATH}/Room.hpp \
+    -i ${SERVER_PATH}/RoomManager.hpp\
     \
     -o UML

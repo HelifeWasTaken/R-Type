@@ -26,9 +26,10 @@ namespace net {
         // Signal Markers
         {message_code::CONN_INIT, message_type::SIGNAL_MARKER},
         {message_code::CREATE_ROOM, message_type::SIGNAL_MARKER},
+        {message_code::LAUNCH_GAME, message_type::SIGNAL_MARKER},
 
         // YesNo messages
-        {message_code::REQUEST_CONNECT_ROOM, message_type::YES_NO_MESSAGES},
+        {message_code::LAUNCH_GAME_REP, message_type::YES_NO_MESSAGES},
 
         // Special messages
         {message_code::CONN_INIT_REP, message_type::CONNECTION_INIT_REPLY},
@@ -37,8 +38,8 @@ namespace net {
 
         {message_code::TEXT_MESSAGE, message_type::TEXT_MESSAGE},
         {message_code::REQUEST_CONNECT_ROOM, message_type::REQUEST_CONNECT_ROOM},
-        {message_code::CREATE_ROOM_REPLY, message_type::CREATE_ROOM_REPLY},
         {message_code::CONNECT_ROOM_REQ_REP, message_type::CONNECT_ROOM_REQ_REP},
+        {message_code::CREATE_ROOM_REPLY, message_type::CREATE_ROOM_REPLY},
         {message_code::ROOM_CLIENT_DISCONNECT, message_type::ROOM_CLIENT_DISCONNECT},
         {message_code::ROOM_CLIENT_CONNECT, message_type::ROOM_CLIENT_CONNECT},
 
@@ -75,6 +76,8 @@ namespace net {
                 return Message::deserialize<UpdateMessage>(buffer, size);
             case message_type::SIGNAL_MARKER:
                 return Message::deserialize<SignalMarker>(buffer, size);
+            case message_type::YES_NO_MESSAGES:
+                return Message::deserialize<YesNoMarker>(buffer, size);
             case message_type::SYNC_MESSAGE:
                 return Message::deserialize<SyncMessage>(buffer, size);
             case message_type::CONNECTION_INIT_REPLY:

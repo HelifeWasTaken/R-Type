@@ -16,7 +16,11 @@ PAA_ENTITY new_player()
 
 PAA_START_CPP(game_scene)
 {
-    players[g_game.id] = new_player();
+    for (int i = 0; i < RTYPE_PLAYER_COUNT; i++) {
+        if (g_game.connected_players[i]) {
+            players[i] = new_player();
+        }
+    }
 }
 
 PAA_UPDATE_CPP(game_scene)
@@ -40,6 +44,7 @@ PAA_UPDATE_CPP(game_scene)
                 g_game.is_host = true;
             }
             PAA_DESTROY_ENTITY(players[rep->get_disconnected_user_id()]);
+            g_game.connected_players[rep->get_disconnected_user_id()] = false;
         } else {
             spdlog::info("Client game_scene: Received message of type {}", msg->type());
         }

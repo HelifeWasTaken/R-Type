@@ -1,8 +1,12 @@
 #include "Scenes/SceneClientConnect.hpp"
 
+#include "PileAA/GUI.hpp"
+
 using namespace rtype::net;
 
-static bool connect_server_if_not_connected(paa::Timer& timer)
+static PAA_SCENE_DECL(client_connect) *self = nullptr;
+
+static bool connect_server_if_not_connected()
 {
     if (g_game.service.restart_if_necessary() == false)
         return false;
@@ -14,14 +18,14 @@ static bool connect_server_if_not_connected(paa::Timer& timer)
     while (tcp.poll(msg) || udp.poll(msg)); // Auto manage event polling and connection
 
     if (tcp.is_connected()) {
-        if (!udp.is_connected() && timer.isFinished()) {
+        if (!udp.is_connected() && self->timer.isFinished()) {
             udp.feed_request(tcp.token(), tcp.id());
-            timer.restart();
+            self->timer.restart();
             return false;
         }
         return true;
-    } else if (timer.isFinished()) {
-        timer.restart();
+    } else if (self->timer.isFinished()) {
+        self->timer.restart();
         g_game.service.run(); // Restart the service so the tcp send another CONN_INIT request
         return false;
     }
@@ -30,20 +34,35 @@ static bool connect_server_if_not_connected(paa::Timer& timer)
 
 PAA_START_CPP(client_connect)
 {
+    self = this;
+
     g_game.service.run("../Client.conf");
 
     // 1 second for each try to connect to feed or server
-    _timer.setTarget(1000);
+    timer.setTarget(1000);
 
-    std::cout << "host or connect: ";
-    std::cin >> choice;
+    gui.addObject(new paa::Button("Connect", [this]() {
+        if (g_game.service.connected()) {
+            PAA_SET_SCENE(connect_room);
+            std::cout << "Connected to server" << std::endl;
+        } else {
+            text->setText("Cannot connect to room as server is not connected");
+        }
+    }));
+
+    gui.addObject(new paa::Button("Host", [this]() {
+        if (g_game.service.connected()) {
+            PAA_SET_SCENE(create_room);
+        } else {
+            text->setText("Cannot host room as server is not connected");
+        }
+    }));
+
+    gui.addObject(text);
 }
 
 PAA_UPDATE_CPP(client_connect)
 {
-    if (connect_server_if_not_connected(_timer)) {
-        // Means trying to connect to server
-    } else {
-        // is connected to server
-    }
+    connect_server_if_not_connected();
+    gui.update();
 }

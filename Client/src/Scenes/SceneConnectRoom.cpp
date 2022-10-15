@@ -3,7 +3,9 @@
 
 using namespace rtype::net;
 
-static void check_connect_room_reply(shared_message_t msg)
+static PAA_SCENE_DECL(connect_room) *self = nullptr;
+
+static void check_connect_room_reply(shared_message_t &msg)
 {
     auto rep = parse_message<RequestConnectRoomReply>(msg.get());
 
@@ -11,10 +13,10 @@ static void check_connect_room_reply(shared_message_t msg)
     // failed to parse message or if player id is invalid
     if (!rep) {
         spdlog::error("Client: Failed to parse CONNECT_ROOM_REPLY message");
-        PAA_SET_SCENE(connect_room);
+        self->text->setText("Failed to connect to room invalid packet received from server");
     } else if (rep->playerID() == RTYPE_INVALID_PLAYER_ID) {
         spdlog::error("Client: Failed to connect to room");
-        PAA_SET_SCENE(connect_room);
+        self->text->setText("The room is full or does not exist");
     } else {
         spdlog::info("Client: Connected to room as {}", rep->playerID());
         g_game.id = rep->playerID();
@@ -42,10 +44,14 @@ static void manage_server_events()
 
 PAA_START_CPP(connect_room)
 {
-    std::cout << "Enter room token: ";
-    std::cin >> _roomToken;
+    self = this;
 
-    g_game.service.tcp().send(RequestConnectRoom(_roomToken));
+    gui.addObject(input);
+    gui.addObject(new paa::Button("Connect", [this]() {
+        g_game.room_token = input->getText();
+        g_game.service.tcp().send(RequestConnectRoom(g_game.room_token));
+    }));
+    gui.addObject(text);
 }
 
 PAA_UPDATE_CPP(connect_room)
@@ -53,5 +59,6 @@ PAA_UPDATE_CPP(connect_room)
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
 
     manage_server_events();
+    gui.update();
     // Display waiting response from server
 }

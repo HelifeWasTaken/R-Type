@@ -2,18 +2,19 @@
 
 #include "PileAA/AnimatedSprite.hpp"
 #include "PileAA/App.hpp"
+#include "PileAA/GUI.hpp"
 #include "RServer/Client/Client.hpp"
 #include "ClientWrapper.hpp"
 #include <unordered_map>
 #include <iostream>
 #include <spdlog/spdlog.h>
 
-
 struct Game {
     RTYPE_CLIENT service;
     bool is_host = false;
     int8_t id = 0;
     std::array<bool, RTYPE_PLAYER_COUNT> connected_players;
+    std::string room_token = "";
 };
 
 extern Game g_game;

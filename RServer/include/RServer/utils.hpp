@@ -42,6 +42,10 @@ namespace net {
     #define RTYPE_FEED_INIT_TOKEN 84
 #endif
 
+#if defined(USE_RTYPE_MAGIC_NUMBER_64_BITS) + defined(USE_RTYPE_MAGIC_NUMBER_32_BITS) + defined(USE_RTYPE_MAGIC_NUMBER_16_BITS) + defined(USE_RTYPE_MAGIC_NUMBER_8_BITS) != 1
+    #error "You must define one and only one of the following macros: USE_RTYPE_MAGIC_NUMBER_64_BITS, USE_RTYPE_MAGIC_NUMBER_32_BITS, USE_RTYPE_MAGIC_NUMBER_16_BITS, USE_RTYPE_MAGIC_NUMBER_8_BITS"
+#endif
+
 #if defined(USE_RTYPE_MAGIC_NUMBER_64_BITS)
     #define RTYPE_MAGIC_NUMBER 0xff1cec0ffeedefec
     using MagicNumber = uint64_t;
@@ -51,7 +55,7 @@ namespace net {
 #elif defined(USE_RTYPE_MAGIC_NUMBER_16_BITS)
     #define RTYPE_MAGIC_NUMBER 0xff1c
     using MagicNumber = uint16_t;
-#else
+#elif defined(USE_RTYPE_MAGIC_NUMBER_8_BITS)
     #define RTYPE_MAGIC_NUMBER 0xff
     using MagicNumber = uint8_t;
 #endif

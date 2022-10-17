@@ -606,6 +606,17 @@
                  "width":94.9295318321729,
                  "x":4324.31556779524,
                  "y":0.323991576219018
+                }, 
+                {
+                 "height":0,
+                 "id":88,
+                 "name":"",
+                 "rotation":0,
+                 "type":"",
+                 "visible":true,
+                 "width":0,
+                 "x":549.988347704498,
+                 "y":787.695175949662
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -632,15 +643,15 @@
                 {
                  "height":205.831903945112,
                  "id":85,
-                 "name":"ActivateSalve1",
+                 "name":"ActivateWaves1",
                  "properties":[
                         {
-                         "name":"salve",
+                         "name":"wave",
                          "type":"string",
-                         "value":"first_salve"
+                         "value":"first_wave"
                         }],
                  "rotation":0,
-                 "type":"activate_salve",
+                 "type":"activate_wave",
                  "visible":true,
                  "width":47.4220563010796,
                  "x":70.6285944909696,
@@ -655,7 +666,7 @@
         {
          "draworder":"topdown",
          "id":10,
-         "name":"first_salve",
+         "name":"first_wave",
          "objects":[
                 {
                  "height":51.2701002097413,
@@ -667,17 +678,6 @@
                  "width":60.5919366115125,
                  "x":39.6178047075274,
                  "y":48.9396411092985
-                }, 
-                {
-                 "height":0,
-                 "id":87,
-                 "name":"",
-                 "rotation":0,
-                 "type":"",
-                 "visible":true,
-                 "width":0,
-                 "x":30.2959683057562,
-                 "y":1519.4593334887
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -686,7 +686,7 @@
          "y":0
         }],
  "nextlayerid":11,
- "nextobjectid":88,
+ "nextobjectid":89,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.4.3",

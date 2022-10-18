@@ -3,6 +3,7 @@
 #include "BaseComponents.hpp"
 #include "Types.hpp"
 #include "meta.hpp"
+#include <memory>
 
 namespace paa {
 
@@ -11,7 +12,7 @@ namespace paa {
  */
 class BatchRenderer {
 private:
-    std::vector<std::pair<Depth, std::vector<Drawable*>>> _drawables;
+    std::vector<std::pair<Depth, std::vector<std::shared_ptr<Drawable>>>> _drawables;
 
 public:
     /**
@@ -29,7 +30,7 @@ public:
      * @param drawable The drawable to add.
      * @param depth The depth of the drawable.
      */
-    void add(Drawable* drawable, Depth depth);
+    void add(std::shared_ptr<Drawable> drawable, Depth depth);
 
     /**
      * @brief Draw all the drawables in the batch renderer.

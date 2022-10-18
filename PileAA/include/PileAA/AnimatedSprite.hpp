@@ -5,6 +5,7 @@
 #include "Types.hpp"
 #include "meta.hpp"
 #include <unordered_map>
+#include <memory>
 
 namespace paa {
 
@@ -69,5 +70,5 @@ public:
         const Vector2u& spacing = Vector2u(0, 0));
 };
 
-using Sprite = AnimatedSprite;
+using Sprite = std::shared_ptr<AnimatedSprite>;
 }

@@ -1,6 +1,6 @@
 project(pileaa)
 
-# set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_BUILD_TYPE Debug)
 
 link_libraries(sfml-graphics sfml-window sfml-system sfml-audio)
 

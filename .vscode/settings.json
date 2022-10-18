@@ -94,7 +94,8 @@
         "silvastate": "cpp",
         "sparse_array": "cpp",
         "udpclient.hpp": "c",
-        "poc.hpp": "c"
+        "poc.hpp": "c",
+        "hash_map": "cpp"
     },
     "C_Cpp.errorSquiggles": "Disabled"
 }

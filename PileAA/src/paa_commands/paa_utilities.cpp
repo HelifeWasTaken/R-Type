@@ -18,10 +18,11 @@ paa::AnimatedSprite& internal_paa_set_sprite(
     PAA_ENTITY entity, const std::string& name)
 {
     hl::silva::registry& registry = PAA_ECS;
-    registry.emplace<AnimatedSprite>(entity, name).emplace_r<Depth>(0);
-    auto& sprite = registry.get_component<Sprite>(entity);
-    PAA_ANIMATION_REGISTER.setAnimationToSpriteIfExist(name, sprite);
-    return sprite;
+    Sprite sprite(new AnimatedSprite(name));
+    registry.insert<Sprite>(entity, std::move(sprite)).emplace_r<Depth>(0);
+    auto& spriteref = registry.get_component<Sprite>(entity);
+    PAA_ANIMATION_REGISTER.setAnimationToSpriteIfExist(name, *spriteref);
+    return *spriteref;
 }
 
 ControllerKeyboard& internal_paa_setup_base_keyboard(PAA_ENTITY entity)

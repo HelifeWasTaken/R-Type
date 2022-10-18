@@ -8,9 +8,9 @@ static inline void animated_sprite_system(hl::silva::registry& r)
 {
     auto& batch = BatchRendererInstance::get();
 
-    for (auto&& [_, sprite, depth] : r.view<AnimatedSprite, Depth>()) {
-        sprite.update();
-        batch.add(&sprite, depth);
+    for (auto&& [_, sprite, depth] : r.view<Sprite, Depth>()) {
+        sprite->update();
+        batch.add(sprite, depth);
     }
 }
 
@@ -28,7 +28,7 @@ static inline void controller_input_manager_system(hl::silva::registry& r)
 
 void setup_ecs(hl::silva::registry& r)
 {
-    r.register_component<Position, Velocity, Sprite, AnimatedSprite, Depth>();
+    r.register_component<Position, Velocity, Sprite, Sprite, Depth>();
 
     r.add_system(animated_sprite_system);
 }

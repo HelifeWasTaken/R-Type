@@ -5,6 +5,14 @@
 
 #include <spdlog/spdlog.h>
 
+#define PAA_PROGRAM_START_CONTENT(baseScene, resources_file) \
+    { \
+        paa::setup_paa_system(resources_file);                         \
+        PAA_SET_SCENE(baseScene);                                      \
+        bool res = PAA_APP.run();                                      \
+        paa::stop_paa_system(); \
+    }
+
 /**
  * @brief Main loop of the game
  */
@@ -14,10 +22,7 @@
         do {                                                                       \
             try {                                                                  \
                 do {                                                               \
-                    paa::setup_paa_system(resources_file);                         \
-                    PAA_SET_SCENE(baseScene);                                      \
-                    bool res = PAA_APP.run();                                      \
-                    paa::stop_paa_system();                                        \
+                    PAA_PROGRAM_START_CONTENT(baseScene, resources_file);          \
                     if (!res)                                                      \
                         break;                                                     \
                 } while (1);                                                       \
@@ -36,3 +41,6 @@
         } while (retry);                                                           \
         return 1;                                                                  \
     }
+
+#define PAA_UNSAFE_PROGRAM_START(baseScene, resources_file) \
+    int main() { PAA_PROGRAM_START_CONTENT(baseScene, resources_file); }

@@ -4,4 +4,4 @@
 
 Game g_game;
 
-PAA_PROGRAM_START(client_connect, "../Resources.conf", true);
+PAA_UNSAFE_PROGRAM_START(client_connect, "../Resources.conf");

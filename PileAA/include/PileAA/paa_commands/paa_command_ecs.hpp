@@ -5,7 +5,7 @@
 /**
  * @brief Register n components to the ECS registry.
  */
-#define PAA_REGISTER_COMPONENTS(...) PAA_ECS.registerComponents<__VA_ARGS__>()
+#define PAA_REGISTER_COMPONENTS(...) PAA_ECS.register_component<__VA_ARGS__>()
 
 /**
  * @brief Register a new system to the ECS registry.

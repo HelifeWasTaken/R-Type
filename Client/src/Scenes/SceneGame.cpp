@@ -1,8 +1,10 @@
+
 #include "ClientScenes.hpp"
 
 using namespace rtype::net;
 
 #include "RServer/Messages/Types.hpp"
+#include "Bullet.hpp"
 
 static PAA_SCENE_DECL(game_scene) *self = nullptr;
 
@@ -16,7 +18,7 @@ static void update_vector2_movement_other_player(const shared_message_t& msg)
     }
     const vector2i pos(rep->data());
     spdlog::info("Received update from player {} at position ({}, {})", rep->sid(), pos.x, pos.y);
-    PAA_GET_COMPONENT(self->players[rep->sid()], paa::Sprite).move(pos.x, pos.y);
+    PAA_GET_COMPONENT(self->players[rep->sid()], paa::Sprite)->move(pos.x, pos.y);
 }
 
 static void update_user_disconnect(const shared_message_t& msg)
@@ -55,7 +57,7 @@ static void server_event_update(void)
 PAA_ENTITY new_player()
 {
     PAA_ENTITY e = PAA_NEW_ENTITY();
-    paa::Sprite& s = PAA_SET_SPRITE(e, "spaceship");
+    paa::AnimatedSprite& s = PAA_SET_SPRITE(e, "spaceship");
 
     s.setPosition(rand() % 500, rand() % 500);
     s.useAnimation("idle");
@@ -66,12 +68,15 @@ PAA_START_CPP(game_scene)
 {
     self = this;
 
+    BulletFactory::setup_systems();
     for (int i = 0; i < RTYPE_PLAYER_COUNT; i++) {
         if (g_game.connected_players[i]) {
             players[i] = new_player();
         }
     }
 }
+
+bool space = false;
 
 PAA_UPDATE_CPP(game_scene)
 {
@@ -80,7 +85,10 @@ PAA_UPDATE_CPP(game_scene)
     server_event_update();
     if (movement.x != 0 || movement.y != 0) {
         g_game.service.udp().send(UpdateMessage(g_game.id, vector2i(movement.x, movement.y), message_code::UPDATE_VECTOR2_MOVEMENT));
-        PAA_GET_COMPONENT(players[g_game.id], paa::Sprite).move(movement.x, movement.y);
+        PAA_GET_COMPONENT(players[g_game.id], paa::Sprite)->move(movement.x, movement.y);
+    }
+    if (space) {
+        BulletFactory::create("basic_bullet", players[g_game.id]);
     }
 }
 
@@ -88,4 +96,5 @@ PAA_EVENTS_CPP(game_scene)
 {
     movement.x = input.isKeyDown(paa::Keyboard::Key::Right) - input.isKeyDown(paa::Keyboard::Key::Left);
     movement.y = input.isKeyDown(paa::Keyboard::Key::Down) - input.isKeyDown(paa::Keyboard::Key::Up);
+    space = input.isKeyDown(paa::Keyboard::Key::Space) || input.isKeyPressed(paa::Keyboard::Key::Space);
 }

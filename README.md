@@ -9,9 +9,10 @@ R-TYPE
     - UML diagrams are mandatory for all big changes.
     - Documentation is generated with Doxygen.
 
-Documentation about server development (+RFC) can be found in the [wiki]()
-Documentation about client development can be found in the [wiki]()
-Documentation about the game engine can be found in the [wiki]()
+Documentation about server development can be found in the [documentation](./RTYPE_DOCUMENTATION.md)
+RFC can be found in the [RFC docs](./docs/rfc)
+Documentation about client development can be found in the [documentation](./RTYPE_DOCUMENTATION.md)
+Documentation about the game engine can be found in the [documentation](./RTYPE_DOCUMENTATION.md)
 
 ## Building
 

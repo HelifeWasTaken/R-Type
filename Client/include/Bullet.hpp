@@ -27,8 +27,9 @@ struct BulletQuery : public rtype::net::Serializable {
         type = (BulletType)t;
     }
 
-    void send_message() const
+    void create_then_send_message() const
     {
+        BulletFactory::create(*this);
         g_game.service.udp().send(UpdateMessage(id, *this, message_code::PLAYER_SHOOT));
     }
 };

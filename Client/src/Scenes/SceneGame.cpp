@@ -106,9 +106,8 @@ PAA_UPDATE_CPP(game_scene)
     }
     if (space && timer_shooter.isFinished()) {
         BulletQuery query(BulletType::BASIC_BULLET, g_game.id);
-        BulletFactory::create(query);
         timer_shooter.restart();
-        query.send_message();
+        query.create_then_send_message();
     }
 }
 

@@ -24,6 +24,9 @@ namespace net {
 
         Serializer() = default;
 
+        Serializer(const BufferSizeType size)
+        { data.reserve(size); }
+
         template<typename T>
         Serializer& operator<<(const T& value) {
             const T big_value = boost::endian::native_to_big(value);

@@ -48,6 +48,7 @@ namespace net {
 
         // Update messages
         {message_code::UPDATE_VECTOR2_MOVEMENT, message_type::UPDATE_MESSAGE},
+        {message_code::PLAYER_SHOOT, message_type::UPDATE_MESSAGE},
     };
 
     message_type message_code_to_type(const message_code& code) {

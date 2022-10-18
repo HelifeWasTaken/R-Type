@@ -110,6 +110,7 @@ namespace net {
 
         // Update messages
         UPDATE_VECTOR2_MOVEMENT,
+        PLAYER_SHOOT
     };
 
     // All classes that inherit from IMessage

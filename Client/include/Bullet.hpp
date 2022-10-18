@@ -4,6 +4,35 @@ enum BulletType : uint8_t {
     BASIC_BULLET
 };
 
+struct BulletQuery : public rtype::net::Serializable {
+    BulletType type;
+    PlayerID id;
+
+    BulletQuery() = default;
+    BulletQuery(BulletType type, PlayerID id) : type(type), id(id) {}
+    BulletQuery(const std::vector<Byte>& bytes) { from(bytes.data(), bytes.size()); }
+
+    std::vector<Byte> serialize(void) const override
+    {
+        rtype::net::Serializer s;
+        s << id << (uint8_t)type;
+        return s.data;
+    }
+
+    void from(const Byte *data, const BufferSizeType size) override
+    {
+        rtype::net::Serializer s(data, size);
+        uint8_t t;
+        s >> id >> t;
+        type = (BulletType)t;
+    }
+
+    void send_message() const
+    {
+        g_game.service.udp().send(UpdateMessage(id, *this, message_code::PLAYER_SHOOT));
+    }
+};
+
 // Base impl
 
 class ABullet {
@@ -15,7 +44,7 @@ public:
         : _type(type) { _timer.setTarget(lifeTime); }
     bool is_alive() const { return !_timer.isFinished(); }
     BulletType get_type() const { return _type; }
-    virtual void update(paa::Vector2f& position) = 0;
+    virtual void update(paa::FloatRect& position) = 0;
 };
 
 using Bullet = std::shared_ptr<ABullet>;
@@ -29,9 +58,9 @@ Bullet make_bullet(Args&& ...args) {
 
 struct BasicBullet : public ABullet {
     BasicBullet() : ABullet(1000, BASIC_BULLET) {}
-    void update(paa::Vector2f& position) override
+    void update(paa::FloatRect& position) override
     {
-        position.x += 1;
+        position.left += 10;
     }
 };
 
@@ -40,15 +69,16 @@ struct BasicBullet : public ABullet {
 class BulletFactory {
 private:
     static inline std::unordered_map<
-        std::string,
+        BulletType,
         std::function<void(const PAA_ENTITY&, const PAA_ENTITY&)>
     > _bullets = {
         {
-            "basic_bullet",
+            BulletType::BASIC_BULLET,
             [](const PAA_ENTITY& e, const PAA_ENTITY& sender_id) {
                 auto& s = PAA_SET_SPRITE(e, "basic_bullet");
+                const auto bounds = PAA_GET_COMPONENT(sender_id, paa::Sprite)->getGlobalBounds();
                 s.useAnimation("base_animation");
-                s.setPosition(PAA_GET_COMPONENT(sender_id, paa::Sprite)->getPosition());
+                s.setPosition(paa::Vector2f(bounds.left + bounds.width, bounds.top));
                 PAA_SET_COMPONENT(e, Bullet, make_bullet<BasicBullet>());
             }
         }
@@ -69,9 +99,9 @@ public:
         PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
             for (auto&& [e, b, s] : r.view<Bullet, paa::Sprite>()) {
                 if (b->is_alive()) {
-                    auto pos = s->getPosition();
-                    b->update(pos);
-                    s->setPosition(pos);
+                    auto bounds = s->getGlobalBounds();
+                    b->update(bounds);
+                    s->setPosition(paa::Vector2f(bounds.left, bounds.top));
                 } else {
                     PAA_DESTROY_ENTITY(e);
                 }
@@ -79,11 +109,15 @@ public:
         });
     }
 
-    static PAA_ENTITY create(const std::string& bulletType, const PAA_ENTITY& sender_id) {
+    static PAA_ENTITY create(const BulletType bulletType, const PAA_ENTITY& sender_id) {
         PAA_ENTITY e = PAA_NEW_ENTITY();
 
         _bullets[bulletType](e, sender_id);
         return e;
+    }
+
+    static PAA_ENTITY create(const BulletQuery& query) {
+        return create(query.type, g_game.players_entities[query.id]);
     }
 
 };

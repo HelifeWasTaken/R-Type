@@ -90,6 +90,20 @@ class SignalMarker : public IMessage {
 };
 ```
 
+### Yes No marker
+
+Yes No markers are two bytes messages with a code and a boolean anwser.
+
+```
+AAAABBBBBB
+ |    |
+CODE BOOL
+
+CODE is the message code
+BOOL is the boolean anwser
+```
+
+
 ### Update message (specifically `UPDATE_MSG`)
 
 The channel used is the `feed` channel.
@@ -216,108 +230,6 @@ class SyncMessage : public IMessage {
         }
     private:
         int16_t _sid;
-        std::vector<char> _data;
-};
-```
-
-### Query message (specifically `QUERY_MSG`)
-
-The channel used can be either the `main` channel or the `feed` channel.
-
-```
-AAAABBBBBBBBB
- |      |
-CODE   DATA
-
-CODE is the message code, it has the value of a message code which is of query type (refer to the relevant code table).
-DATA is the serialized data which is relevant for this query. its size in bytes is defined according to the specified CODE.
-```
-
-Sample implementation:
-```cpp
-
-class QueryMessage : public IMessage {
-    public:
-        QueryMessage() : _code(0) {}
-        QueryMessage(char code, const std::vector<char>& data) : _code(code), _data(data) {}
-
-        void from(const std::vector<char>& buff) {
-            _code = buff[0];
-            _data = std::vector<char>(buff.begin() + 1, buff.end());
-        }
-
-        std::vector<char> bytes() {
-            std::vector<char> buff;
-            buff.push_back(_code);
-            buff.insert(buff.end(), _data.begin(), _data.end());
-            return buff;
-        }
-
-        char code() {
-            return _code;
-        }
-
-        std::vector<char> data() {
-            return _data;
-        }
-    private:
-        char _code;
-        std::vector<char> _data;
-};
-```
-
-### Reply message
-
-The channel used can be either the `main` channel or the `feed` channel.
-
-A reply message cannot and should not be sent without having a query message received before.
-
-```
-AAAABBBBBCCCCCCCCCC
- |    |       |
-CODE STATUS  DATA
-
-CODE is the message code, it has the value of a message code which is of reply type (refer to the relevant code table).
-STATUS is the status code, it has the value of any status code (refer to the relevant code table).
-DATA is the serialized data which is relevant for this reply. its size in bytes is defined according to the specified CODE.
-```
-
-Sample implementation:
-```cpp
-
-class ReplyMessage : public IMessage {
-    public:
-        ReplyMessage() : _code(0), _status(0) {}
-        ReplyMessage(char code, char status, const std::vector<char>& data) : _code(code), _status(status), _data(data) {}
-
-        void from(const std::vector<char>& buff) {
-            _code = buff[0];
-            _status = buff[1];
-            _data = std::vector<char>(buff.begin() + 2, buff.end());
-        }
-
-        std::vector<char> bytes() {
-            std::vector<char> buff;
-            buff.push_back(_code);
-            buff.push_back(_status);
-            buff.insert(buff.end(), _data.begin(), _data.end());
-            return buff;
-        }
-
-        char code() {
-            return _code;
-        }
-
-        char status() {
-            return _status;
-        }
-
-        std::vector<char> data() {
-            return _data;
-        }
-    private:
-        char _code;
-        char _status;
         std::vector<char> _data;
 };
 ```
@@ -479,4 +391,82 @@ class FeedInitReply : public IMessage {
     private:
         int32_t _token;
 };
+```
+
+### User connect room (specifically `ROOM_CLIENT_CONNECT`)
+
+
+The channel used is the `main` channel.
+
+Sent when a client joins a room.
+
+```
+AAAABBBBBBBBBBBBB
+ |       |
+CODE   PLAYERID
+
+CODE is the message code, it has the value of `ROOM_CLIENT_CONNECT` (refer to the relevant code table).
+PLAYERID is the id of the player, it is encoded as an uint16_t.
+```
+
+### User disconnect from room (specifically `ROOM_CLIENT_DISCONNECT`)
+
+The channel used is the `main` channel.
+
+Sent when a client leaves the room.
+
+```
+AAAABBBBBBBBBBBBBCCCCCCCCCCC
+ |       |            |
+CODE  DCUSERID    NEWHOSTID
+
+CODE is the message code, it has the value of `ROOM_CLIENT_DISCONNECT` (refer to the relevant code table).
+DCUSERID is the id of the disconnected user.
+NEWHOSTID is the new host of the game (might need clarification).
+PLAYERID is the id of the player, it is encoded as an uint16_t.
+```
+
+### Request connect room (specifically `REQUEST_CONNECT_ROOM`)
+
+The channel used is the `main` channel.
+
+It is called to request for entering into a room.
+
+```
+AAAABBBBBBBBBBBBB
+ |       |
+CODE  ROOMID
+
+CODE is the message code, it has the value of `REQUEST_CONNECT_ROOM` (refer to the relevant code table).
+ROOMID is a multibyte room identifier
+```
+
+### Request connect room reply (specifically `CONNECT_ROOM_REQ_REP`)
+
+The channel used is the `main` channel.
+
+It is always sent in reply of a request connect room message.
+
+```
+AAAABBBBBBBBBB
+ |       |
+CODE  PLAYERID
+
+CODE is the message code, it has the value of `CONNECT_ROOM_REQ_REP` (refer to the relevant code table).
+PLAYERID is the ID of the player entering into the room.
+```
+
+### Create room reply (specifically `CREATE_ROOM_REPLY`)
+
+The channel used is the `main` channel.
+
+It is used in reply of a `CREATE_ROOM` signal marker.
+
+```
+AAAABBBBBBBBBB
+ |       |
+CODE  TOKEN
+
+CODE is the message code, it has the value of `CONNECT_ROOM_REQ_REP` (refer to the relevant code table).
+TOKEN is the token of the room.
 ```

@@ -108,6 +108,26 @@ namespace net {
         return nullptr;
     }
 
+    std::vector<boost::shared_ptr<IMessage>> parse_messages(const Byte* buffer, BufferSizeType size)
+    {
+        std::vector<boost::shared_ptr<IMessage>> messages;
+        BufferSizeType offset = 0;
+
+        while (offset < size) {
+            const message_code code = static_cast<message_code>(buffer[offset]);
+            const message_type type = message_code_to_type(code);
+
+            auto msg = parse_message(buffer + offset, size - offset);
+            if (msg == nullptr) {
+                spdlog::error("MessageList::parse_messages: Message is null skipping everything else");
+                return messages;
+            }
+            messages.push_back(msg);
+            offset += msg->size();
+        }
+        return messages;
+    }
+
     boost::shared_ptr<IMessage> parse_message(const std::vector<Byte>& buff)
     {
         return parse_message(buff.data(), buff.size());

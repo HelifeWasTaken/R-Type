@@ -19,6 +19,10 @@ namespace net {
         return s.data;
     }
 
+    BufferSizeType FeedInitReply::size() const {
+        return sizeof(_message_code) + sizeof(_token);
+    }
+
     TokenType FeedInitReply::token() const { return _token; }
 
 }

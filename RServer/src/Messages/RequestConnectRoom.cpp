@@ -24,6 +24,11 @@ namespace net {
         return s.data;
     }
 
+    BufferSizeType RequestConnectRoom::size() const
+    {
+        return sizeof(_message_code) + _roomID.size();
+    }
+
     const std::string& RequestConnectRoom::roomID() const
     {
         return _roomID;

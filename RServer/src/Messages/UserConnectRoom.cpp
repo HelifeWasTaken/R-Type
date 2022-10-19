@@ -19,6 +19,10 @@ namespace net {
         return s.data;
     }
 
+    BufferSizeType UserConnectRoom::size() const {
+        return sizeof(_message_code) + sizeof(_playerID);
+    }
+
     PlayerID UserConnectRoom::playerID() const { return _playerID; }
 
 }

@@ -9,21 +9,21 @@ namespace net {
     {
     }
 
+    BufferSizeType YesNoMarker::size() const {
+        return sizeof(_message_code) + sizeof(_yes);
+    }
+
     void YesNoMarker::from(const Byte *data, BufferSizeType size)
     {
         Serializer s(data, size);
-        int8_t yes;
-
-        s >> _message_code >> yes;
-        _yes = yes;
+        s >> _message_code >> _yes;
     }
 
     std::vector<Byte> YesNoMarker::serialize() const
     {
         Serializer s;
-        Byte yes = _yes;
 
-        s << _message_code << yes;
+        s << _message_code << _yes;
         return s.data;
     }
 

@@ -20,6 +20,10 @@ namespace net {
         return s.data;
     }
 
+    BufferSizeType ConnectionInitReply::size() const {
+        return sizeof(_message_code) + sizeof(_playerId) + sizeof(_token);
+    }
+
     PlayerID ConnectionInitReply::playerId() const { return _playerId; }
     TokenType ConnectionInitReply::token() const { return _token; }
 

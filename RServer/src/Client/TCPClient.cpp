@@ -54,14 +54,10 @@ namespace net {
             [this, buf_recv = _buf_recv](
                 const boost::system::error_code& ec, BufferSizeType bytes) {
                 if (!ec) {
-                    auto msg = parse_message(
-                        reinterpret_cast<Byte*>(_buf_recv->c_array()),
-                        bytes);
-                    if (msg) {
-                        spdlog::info("TCPClient::receive: Received {} bytes", bytes);
-                        _add_event(msg);
-                    } else {
-                        spdlog::error("TCPClient::receive: Invalid message");
+                    spdlog::info("TCPClient::receive: Received {} bytes", bytes);
+                    auto msg = parse_messages(_buf_recv->c_array(), bytes);
+                    for (auto& m : msg) {
+                        _add_event(m);
                     }
                     receive();
                 } else {

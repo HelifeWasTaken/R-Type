@@ -16,5 +16,9 @@ namespace net {
         s << _message_code;
         return s.data;
     }
+
+    BufferSizeType SignalMarker::size() const {
+        return sizeof(_message_code);
+    }
 }
 }

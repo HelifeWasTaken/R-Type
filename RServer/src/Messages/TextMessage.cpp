@@ -20,6 +20,10 @@ namespace net {
         return s.data;
     }
 
+    BufferSizeType TextMessage::size() const {
+        return sizeof(_message_code) + _text.size();
+    }
+
     const std::string& TextMessage::text() const { return _text; }
 
 }

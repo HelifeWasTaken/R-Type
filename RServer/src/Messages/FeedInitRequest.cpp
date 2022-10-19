@@ -21,6 +21,10 @@ namespace net {
         return s.data;
     }
 
+    BufferSizeType FeedInitRequest::size() const {
+        return sizeof(_message_code) + sizeof(_playerId) + sizeof(_token);
+    }
+
     ClientID FeedInitRequest::playerId() const { return _playerId; }
 
     TokenType FeedInitRequest::token() const { return _token; }

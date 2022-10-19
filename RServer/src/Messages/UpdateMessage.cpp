@@ -22,6 +22,10 @@ namespace net {
         return s.data;
     }
 
+    BufferSizeType UpdateMessage::size() const {
+        return sizeof(_message_code) + sizeof(_sid) + _data.size();
+    }
+
     PlayerID UpdateMessage::sid() const { return _sid; }
 
     const std::vector<Byte>& UpdateMessage::data() const { return _data; }

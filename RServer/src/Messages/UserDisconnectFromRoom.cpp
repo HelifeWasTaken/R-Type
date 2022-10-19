@@ -23,6 +23,11 @@ namespace net {
         return s.data;
     }
 
+    BufferSizeType UserDisconnectFromRoom::size() const
+    {
+        return sizeof(_message_code) + sizeof(_dc_user_id) + sizeof(_new_host_id);
+    }
+
     const PlayerID UserDisconnectFromRoom::get_disconnected_user_id() const
     {
         return _dc_user_id;

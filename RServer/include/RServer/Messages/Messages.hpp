@@ -164,9 +164,11 @@ namespace net {
         virtual std::vector<Byte> serialize() const = 0;
         virtual message_type type() const = 0;
         virtual message_code code() const = 0;
+        virtual BufferSizeType size() const = 0;
     };
 
     // ParseMessage file content
+    std::vector<boost::shared_ptr<IMessage>> parse_messages(const Byte* buffer, BufferSizeType size);
     boost::shared_ptr<IMessage> parse_message(const Byte* buffer, BufferSizeType size);
     boost::shared_ptr<IMessage> parse_message(const std::vector<Byte>& buff);
 
@@ -262,6 +264,7 @@ namespace net {
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
+        BufferSizeType size() const override;
     };
 
     class YesNoMarker : public Message {
@@ -271,11 +274,12 @@ namespace net {
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
+        BufferSizeType size() const override;
 
         Bool yes() const { return _yes; }
 
     private:
-        Bool _yes = false;
+        Byte _yes = false;
     };
 
     class UpdateMessage : public Message {
@@ -285,6 +289,7 @@ namespace net {
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
+        BufferSizeType size() const override;
 
         PlayerID sid() const;
         const std::vector<Byte>& data() const;
@@ -301,6 +306,7 @@ namespace net {
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
+        BufferSizeType size() const override;
 
         PlayerID sid() const;
         const std::vector<Byte>& data() const;
@@ -317,6 +323,7 @@ namespace net {
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
+        BufferSizeType size() const override;
 
         PlayerID playerId() const;
         TokenType token() const;
@@ -333,6 +340,7 @@ namespace net {
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
+        BufferSizeType size() const override;
 
         ClientID playerId() const;
         TokenType token() const;
@@ -349,6 +357,7 @@ namespace net {
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
+        BufferSizeType size() const override;
 
         TokenType token() const;
 
@@ -363,6 +372,7 @@ namespace net {
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
+        BufferSizeType size() const override;
 
         const std::string& text() const;
 
@@ -377,6 +387,7 @@ namespace net {
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
+        BufferSizeType size() const override;
 
         const std::string& roomID() const;
 
@@ -397,6 +408,7 @@ namespace net {
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
+        BufferSizeType size() const override;
 
         PlayerID playerID() const;
 
@@ -411,6 +423,7 @@ namespace net {
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
+        BufferSizeType size() const override;
 
         const std::string& token() const;
 
@@ -425,6 +438,7 @@ namespace net {
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
+        BufferSizeType size() const override;
 
         PlayerID playerID() const;
 
@@ -439,6 +453,7 @@ namespace net {
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
+        BufferSizeType size() const override;
 
         const PlayerID get_disconnected_user_id() const;
         const PlayerID get_new_host_id() const;

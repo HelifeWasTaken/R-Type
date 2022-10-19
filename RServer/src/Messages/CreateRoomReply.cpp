@@ -32,6 +32,11 @@ namespace net {
         return s.data;
     }
 
+    BufferSizeType CreateRoomReply::size() const
+    {
+        return sizeof(_message_code) + _token.size();
+    }
+
     const std::string& CreateRoomReply::token() const
     {
         return _token;

@@ -22,6 +22,11 @@ namespace net {
         return s.data;
     }
 
+    BufferSizeType RequestConnectRoomReply::size() const
+    {
+        return sizeof(_message_code) + sizeof(_playerID);
+    }
+
     PlayerID RequestConnectRoomReply::playerID() const
     {
         return _playerID;

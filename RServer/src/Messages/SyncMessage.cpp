@@ -22,6 +22,10 @@ namespace rtype {
             return s.data;
         }
 
+        BufferSizeType SyncMessage::size() const {
+            return sizeof(_message_code) + sizeof(_sid) + _data.size();
+        }
+
         PlayerID SyncMessage::sid() const { return _sid; }
 
         const std::vector<Byte>& SyncMessage::data() const { return _data; }

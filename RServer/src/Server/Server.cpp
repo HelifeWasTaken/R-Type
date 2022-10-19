@@ -99,6 +99,7 @@ namespace net {
                         id, error.message());
                     *should_exit = true;
                 } else {
+                    // TODO: Maybe handle in list there too
                     if (bytes_transferred) {
                         readed_messages_queue->async_push(
                             shared_message_info_t(

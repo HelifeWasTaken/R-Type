@@ -66,8 +66,8 @@ namespace net {
                         spdlog::info("tcp_connection({}): Sucessfully sended "
                                      "message({})",
                             id, index);
-                        send_message_list->async_remove(index);
                     }
+                    send_message_list->async_remove(index);
                 });
         }
 
@@ -107,6 +107,8 @@ namespace net {
                         spdlog::info("tcp_connection({}): Added to message "
                                         "queue a new message",
                             id);
+                    } else {
+                        spdlog::warn("tcp_connection({}): Received empty message");
                     }
                     if (!(*should_exit))
                         handle_read();

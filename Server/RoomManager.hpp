@@ -43,12 +43,11 @@ public:
         _server.get_client(client)->send_main(rtype::net::RequestConnectRoomReply(id));
 
         for (auto& already_connected : _rooms[roomID]->get_clients()) {
+            spdlog::info("RoomManager: Sending connection to {} that {} is connected", already_connected.first, id);
             _server.get_client(already_connected.first)->send_main(
                 rtype::net::UserConnectRoom(id)
             );
-            if (already_connected.first == client) {
-                continue;
-            }
+            spdlog::info("RoomManager: Sending connection to {} that {} is connected", client, already_connected.second);
             _server.get_client(client)->send_main(
                 rtype::net::UserConnectRoom(already_connected.second)
             );

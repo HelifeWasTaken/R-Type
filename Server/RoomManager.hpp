@@ -58,6 +58,7 @@ public:
     void removePlayerIfInRoom(rtype::net::ClientID client) {
         auto it = _client_to_room_id.find(client);
         if (it != _client_to_room_id.end()) {
+            spdlog::info("Client going to be removed from: {}", it->second);
             auto &room = _rooms[it->second];
             room->removePlayer(client);
             if (room->isEmpty()) {
@@ -66,6 +67,7 @@ public:
             } else {
                 room->main_broadcast(rtype::net::UserDisconnectFromRoom(client, room->getHostID()));
             }
+            _client_to_room_id.erase(client);
         }
     }
 

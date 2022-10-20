@@ -78,6 +78,7 @@ namespace net {
 
         Serializable(Byte type) : _type(type) {}
         Serializable() = default;
+        virtual ~Serializable() = default;
 
         Byte type() const { return _type; }
 
@@ -165,6 +166,9 @@ namespace net {
         virtual message_type type() const = 0;
         virtual message_code code() const = 0;
         virtual BufferSizeType size() const = 0;
+
+        IMessage() = default;
+        virtual ~IMessage() = default;
     };
 
     // ParseMessage file content
@@ -233,7 +237,7 @@ namespace net {
             _message_code(code) {}
         Message() = default;
 
-        ~Message() = default;
+        ~Message() override = default;
 
         template<typename T>
         static boost::shared_ptr<T> deserialize(const Byte *data, const BufferSizeType size)
@@ -261,6 +265,7 @@ namespace net {
     public:
         SignalMarker() = default;
         SignalMarker(const message_code& code);
+        ~SignalMarker() override = default;
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
@@ -271,12 +276,13 @@ namespace net {
     public:
         YesNoMarker() = default;
         YesNoMarker(const message_code& code, const Bool& yes);
+        ~YesNoMarker() override = default;
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
         BufferSizeType size() const override;
 
-        Bool yes() const { return _yes; }
+        Bool yes() const;
 
     private:
         Byte _yes = false;
@@ -286,6 +292,7 @@ namespace net {
     public:
         UpdateMessage() = default;
         UpdateMessage(const PlayerID& sid, const Serializable& data, const message_code& code);
+        ~UpdateMessage() override = default;
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
@@ -303,6 +310,7 @@ namespace net {
     public:
         SyncMessage() = default;
         SyncMessage(PlayerID sid, const Serializable& serializable, const message_code& code);
+        ~SyncMessage() override = default;
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
@@ -320,6 +328,7 @@ namespace net {
     public:
         ConnectionInitReply() = default;
         ConnectionInitReply(PlayerID playerId, TokenType token);
+        ~ConnectionInitReply() override = default;
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
@@ -337,6 +346,7 @@ namespace net {
     public:
         FeedInitRequest() = default;
         FeedInitRequest(ClientID playerId, TokenType token);
+        ~FeedInitRequest() override = default;
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
@@ -354,6 +364,7 @@ namespace net {
     public:
         FeedInitReply() = default;
         FeedInitReply(TokenType token);
+        ~FeedInitReply() override = default;
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
@@ -369,6 +380,7 @@ namespace net {
     public:
         TextMessage() = default;
         TextMessage(const std::string& text);
+        ~TextMessage() override = default;
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
@@ -384,6 +396,7 @@ namespace net {
     public:
         RequestConnectRoom() = default;
         RequestConnectRoom(const std::string& roomID);
+        ~RequestConnectRoom() override = default;
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
@@ -405,6 +418,7 @@ namespace net {
     public:
         RequestConnectRoomReply() = default;
         RequestConnectRoomReply(PlayerID playerID);
+        ~RequestConnectRoomReply() override = default;
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
@@ -420,6 +434,7 @@ namespace net {
     public:
         CreateRoomReply() = default;
         CreateRoomReply(const std::string& token);
+        ~CreateRoomReply() override = default;
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
@@ -435,6 +450,7 @@ namespace net {
     public:
         UserConnectRoom() = default;
         UserConnectRoom(PlayerID playerID);
+        ~UserConnectRoom() override = default;
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;
@@ -450,6 +466,7 @@ namespace net {
     public:
         UserDisconnectFromRoom() = default;
         UserDisconnectFromRoom(PlayerID dc_user, PlayerID new_host);
+        ~UserDisconnectFromRoom() override = default;
 
         void from(const Byte *data, const BufferSizeType size) override;
         std::vector<Byte> serialize() const override;

@@ -36,6 +36,8 @@ PAA_START_CPP(client_connect)
 {
     self = this;
 
+    PAA_ECS.clear();
+
     g_game.service.run("../Client.conf");
 
     // 1 second for each try to connect to feed or server

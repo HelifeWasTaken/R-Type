@@ -6,13 +6,39 @@
 namespace paa {
 
 struct Vec2 {
-    float x, y;
+    double x;
+    double y;
+
+    Vec2(const double& x=0, const double& y=0) : x(x), y(y) {}
+    Vec2(const Vec2& other) = default;
+    Vec2(const Vec2&& other) = default;
+
+    ~Vec2() = default;
+
+    Vec2 operator+(const Vec2& other) { return Vec2(x + other.x, y + other.y); }
+    Vec2 operator-(const Vec2& other) { return Vec2(x - other.x, y - other.y); }
+    Vec2 operator*(const Vec2& other) { return Vec2(x * other.x, y * other.y); }
+    Vec2 operator/(const Vec2& other) { return Vec2(x / other.x, y / other.y); }
+    Vec2 operator*(const double& f) { return *this * (Vec2(f, f)); }
+    Vec2 operator/(const double& f) { return *this / (Vec2(f, f)); }
+
+    Vec2& operator-=(const Vec2& other) { return *this = *this - other; }
+    Vec2& operator*=(const Vec2& other) { return *this = *this * other; }
+    Vec2& operator/=(const Vec2& other) { return *this = *this / other; }
+    Vec2& operator+=(const Vec2& other) { return *this = *this + other; }
+    Vec2& operator*=(const double& f) { return *this = *this * f; }
+    Vec2& operator/=(const double& f) { return *this = *this / f; }
+
+    void move(const Vec2& offset) { *this = *this + offset; }
+    void setPosition(const Vec2& other) { *this = other; }
 };
 
 struct Position : public Vec2 {
-};
+    Position(const double& x=0, const double& y=0)
+        : Vec2(x, y)
+    {}
 
-struct Velocity : public Vec2 {
+    HL_AUTO_COMPLETE_CANONICAL_FORM(Position);
 };
 
 struct Depth {

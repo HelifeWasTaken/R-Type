@@ -215,6 +215,18 @@ namespace silva
         {
             _to_kill_entities.insert(e.get_id());
         }
+
+        /**
+         * @brief Remove all entities
+         * 
+         */
+        void clear()
+        {
+            for (EntityId i = 0; i < _entities_count; i++) {
+                kill_entity(i);
+            }
+        }
+
         /**
          * @brief  Add a component to an entity
          * @param  &to: The entity to add the component

@@ -9,7 +9,8 @@ namespace net {
     {
     }
 
-    BufferSizeType YesNoMarker::size() const {
+    BufferSizeType YesNoMarker::size() const
+    {
         return sizeof(_message_code) + sizeof(_yes);
     }
 
@@ -27,5 +28,9 @@ namespace net {
         return s.data;
     }
 
+    Bool YesNoMarker::yes() const
+    {
+        return _yes;
+    }
 }
 }

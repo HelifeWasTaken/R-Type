@@ -67,6 +67,11 @@ namespace silva
         Entity(const Entity& other) = default;
         Entity(Entity&& other) = default;
         Entity() = default;
+        Entity& operator=(const Entity& other) = default;
+        Entity& operator=(Entity&& other) = default;
+        Entity& operator=(const Id& id) { this->id = id; return *this; }
+        Entity& operator=(Id&& id) { this->id = id; return *this; }
+
         ~Entity() = default;
         /**
          * @brief Get the Id of the entity
@@ -80,7 +85,7 @@ namespace silva
          * @brief Get the Id of the entity
          * @retval The id of the entity
          */
-        Id get_id() const { return (Id) * this; }
+        Id get_id() const { return id; }
     };
 
     /**

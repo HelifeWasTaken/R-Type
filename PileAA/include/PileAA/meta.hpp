@@ -37,6 +37,17 @@
         }                                                                      \
     };
 
+#define HL_ERROR_IMPL_FROM_STD_EXCEPTION(name)                                 \
+    class name : public std::exception {                                       \
+    protected:                                                                 \
+        const std::string _msg;                                                \
+                                                                               \
+    public:                                                                    \
+        name(const std::string& msg) : _msg(msg) {}                            \
+        name(const char* msg) : _msg(msg) {}                                   \
+        const char* what() const noexcept override { return _msg.c_str(); }    \
+    };
+
 #define HL_BASE_ERROR_IMPL(name)                                               \
     class name {                                                               \
     private:                                                                   \

@@ -1,136 +1,26 @@
 #pragma once
 
-#include "PileAA/meta.hpp"
-#include <Network/Messages.hpp>
-#include <boost/array.hpp>
-#include <boost/asio.hpp>
-#include <boost/bind/bind.hpp>
-#include <boost/enable_shared_from_this.hpp>
-#include <boost/thread.hpp>
-#include <queue>
 #include <spdlog/spdlog.h>
+
 #include <variant>
 
-#define MAGIC_NUMBER 0xff1cec0ffeedefec
+#include "RServer/Messages/Messages.hpp"
 
-// TODO: Use proper logging library vs std::fprintf stderr
+#include "RServer/utils.hpp"
 
-// using namespace boost::placeholders;
+#include "PileAA/meta.hpp"
 
 namespace rtype {
 namespace net {
 
-    template <typename T> class async_queue : public std::queue<T> {
-    public:
-        HL_AUTO_COMPLETE_CANONICAL_FORM(async_queue);
-
-        bool async_empty()
-        {
-            std::lock_guard<std::mutex> lock(_mutex);
-            return this->empty();
-        }
-
-        bool async_pop(T& value)
-        {
-            std::lock_guard<std::mutex> lock(_mutex);
-            if (this->empty())
-                return false;
-            value = std::move(this->front());
-            this->pop();
-            return true;
-        }
-
-        void async_push(const T& value)
-        {
-            std::lock_guard<std::mutex> lock(_mutex);
-            this->push(value);
-        }
-
-        void async_push(T&& value)
-        {
-            std::lock_guard<std::mutex> lock(_mutex);
-            this->push(std::move(value));
-        }
-
-        template <typename... Args> void async_emplace(Args&&... args)
-        {
-            std::lock_guard<std::mutex> lock(_mutex);
-            this->emplace(std::forward<Args>(args)...);
-        }
-
-    private:
-        std::mutex _mutex;
-    };
-
-    template <typename T> class async_automated_sparse_array {
-    private:
-        std::mutex _mut;
-        async_queue<size_t> _unused_indexes;
-        std::vector<boost::shared_ptr<T>> _array;
-
-    public:
-        HL_AUTO_COMPLETE_CANONICAL_FORM(async_automated_sparse_array);
-
-        boost::shared_ptr<T> async_get(size_t index)
-        {
-            std::lock_guard<std::mutex> lock(this->_mut);
-            if (index >= this->_array.size())
-                return nullptr;
-            return this->_array.at(index);
-        }
-
-        size_t async_set(boost::shared_ptr<T> value)
-        {
-            std::lock_guard<std::mutex> lock(this->_mut);
-            size_t index;
-
-            if (this->_unused_indexes.async_pop(index)) {
-                this->_array.at(index) = value;
-                return index;
-            }
-            this->_array.push_back(value);
-            return this->_array.size() - 1;
-        }
-
-        void async_remove(size_t index)
-        {
-            std::lock_guard<std::mutex> lock(_mut);
-            if (index >= this->_array.size())
-                return;
-            this->_array.at(index) = nullptr;
-            this->_unused_indexes.async_push(index);
-        }
-
-        // TODO: Optimize size by avoiding unused indexes
-        size_t async_size()
-        {
-            std::lock_guard<std::mutex> lock(this->_mut);
-            return this->_array.size();
-        }
-    };
-
-#ifndef RTYPE_TCP_BUFFER_SIZE
-#define RTYPE_TCP_BUFFER_SIZE 1024
-#endif
-
-#ifndef RTYPE_UDP_BUFFER_SIZE
-#define RTYPE_UDP_BUFFER_SIZE 1024
-#endif
-
-    using tcp = boost::asio::ip::tcp;
-    using udp = boost::asio::ip::udp;
-
-    using tcp_buffer_t = boost::array<char, RTYPE_TCP_BUFFER_SIZE>;
-    using udp_buffer_t = boost::array<char, RTYPE_UDP_BUFFER_SIZE>;
-
-    template <typename BufferType, int StartOffset = 0>
+    template <typename BufferType, BufferSizeType StartOffset = 0>
     struct base_message_info {
         BufferType buffer;
-        size_t size = 0;
+        BufferSizeType size = 0;
 
         HL_AUTO_COMPLETE_CANONICAL_FORM(base_message_info);
 
-        base_message_info(BufferType&& buffer, size_t size)
+        base_message_info(BufferType&& buffer, BufferSizeType size)
             : buffer(std::move(buffer))
             , size(size)
         {
@@ -147,24 +37,24 @@ namespace net {
             return to<std::string>();
         }
 
-        std::vector<uint8_t> to_vec()
+        std::vector<Byte> to_vec()
         {
-            return to<std::vector<uint8_t>>();
+            return to<std::vector<Byte>>();
         }
 
         boost::shared_ptr<IMessage> to_msg()
         {
-            return parse_message(to<std::vector<uint8_t>>());
+            return parse_message(to<std::vector<Byte>>());
         }
         template <typename T> std::shared_ptr<T> to_msg()
         {
-            return parse_message<T>(to<std::vector<uint8_t>>());
+            return parse_message<T>(to<std::vector<Byte>>());
         }
 
         message_code code()
         {
-            if (buffer.size() > 0)
-                return static_cast<message_code>(buffer[0]);
+            if (buffer.size() > StartOffset)
+                return static_cast<message_code>(buffer[StartOffset]);
             return message_code::DUMMY;
         }
     };
@@ -177,7 +67,7 @@ namespace net {
         struct message_info : public base_message_info<tcp_buffer_t> {
             HL_AUTO_COMPLETE_CANONICAL_FORM(message_info);
 
-            message_info(tcp_buffer_t&& buffer, size_t size)
+            message_info(tcp_buffer_t&& buffer, BufferSizeType size)
                 : base_message_info(std::move(buffer), size)
             {
             }
@@ -185,7 +75,7 @@ namespace net {
 
         using shared_message_info_t = boost::shared_ptr<message_info>;
 
-        static shared_message_info_t new_message(const void* data, size_t size);
+        static shared_message_info_t new_message(const void* data, BufferSizeType size);
 
         static shared_message_info_t new_message(const IMessage& msg);
 
@@ -213,8 +103,8 @@ namespace net {
 
     public:
         ~tcp_connection() = default;
-        void set_id(size_t id) { _id = id; }
-        size_t get_id() const { return _id; }
+        void set_id(ClientID id) { _id = id; }
+        ClientID get_id() const { return _id; }
 
     private:
         tcp::socket _socket;
@@ -226,49 +116,49 @@ namespace net {
         boost::shared_ptr<async_queue<shared_message_info_t>>
             _readed_messages_queue;
 
-        size_t _id = -1;
+        ClientID _id = static_cast<ClientID>(-1);
     };
 
     class tcp_event_connexion {
     private:
-        size_t _id = -1;
+        ClientID _id = static_cast<ClientID>(-1);
 
     public:
-        tcp_event_connexion(size_t id);
+        tcp_event_connexion(ClientID id);
 
-        size_t get_id() const;
+        ClientID get_id() const;
 
         HL_AUTO_COMPLETE_CANONICAL_FORM(tcp_event_connexion);
     };
 
     class tcp_event_disconnexion {
     private:
-        size_t _id = -1;
+        ClientID _id = static_cast<ClientID>(-1);
 
     public:
-        tcp_event_disconnexion(size_t id);
+        tcp_event_disconnexion(ClientID id);
 
-        size_t get_id() const;
+        ClientID get_id() const;
 
         HL_AUTO_COMPLETE_CANONICAL_FORM(tcp_event_disconnexion);
     };
 
     class tcp_event_message {
     private:
-        size_t _id = -1;
+        ClientID _id = static_cast<ClientID>(-1);
         tcp_connection::shared_message_info_t _message;
 
     public:
         tcp_event_message(
-            size_t id, tcp_connection::shared_message_info_t message);
+            ClientID id, tcp_connection::shared_message_info_t message);
 
-        size_t get_id() const;
+        ClientID get_id() const;
         tcp_connection::shared_message_info_t get_message();
 
         HL_AUTO_COMPLETE_CANONICAL_FORM(tcp_event_message);
     };
 
-    enum tcp_event_type { Invalid, Connexion, Disconnexion, Message };
+    enum class tcp_event_type : Byte { Invalid, Connexion, Disconnexion, Message };
 
     using tcp_event_container = std::variant<void*, tcp_event_connexion,
         tcp_event_disconnexion, tcp_event_message>;
@@ -293,19 +183,20 @@ namespace net {
 
         template <typename T> T& get() { return std::get<T>(_container); }
 
-        int get_type() const { return _container.index(); }
+        tcp_event_type get_type() const
+        { return static_cast<tcp_event_type>(_container.index()); }
     };
 
     class tcp_server {
     public:
-        tcp_server(boost::asio::io_context& io_context, int port);
+        tcp_server(boost::asio::io_context& io_context, PortType port);
 
 
         ~tcp_server();
 
         bool poll(tcp_event& event);
 
-        void send(size_t id, tcp_connection::shared_message_info_t message);
+        void send(ClientID id, tcp_connection::shared_message_info_t message);
 
     private:
         void start_accept();
@@ -319,59 +210,60 @@ namespace net {
         boost::asio::io_context& _io_context;
         tcp::acceptor _acceptor;
         async_automated_sparse_array<tcp_connection> _connections;
-        std::atomic<bool> _is_started = false;
+        std::atomic<Bool> _is_started = false;
 
         std::unique_ptr<boost::thread> _tcp_connection_polling_thread;
 
         async_queue<tcp_event> _events;
     };
 
+#define RTYPE_UDP_MESSAGE_HEADER (sizeof(MagicNumber) + sizeof(ClientID))
+
     class udp_server {
     public:
-        class message_info : public base_message_info<udp_buffer_t,
-                                 2 * sizeof(uint64_t) + sizeof(uint16_t)> {
+        class message_info : public base_message_info<udp_buffer_t, RTYPE_UDP_MESSAGE_HEADER> {
         public:
             message_info(
-                udp::endpoint sender, udp_buffer_t&& buffer, size_t size);
+                udp::endpoint sender, udp_buffer_t&& buffer, BufferSizeType size);
 
-            char *msg() const;
+            Byte *msg() const;
 
-            void set_msg(char *msg);
+            void set_msg(Byte *msg);
 
-            size_t size();
+            BufferSizeType size();
 
-            void set_size(size_t size);
+            void set_size(BufferSizeType size);
 
             udp::endpoint sender();
 
-            uint64_t seq_num();
-
-            uint16_t sender_id();
+            ClientID sender_id();
 
             HL_AUTO_COMPLETE_CANONICAL_FORM(message_info);
 
         private:
-            char *_msg;
-            size_t _size;
+            Byte *_msg;
+            BufferSizeType _size;
             udp::endpoint _sender;
-            uint16_t _sender_id;
-            uint16_t _seq_num;
+
+            ClientID _sender_id;
+
+            MagicNumber _magic;
         };
 
         using shared_message_info_t = boost::shared_ptr<message_info>;
 
         static shared_message_info_t new_message(
-            int sender, const void* data, size_t size);
+            ClientID sender, const void* data, BufferSizeType size);
 
         static shared_message_info_t new_message(
-            int sender, const IMessage& msg);
+            ClientID sender, const IMessage& msg);
 
         static shared_message_info_t new_message(
-            int sender, const std::string& s);
+            ClientID sender, const std::string& s);
 
     private:
         void handle_receive_from(const boost::system::error_code& error,
-            std::size_t bytes_transferred);
+            BufferSizeType bytes_transferred);
 
         void start_receive();
 
@@ -381,7 +273,7 @@ namespace net {
 
         void send_to(udp::endpoint target, shared_message_info_t message);
 
-        udp_server(boost::asio::io_context& io_context, int port);
+        udp_server(boost::asio::io_context& io_context, PortType port);
 
     private:
         udp::socket _socket;
@@ -400,7 +292,7 @@ namespace net {
 
         remote_client();
 
-        void init_main_channel(tcp_server& main_channel, size_t main_id);
+        void init_main_channel(tcp_server& main_channel, ClientID main_id);
 
         void init_feed_channel(
             udp_server& feed_channel, udp::endpoint feed_endpoint);
@@ -416,7 +308,7 @@ namespace net {
 
         void send_main(const std::string& s);
 
-        void send_main(const void* data, size_t size);
+        void send_main(const void* data, BufferSizeType size);
 
         void send_main(const rtype::net::IMessage& message);
 
@@ -426,32 +318,33 @@ namespace net {
 
         void send_feed(const std::string& s);
 
-        void send_feed(const void* data, size_t size);
+        void send_feed(const void* data, BufferSizeType size);
 
         void send_feed(const rtype::net::IMessage& message);
 
         void send_feed(rtype::net::IMessage& message);
 
-        int id() const;
+        ClientID id() const;
 
         udp::endpoint get_feed_endpoint() const;
 
     private:
-        size_t _main_id;
+        ClientID _main_id;
         udp::endpoint _feed_endpoint;
         tcp_server* _main_channel;
         udp_server* _feed_channel;
     };
     class server {
     public:
-        server(int tcp_port, int udp_port, bool authenticate = false);
+        server(PortType tcp_port, PortType udp_port, Bool authenticate = false);
+        ~server() { _is_running = false; _thread_io_context_runner->join(); }
 
-        enum event_type {
+        enum class event_type : Byte {
             Invalid,
-            Connect,
-            Disconnect,
             MainMessage,
-            FeedMessage
+            FeedMessage,
+            Connect,
+            Disconnect
         };
 
         class base_message {
@@ -459,7 +352,7 @@ namespace net {
             virtual ~base_message() = default;
             virtual remote_client::pointer sender() const = 0;
             virtual std::string to_string() const = 0;
-            virtual std::vector<uint8_t> to_vec() const = 0;
+            virtual std::vector<Byte> to_vec() const = 0;
             virtual boost::shared_ptr<IMessage> to_msg() = 0;
             virtual message_code code() const = 0;
         };
@@ -474,7 +367,7 @@ namespace net {
 
             remote_client::pointer sender() const override;
             std::string to_string() const override;
-            std::vector<uint8_t> to_vec() const override;
+            std::vector<Byte> to_vec() const override;
             boost::shared_ptr<IMessage> to_msg() override;
 
             message_code code() const override;
@@ -491,7 +384,7 @@ namespace net {
 
             remote_client::pointer sender() const override;
             std::string to_string() const override;
-            std::vector<uint8_t> to_vec() const override;
+            std::vector<Byte> to_vec() const override;
             boost::shared_ptr<IMessage> to_msg() override;
             message_code code() const override;
 
@@ -506,7 +399,7 @@ namespace net {
             std::unique_ptr<server::base_message> message;
 
             event()
-                : type(Invalid)
+                : type(rtype::net::server::event_type::Invalid)
                 , message(nullptr)
                 , client(nullptr)
             {
@@ -519,25 +412,38 @@ namespace net {
 
         tcp_server& tcp();
         udp_server& udp();
-        std::unordered_map<uint16_t, remote_client::pointer>& clients();
+        std::unordered_map<ClientID, remote_client::pointer>& clients();
 
     private:
         void run();
 
-        remote_client::pointer get_client(uint16_t id);
+        bool poll_tcp(event& event, tcp_event& tcp_event);
+        bool on_tcp_event_connexion(event& event, tcp_event& tcp_event);
+        bool on_tcp_event_disconnexion(event& event, tcp_event& tcp_event);
+        bool on_tcp_event_message(event& event, tcp_event& tcp_event);
+
+        bool poll_udp(event& event, udp_server::shared_message_info_t& msg);
+        bool on_udp_feed_init(event& event, udp_server::shared_message_info_t& msg);
+        bool on_udp_event_message(event& event, udp_server::shared_message_info_t& msg);
+
+    public:
+        remote_client::pointer get_client(ClientID id);
 
         remote_client::pointer get_client(tcp_connection::pointer conn);
         remote_client::pointer get_client(const udp::endpoint& endpoint);
 
-        bool _authenticate = false;
+    private:
+        Bool _authenticate = false;
         boost::asio::io_context _io_context;
 
         boost::shared_ptr<tcp_server> _tcp_server;
         boost::shared_ptr<udp_server> _udp_server;
 
-        std::unordered_map<uint16_t, remote_client::pointer> _clients;
+        std::unordered_map<ClientID, remote_client::pointer> _clients;
 
         boost::shared_ptr<boost::thread> _thread_io_context_runner;
+
+        std::atomic_bool _is_running = false;
     };
 }
 }

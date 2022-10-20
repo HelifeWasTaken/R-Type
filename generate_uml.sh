@@ -1,37 +1,68 @@
+RSERVER_PATH="./RServer/include/RServer"
+RSERVER_MESSAGES_PATH="${RSERVER_PATH}/Messages"
+RSERVER_CLIENT_PATH="${RSERVER_PATH}/Client"
+RSERVER_SERVER_PATH="${RSERVER_PATH}/Server"
+
+PILEAA_PATH="./PileAA/include/PileAA"
+PILEAA_EXTERNAL_PATH="${PILEAA_PATH}/external"
+
+CLIENT_PATH="./Client/include"
+CLIENT_SCENE_PATH="${CLIENT_PATH}/Scenes"
+
+SERVER_PATH="./Server"
+
 hpp2plantuml \
-    -i include/Network/Messages.hpp \
-    -i include/Network/Types.hpp \
     \
-    -i RServer/include/Client.hpp \
-    -i RServer/include/Server.hpp \
+    -i ${RSERVER_PATH}/async_automated_sparse_array.hpp \
+    -i ${RSERVER_PATH}/async_queue.hpp \
+    -i ${RSERVER_PATH}/utils.hpp \
     \
-    -i PileAA/include/PileAA/external/HelifeWasTaken/Silva \
-    -i PileAA/include/PileAA/external/HelifeWasTaken/SilvaState \
+    -i ${RSERVER_CLIENT_PATH}/AClient.hpp \
+    -i ${RSERVER_CLIENT_PATH}/Client.hpp \
+    -i ${RSERVER_CLIENT_PATH}/TCPClient.hpp \
+    -i ${RSERVER_CLIENT_PATH}/UDPClient.hpp \
     \
-    -i PileAA/include/PileAA/paa_commands/paa_getters.hpp \
-    -i PileAA/include/PileAA/paa_commands/paa_utilities.hpp \
-    -i PileAA/include/PileAA/paa_commands/paa_command_ecs.hpp \
-    -i PileAA/include/PileAA/paa_commands/paa_command_main.hpp \
-    -i PileAA/include/PileAA/paa_commands/paa_command_state.hpp \
+    -i ${RSERVER_MESSAGES_PATH}/Messages.hpp \
+    -i ${RSERVER_MESSAGES_PATH}/Types.hpp \
     \
-    -i PileAA/include/PileAA/AnimatedSprite.hpp \
-    -i PileAA/include/PileAA/AnimationRegister.hpp \
-    -i PileAA/include/PileAA/App.hpp \
-    -i PileAA/include/PileAA/BaseComponents.hpp \
-    -i PileAA/include/PileAA/BatchRenderer.hpp \
-    -i PileAA/include/PileAA/Error.hpp \
-    -i PileAA/include/PileAA/InputHandler.hpp \
-    -i PileAA/include/PileAA/InputManager.hpp \
-    -i PileAA/include/PileAA/meta.hpp \
-    -i PileAA/include/PileAA/ResourceManager.hpp \
-    -i PileAA/include/PileAA/TilesetManager.hpp \
-    -i PileAA/include/PileAA/Timer.hpp \
-    -i PileAA/include/PileAA/Types.hpp \
-    -i PileAA/include/PileAA/VectorExtension.hpp \
+    -i ${RSERVER_SERVER_PATH}/Server.hpp \
     \
-    -i include/rtype/BulletPool.hpp \
-    -i include/rtype/IBullet.hpp \
-    -i include/rtype/IEnemy.hpp \
-    -i include/rtype/IShooter.hpp \
+    -i ${PILEAA_PATH}/AnimatedSprite.hpp \
+    -i ${PILEAA_PATH}/AnimationRegister.hpp \
+    -i ${PILEAA_PATH}/App.hpp \
+    -i ${PILEAA_PATH}/BaseComponents.hpp \
+    -i ${PILEAA_PATH}/BatchRenderer.hpp \
+    -i ${PILEAA_PATH}/Error.hpp \
+    -i ${PILEAA_PATH}/InputHandler.hpp \
+    -i ${PILEAA_PATH}/InputManager.hpp \
+    -i ${PILEAA_PATH}/meta.hpp \
+    -i ${PILEAA_PATH}/ResourceManager.hpp \
+    -i ${PILEAA_PATH}/TilesetManager.hpp \
+    -i ${PILEAA_PATH}/Timer.hpp \
+    -i ${PILEAA_PATH}/Types.hpp \
+    -i ${PILEAA_PATH}/VectorExtension.hpp \
+    \
+    -i ${PILEAA_EXTERNAL_PATH}/Galbar/InputHandler.hpp \
+    \
+    -i ${PILEAA_EXTERNAL_PATH}/HelifeWasTaken/Silva \
+    -i ${PILEAA_EXTERNAL_PATH}/HelifeWasTaken/SilvaState \
+    \
+    -i ${PILEAA_PAA_COMMANDS_PATH}/paa_command_ecs.hpp \
+    -i ${PILEAA_PAA_COMMANDS_PATH}/paa_command_main.hpp \
+    -i ${PILEAA_PAA_COMMANDS_PATH}/paa_command_state.hpp \
+    -i ${PILEAA_PAA_COMMANDS_PATH}/paa_getters.hpp \
+    -i ${PILEAA_PAA_COMMANDS_PATH}/paa_utilities.hpp \
+    \
+    -i ${CLIENT_PATH}/ClientWrapper.hpp \
+    -i ${CLIENT_PATH}/ClientScenes.hpp \
+    \
+    -i ${CLIENT_SCENE_PATH}/SceneClientConnect.hpp \
+    -i ${CLIENT_SCENE_PATH}/SceneConnectRoom.hpp \
+    -i ${CLIENT_SCENE_PATH}/SceneCreateRoom.hpp \
+    -i ${CLIENT_SCENE_PATH}/SceneGame.hpp \
+    -i ${CLIENT_SCENE_PATH}/SceneRoomWait.hpp \
+    \
+    -i ${SERVER_PATH}/Room.hpp \
+    -i ${SERVER_PATH}/RoomManager.hpp\
     \
     -o UML

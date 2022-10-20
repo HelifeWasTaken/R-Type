@@ -5,7 +5,7 @@
 /**
  * @brief Register n components to the ECS registry.
  */
-#define PAA_REGISTER_COMPONENTS(...) PAA_ECS.registerComponents<__VA_ARGS__>()
+#define PAA_REGISTER_COMPONENTS(...) PAA_ECS.register_component<__VA_ARGS__>()
 
 /**
  * @brief Register a new system to the ECS registry.
@@ -16,6 +16,11 @@
  * @brief Returns a new entity
  */
 #define PAA_NEW_ENTITY() PAA_ECS.spawn_entity()
+
+/**
+ * @brief Destroy an entity
+ */
+#define PAA_DESTROY_ENTITY(entity) PAA_ECS.kill_entity(entity)
 
 /**
  * @brief Set a component to an entity

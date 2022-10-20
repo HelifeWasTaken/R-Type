@@ -2,6 +2,8 @@
 
 #include "PileAA/external/nlohmann/json.hpp"
 
+#include "PileAA/GUI.hpp"
+
 #include <fstream>
 
 #include <spdlog/spdlog.h>
@@ -35,12 +37,19 @@ bool App::run()
     auto& ecs = paa::EcsInstance::get();
     auto& scene = paa::SceneManager::get();
     auto& batch = paa::BatchRendererInstance::get();
+    auto& delta = paa::DeltaTimerInstance::get();
+
+    sf::Clock imGUIDeltaClock;
 
     spdlog::info("PileAA: Starting main loop");
 
     while (isRunning()) {
         Event event;
-        input.update();
+
+        input.update(); // TODO: Should it be here?
+        delta.update();
+
+        // TODO: Maybe change this to an if statement instead of a while
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
@@ -49,12 +58,20 @@ bool App::run()
                 && event.key.control) {
                 return true;
             }
-            input.handleEvent(event);
+
+            ImGui::SFML::ProcessEvent(event);
+
+            input.handleEvent(event); // TODO: Have a better input manager
+
             scene.handleEvent();
         }
+
+        ImGui::SFML::Update(window, imGUIDeltaClock.restart());
+
         window.clear();
         ecs.update();
         scene.update();
+        ImGui::SFML::Render(window);
         batch.render(window);
         window.display();
     }
@@ -160,6 +177,36 @@ static inline void load_configuration_file_animations(nlohmann::json& json)
     spdlog::info("PileAA: Animations loaded");
 }
 
+static inline void load_configuration_file_window(nlohmann::json& json)
+{
+    spdlog::info("PileAA: Loading window from configuration file");
+    auto& screen = Screen::get();
+
+    if (json.find("window") == json.end()) {
+        spdlog::info("PileAA: No window configuration found using default (800,600) 120fps");
+        screen.create(VideoMode(800, 600), "PileAA");
+        screen.setFramerateLimit(120);
+        DeltaTimerInstance::get().setFpsTarget(120);
+        return;
+    }
+    try {
+        const auto& window = json["window"];
+        const auto& width = window["width"].get<int>();
+        const auto& height = window["height"].get<int>();
+        const auto& title = window["title"].get<std::string>();
+        const auto& fps = window["fps"].get<int>();
+        screen.create(VideoMode(width, height), title);
+        screen.setFramerateLimit(fps);
+        DeltaTimerInstance::get().setFpsTarget(fps);
+        spdlog::info("PileAA: Window created: {} {}x{} at {}fps", title, width, height, fps);
+    } catch (const nlohmann::json::exception& e) {
+        throw App::Error(
+            std::string("window: load_configuration_file - Invalid json file: ")
+            + e.what()
+        );
+    }
+}
+
 static inline void load_configuration_file(const std::string& filename)
 {
     spdlog::info("PileAA: Loading configuration file: {}", filename);
@@ -173,6 +220,7 @@ static inline void load_configuration_file(const std::string& filename)
         file >> json;
         load_configuration_file_resources(json["resources"]);
         load_configuration_file_animations(json["animations"]);
+        load_configuration_file_window(json);
     } catch (const nlohmann::json::exception& e) {
         throw ResourceManagerError(
             "load_configuration_file - Invalid json file: "
@@ -199,16 +247,19 @@ void setup_paa_system(const std::string& configuration_filename)
     SceneManager::get();
     spdlog::info("PileAA: SceneManager created");
 
-    Screen::get().create(VideoMode(800, 600), "PileAA");
-    spdlog::info("PileAA: Screen created");
-
     BatchRendererInstance::get();
     spdlog::info("PileAA: BatchRenderer created");
+
+    DeltaTimerInstance::get();
+    spdlog::info("PileAA: DeltaTimer created");
 
     App::get();
     spdlog::info("PileAA: App created");
 
     load_configuration_file(configuration_filename);
+
+    ImGui::SFML::Init(Screen::get());
+    spdlog::info("PileAA: ImGui created");
 
     spdlog::info("PileAA: system setup complete");
 }
@@ -232,14 +283,22 @@ void stop_paa_system()
     SceneManager::release();
     spdlog::info("PileAA: SceneManager released");
 
+    BatchRendererInstance::release();
+
     Screen::release();
     spdlog::info("PileAA: Screen released");
 
     BatchRendererInstance::release();
     spdlog::info("PileAA: BatchRenderer released");
 
+    DeltaTimerInstance::release();
+    spdlog::info("PileAA: DeltaTimer released");
+
     App::release();
     spdlog::info("PileAA: App released");
+
+    ImGui::SFML::Shutdown();
+    spdlog::info("PileAA: ImGui released");
 }
 
 }

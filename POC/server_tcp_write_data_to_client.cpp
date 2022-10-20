@@ -3,11 +3,11 @@
 #include <iostream>
 #include <unordered_set>
 #include <thread>
-#include <Server.hpp>
+#include "RServer/Server/Server.hpp"
 
 using namespace rtype::net;
 
-static std::unordered_set<size_t> VALID_INDEXES;
+static std::unordered_set<BufferSizeType> VALID_INDEXES;
 static std::mutex mut;
 static tcp_server *s;
 

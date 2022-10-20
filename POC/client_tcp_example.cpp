@@ -1,6 +1,7 @@
-#include <Client.hpp>
-#include <Network/Messages.hpp>
-#include <poc.hpp>
+#include "RServer/Client/Client.hpp"
+#include "RServer/Messages/Messages.hpp"
+#include "poc.hpp"
+#include <iostream>
 
 using TCPClient = rtype::net::TCPClient;
 
@@ -21,9 +22,9 @@ void poc_client_tcp_example(void)
         std::memcpy(message->data(), "Hello", 5);
         c.send(message, 5);
         while (c.poll(recv_msg)) {
-            if (recv_msg->code() == rtype::net::message_code::TEXT_REP) {
+            if (recv_msg->code() == rtype::net::message_code::TEXT_MESSAGE) {
                 auto msg
-                    = rtype::net::parse_message<rtype::net::TextReplyMessage>(
+                    = rtype::net::parse_message<rtype::net::TextMessage>(
                         recv_msg);
                 std::cout << "Received: " << msg->text() << std::endl;
             }

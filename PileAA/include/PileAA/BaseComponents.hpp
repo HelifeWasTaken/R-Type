@@ -11,7 +11,6 @@ struct Vec2 {
 
     Vec2(const double& x=0, const double& y=0) : x(x), y(y) {}
     Vec2(const Vec2& other) = default;
-    Vec2(const Vec2&& other) = default;
 
     ~Vec2() = default;
 

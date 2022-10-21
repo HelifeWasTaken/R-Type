@@ -7,7 +7,7 @@ namespace game {
 
 class AShooter {
 private:
-    Timer _timer;
+    paa::Timer _timer;
     double _aim_angle = -90;
     const paa::Position& _positionRef;
 

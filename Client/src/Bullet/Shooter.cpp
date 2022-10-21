@@ -23,10 +23,11 @@ namespace game {
 
     double AShooter::aim_angle() const { return _aim_angle; }
 
-    void aim(const paa::Vector2f& to_aim)
+    void AShooter::aim(const paa::Vector2f& to_aim)
     {
-        const paa::Vector2<float> fpos = to_aim - _positionRef;
-        _angle = std::atan2(fpos.y, fpos.x) * 180 / M_PI;
+        const paa::Position fpos = paa::Position(_positionRef.x - to_aim.x,
+                                                _positionRef.y - to_aim.y);
+        _aim_angle = std::atan2(fpos.y, fpos.x) * 180 / M_PI;
     }
 
 }

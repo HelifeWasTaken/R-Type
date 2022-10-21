@@ -7,23 +7,23 @@ namespace game {
         : type(type), id(id)
     {}
 
-    BulletQuery::BulletQuery(const std::vector<Byte>& bytes)
+    BulletQuery::BulletQuery(const std::vector<net::Byte>& bytes)
     { from(bytes.data(), bytes.size()); }
 
-    std::vector<net::Byte> BulletQuery::serialize(void) const override
+    std::vector<net::Byte> BulletQuery::serialize(void) const
     {
         rtype::net::Serializer s;
         s << id << type;
         return s.data;
     }
 
-    void BulletQuery::from(const net::Byte *data, const net::BufferSizeType size) override
+    void BulletQuery::from(const net::Byte *data, const net::BufferSizeType size)
     {
         net::Serializer s(data, size);
-        s >> id >> t;
+        s >> id >> type;
     }
 
-    Abullet::ABullet(const double lifeTime,
+    ABullet::ABullet(const double lifeTime,
                     const BulletType type,
                     const double aim_angle,
                     paa::Position& posRef)
@@ -34,8 +34,8 @@ namespace game {
 
     bool ABullet::is_alive() const { return !_timer.isFinished(); }
     BulletType ABullet::get_type() const { return _type; }
-    paa::Position& get_position() const { return _position; }
-    double ABullet::get_aim_angle() const { return ai_angle; }
+    paa::Position& ABullet::get_position() const { return _posRef; }
+    double ABullet::get_aim_angle() const { return _aim_angle; }
 
 };
 }

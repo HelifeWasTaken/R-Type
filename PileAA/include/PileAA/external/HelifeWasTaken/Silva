@@ -218,11 +218,11 @@ namespace silva
 
         /**
          * @brief Remove all entities
-         * 
+         *
          */
         void clear()
         {
-            for (EntityId i = 0; i < _entities_count; i++) {
+            for (Entity::Id i = 0; i < _entities_count; i++) {
                 kill_entity(i);
             }
         }

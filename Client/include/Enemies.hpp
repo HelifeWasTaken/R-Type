@@ -16,9 +16,9 @@ public:
     virtual void update() = 0;
 };
 
-using Enemy = std::shared_ptr<AEnemy>
+using Enemy = std::shared_ptr<AEnemy>;
 
-template<typename T, typenmae ...Args>
+template<typename T, typename ...Args>
 static inline Enemy make_enemy(Args&& ...args)
 {
     return std::make_shared<T>(std::forward<Args>(args)...);

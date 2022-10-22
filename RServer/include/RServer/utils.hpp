@@ -73,7 +73,7 @@ namespace net {
 
     static inline void dump_memory(const Byte *data, const BufferSizeType size)
     {
-        std::printf("Dumping memory at %p of size %lu\n", data, size);
+        std::printf("Dumping memory at %p of size %zu\n", data, size);
         std::printf("bytes: [");
         for (BufferSizeType i = 0; i < size; ++i) {
             std::printf("0x%hhx", data[i]);

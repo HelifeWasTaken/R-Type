@@ -6,23 +6,30 @@ namespace rtype {
 namespace game {
 
 class AEnemy {
-private:
-    // TODO Collision Ref
+protected:
+    paa::Position& _positionRef;
 
 public:
-    AEnemy() {}
+    AEnemy(paa::Position& positionRef)
+        : _positionRef(positionRef)
+    {}
+
     virtual ~AEnemy() = default;
 
     virtual void update() = 0;
+    virtual void on_collision(const paa::CollisionBox& other) = 0;
 };
+
 
 using Enemy = std::shared_ptr<AEnemy>;
 
-template<typename T, typename ...Args>
-static inline Enemy make_enemy(Args&& ...args)
-{
-    return std::make_shared<T>(std::forward<Args>(args)...);
-}
+class EnemyFactory {
+    template<typename T, typename ...Args>
+    static Enemy make_enemy(Args&& ...args)
+    {
+        return std::make_shared<T>(std::forward<Args>(args)...);
+    }
+};
 
 }
 }

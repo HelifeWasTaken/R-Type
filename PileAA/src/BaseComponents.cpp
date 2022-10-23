@@ -1,10 +1,11 @@
 #include "PileAA/BaseComponents.hpp"
 #include "PileAA/BatchRenderer.hpp"
 #include "PileAA/InputManager.hpp"
+#include "PileAA/QuadTree.hpp"
 
 namespace paa {
 
-static inline void animated_sprite_system(hl::silva::registry& r)
+static inline void sys_animated_sprite_system(hl::silva::registry& r)
 {
     auto& batch = BatchRendererInstance::get();
 
@@ -14,7 +15,7 @@ static inline void animated_sprite_system(hl::silva::registry& r)
     }
 }
 
-static inline void controller_input_manager_system(hl::silva::registry& r)
+static inline void sys_controller_input_manager_system(hl::silva::registry& r)
 {
     for (auto&& [e, input, controller] :
         r.view<InputManagement, Controller>()) {
@@ -22,23 +23,49 @@ static inline void controller_input_manager_system(hl::silva::registry& r)
     }
 }
 
-static inline void sprite_position_updater(hl::silva::registry& r)
+static inline void sys_sprite_position_updater(hl::silva::registry& r)
 {
     for (auto&& [_, v, s] : r.view<Position, Sprite>()) {
         s->setPosition(v.x, v.y);
     }
 }
 
+static inline void sys_collision_box_sync(hl::silva::registry& r)
+{
+    for (auto&& [_, c, s] : r.view<SCollisionBox, Sprite>()) {
+        const auto r = s->getGlobalBounds();
+        c->set_position(Vector2i(r.left, r.top));
+        c->set_size(Vector2i(r.width, r.height));
+    }
+}
+
+static inline void sys_collision_check(hl::silva::registry& r)
+{
+    auto& screen = PAA_SCREEN;
+    auto view = screen.getViewport(screen.getView());
+    Quadtree q(view.left, view.top, view.width, view.height);
+
+    for (auto&& [_, c] : r.view<SCollisionBox>()) {
+        q.insert_collision(c.get());
+    }
+    q.check_collision();
+}
+
 void setup_ecs(hl::silva::registry& r)
 {
     r.register_component<
         Position,
-        Sprite, Depth,
+        Velocity,
+        Sprite,
+        Depth,
+        SCollisionBox,
         InputManagement,
         Controller
-    >().add_system(animated_sprite_system)
-        .add_system(controller_input_manager_system)
-        .add_system(sprite_position_updater);
+    >().add_system(sys_animated_sprite_system)
+        .add_system(sys_controller_input_manager_system)
+        .add_system(sys_sprite_position_updater)
+        .add_system(sys_collision_box_sync)
+        .add_system(sys_collision_check);
 }
 
 }

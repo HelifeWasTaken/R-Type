@@ -4,6 +4,10 @@
 #include "ClientScenes.hpp"
 #include <cmath>
 
+namespace paa {
+    class CollisionBox;
+}
+
 namespace rtype {
 namespace game {
 
@@ -33,14 +37,20 @@ class ABullet {
 private:
     paa::Timer _timer;
     BulletType _type;
-    paa::Position& _posRef;
+    bool _from_player;
+
+protected:
     double _aim_angle;
-    // TODO Have collider there
+    double _damage;
+    bool _destroyed_on_collision;
+    paa::Position& _posRef;
 
 public:
-    ABullet(const double lifeTime,
-            const BulletType type,
+    ABullet(const BulletType type,
+            const double life_time,
             const double aim_angle,
+            const double damage,
+            const bool from_player,
             paa::Position& posRef);
     virtual ~ABullet() = default;
 
@@ -48,8 +58,11 @@ public:
     BulletType get_type() const;
     paa::Position& get_position() const;
     double get_aim_angle() const;
+    double get_damage() const;
+    bool is_from_player() const;
 
     virtual void update() = 0;
+    virtual void on_collision(const paa::CollisionBox& other) = 0;
 };
 
 using Bullet = std::shared_ptr<ABullet>;

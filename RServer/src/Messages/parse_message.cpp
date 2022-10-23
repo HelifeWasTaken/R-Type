@@ -44,11 +44,10 @@ namespace net {
         {message_code::ROOM_CLIENT_CONNECT, message_type::ROOM_CLIENT_CONNECT},
 
         // Sync messages
-        {message_code::SYNC_VECTOR2_POSITION, message_type::SYNC_MESSAGE},
+        {message_code::SYNC_PLAYER, message_type::SYNC_MESSAGE},
 
         // Update messages
-        {message_code::UPDATE_VECTOR2_MOVEMENT, message_type::UPDATE_MESSAGE},
-        {message_code::PLAYER_SHOOT, message_type::UPDATE_MESSAGE},
+        {message_code::UPDATE_PLAYER, message_type::UPDATE_MESSAGE},
     };
 
     message_type message_code_to_type(const message_code& code) {

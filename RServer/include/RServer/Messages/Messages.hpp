@@ -110,11 +110,10 @@ namespace net {
         ROOM_CLIENT_DISCONNECT,
 
         // Sync messages
-        SYNC_VECTOR2_POSITION,
+        SYNC_PLAYER,
 
         // Update messages
-        UPDATE_VECTOR2_MOVEMENT,
-        PLAYER_SHOOT
+        UPDATE_PLAYER
     };
 
     // All classes that inherit from IMessage
@@ -151,11 +150,11 @@ namespace net {
 
         // Sync messages
         SYNC_MESSAGE,
-        SYNC_VECTOR2_POSITION = SYNC_MESSAGE,
+        SYNC_PLAYER = SYNC_MESSAGE,
 
         // Update messages
         UPDATE_MESSAGE,
-        UPDATE_VECTOR2_MOVEMENT = UPDATE_MESSAGE,
+        UPDATE_PLAYER = UPDATE_MESSAGE
     };
 
     class IMessage {

@@ -13,8 +13,8 @@ namespace net {
     };
 
     struct vector2i : public Serializable {
-        int x = 0;
-        int y = 0;
+        uint32_t x = 0;
+        uint32_t y = 0;
 
         vector2i() = default;
 

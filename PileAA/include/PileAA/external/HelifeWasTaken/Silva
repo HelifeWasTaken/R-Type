@@ -32,6 +32,7 @@
 #include <functional>
 #include <exception>
 #include <string>
+#include <numeric>
 
 #include "sparse_array"
 
@@ -52,9 +53,10 @@ namespace silva
     {
     public:
         using Id = std::size_t;
+        static constexpr Id INVALID_ID = std::numeric_limits<Id>::max();
 
     private:
-        Id id = -1;
+        Id id = INVALID_ID;
 
     public:
         /**
@@ -315,17 +317,33 @@ namespace silva
             {
                 for (const auto &e : _to_kill_entities)
                 {
-                    for (const auto &f : _remove_system_methods)
+                    if (e == Entity::INVALID_ID)
+                        continue;
+                    for (auto &&f : _remove_system_methods)
                         f(*this, entity_t(e));
                     _killed_entities.insert(e);
                 }
                 _to_kill_entities.clear();
+                if (_killed_entities.size() == _entities_count)
+                    _killed_entities.clear();
             }
             for (const system_t &system : _systems)
             {
                 system(*this);
             }
         }
+
+        /**
+         * @brief  Tell if the entity is alive
+         * @retval true if the entity is alive
+         */
+        bool is_alive(entity_t const &e) const
+        {
+            return  e.get_id() != Entity::INVALID_ID &&
+                    e.get_id() < _entities_count && 
+                   _killed_entities.find(e.get_id()) == _killed_entities.end();
+        }
+
         /**
          * @brief  Return the number of entities
          * @retval Number of entities
@@ -347,6 +365,17 @@ namespace silva
             if (comps.non_null(e.get_id()))
                 return comps[e.get_id()].value();
             throw Error("Entity does not have the component");
+        }
+
+        /**
+         * @brief Get an entity from a Component
+         * @param c: The component
+         * @tparam Component: The component
+         */
+        template<typename T>
+        entity_t get_entity(T const &c)
+        {
+            return entity_t(get_components<T>().get_index());
         }
 
         /**

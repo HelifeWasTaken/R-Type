@@ -19,6 +19,8 @@ namespace silva {
         using iterator = typename container_t::iterator;
         using const_iterator = typename container_t::const_iterator;
 
+        static constexpr size_type npos = -1;
+
         /**
          * @brief Construct a new sparse array object
          * @param  size: The size of the array
@@ -178,9 +180,14 @@ namespace silva {
          */
         size_type get_index(value_type const &val) const
         {
-            return (reinterpret_cast<char *>(&val) -
-                    reinterpret_cast<char *>(_data.data())) /
-                   sizeof(value_type);
+            const size_type ptr = reinterpret_cast<const size_type>(&val);
+            const size_type sdata = reinterpret_cast<const size_type>(_data.data());
+            const size_type edata = reinterpret_cast<const size_type>(sdata + _data.size());
+            const std::lldiv_t index = std::lldiv(ptr - sdata, sizeof(value_type));
+
+            if (ptr < sdata || ptr >= edata || index.rem != 0)
+                return npos;
+            return index.quot;
         }
 
         /**

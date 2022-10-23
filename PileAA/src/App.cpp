@@ -33,7 +33,7 @@ bool App::isRunning() const
 bool App::run()
 {
     auto& window = paa::Screen::get();
-    auto& input = paa::InputHandler::get();
+    auto& input = paa::InputHandler::getInstance();
     auto& ecs = paa::EcsInstance::get();
     auto& scene = paa::SceneManager::get();
     auto& batch = paa::BatchRendererInstance::get();
@@ -46,10 +46,9 @@ bool App::run()
     while (isRunning()) {
         Event event;
 
-        input.update(); // TODO: Should it be here?
+        input.update();
         delta.update();
 
-        // TODO: Maybe change this to an if statement instead of a while
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
@@ -61,7 +60,7 @@ bool App::run()
 
             ImGui::SFML::ProcessEvent(event);
 
-            input.handleEvent(event); // TODO: Have a better input manager
+            input.eventUpdate(event);
 
             scene.handleEvent();
         }
@@ -232,7 +231,7 @@ void setup_paa_system(const std::string& configuration_filename)
 {
     spdlog::info("PileAA: Setting up system");
 
-    InputHandler::get();
+    InputHandler::getInstance();
     spdlog::info("PileAA: InputHandler created");
 
     ResourceManagerInstance::get();
@@ -268,13 +267,13 @@ void stop_paa_system()
 {
     spdlog::info("PileAA: Stopping PileAA system");
 
-    InputHandler::release();
+    InputHandler::destroyInstance();
     spdlog::info("PileAA: InputHandler released");
 
     ResourceManagerInstance::release();
     spdlog::info("PileAA: ResourceManager released");
 
-    AnimationRegisterInstance::get();
+    AnimationRegisterInstance::release();
     spdlog::info("PileAA: AnimationRegister released");
 
     EcsInstance::release();

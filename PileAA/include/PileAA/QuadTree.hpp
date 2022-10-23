@@ -7,23 +7,29 @@ namespace paa {
 
 class CollisionBox {
 public:
-    using callback_t = std::function<void(const int other_id)>;
+    using Id = int64_t;
+    using callback_t = std::function<void(const CollisionBox& self, const CollisionBox& other)>;
+
+    static constexpr int64_t INVALID_ID = std::numeric_limits<int64_t>::min();
 
 private:
     const PAA_ENTITY _e;
+    const int64_t _id;
     const callback_t _callback;
     paa::IntRect _r;
-    int _id;
 
 public:
-    CollisionBox(const PAA_ENTITY& e,
-                 const paa::IntRect& r,
+    CollisionBox(const paa::IntRect& r,
                  const callback_t& callback,
-                 int id)
+                 int64_t id=INVALID_ID,
+                 const PAA_ENTITY& e=PAA_ENTITY())
         : _e(e), _r(r), _callback(callback), _id(id)
     {}
 
+    const int64_t& get_id()        const { return _id; }
+    const PAA_ENTITY& get_entity() const { return _e; }
     const paa::IntRect& get_rect() const { return _r; }
+
     int get_x() const { return _r.left; }
     int get_y() const { return _r.top; }
     int get_w() const { return _r.width; }
@@ -37,12 +43,12 @@ public:
     }
 
     void set_position(const paa::Vector2i& pos) { _r.left = pos.x; _r.top = pos.y; }
-    void set_size(const paa::Vector2i& size) { _r.width = size.x; _r.height = size.y; }
+    void set_size(const paa::Vector2i& size)    { _r.width = size.x; _r.height = size.y; }
 
-    int get_id() const { return _id; }
-
-    void collision_callback(const int other_id) { _callback(other_id); }
+    void collision_callback(const CollisionBox& other) { _callback(*this, other); }
 };
+
+using SCollisionBox = std::shared_ptr<paa::CollisionBox>;
 
 class Quadtree {
 public:
@@ -188,7 +194,7 @@ public:
                     continue;
                 if (node_one->collides(*node_two) == true) {
                     spdlog::info("Collision {} entered in collision with collision {}.", node_one->get_id(), node_two->get_id());
-                    node_one->collision_callback(node_two->get_id());
+                    node_one->collision_callback(*node_two);
                 }
             }
         }

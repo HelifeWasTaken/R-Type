@@ -40,13 +40,24 @@ struct Position : public Vec2 {
     HL_AUTO_COMPLETE_CANONICAL_FORM(Position);
 };
 
-struct Depth {
-    int z;
+struct Velocity : public Vec2 {
+    Velocity(const double& x=0, const double& y=0)
+        : Vec2(x, y)
+    {}
+
+    HL_AUTO_COMPLETE_CANONICAL_FORM(Velocity);
 };
 
-struct Id {
-    int id;
+#define PAA_SINGLE_INTEGER_COMPONENT(name, __v) \
+struct name { \
+    int __v; \
+    name(const int& __value=0) : __v(__value) {} \
+    HL_AUTO_COMPLETE_CANONICAL_FORM(name); \
 };
+
+PAA_SINGLE_INTEGER_COMPONENT(Depth, z);
+PAA_SINGLE_INTEGER_COMPONENT(Id, id);
+PAA_SINGLE_INTEGER_COMPONENT(Health, hp);
 
 /**
  * @brief Setup the given ECS registry with the base components needed for any

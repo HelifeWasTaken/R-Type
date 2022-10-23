@@ -86,15 +86,14 @@ private:
 
         // Thoses should be used in feed but are there for
         // completeness and debug
-        RTYPE_SERVER_MAIN_HANDLE_THIS_MESSAGE(rtype::net::message_code::SYNC_VECTOR2_POSITION, {
+        RTYPE_SERVER_MAIN_HANDLE_THIS_MESSAGE(rtype::net::message_code::SYNC_PLAYER, {
             Room *room = this->_roomManager.getRoom(client);
             if (room) {
                 room->main_broadcast(message, client);
             }
         }),
 
-        RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::UPDATE_VECTOR2_MOVEMENT),
-        RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::PLAYER_SHOOT)
+        RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::UPDATE_PLAYER)
     };
 
     std::unordered_map<
@@ -120,24 +119,18 @@ private:
         RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::ROOM_CLIENT_CONNECT),
         RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::ROOM_CLIENT_DISCONNECT),
 
-        RTYPE_SERVER_FEED_HANDLE_THIS_MESSAGE(rtype::net::message_code::SYNC_VECTOR2_POSITION, {
+        RTYPE_SERVER_FEED_HANDLE_THIS_MESSAGE(rtype::net::message_code::SYNC_PLAYER, {
             Room *room = this->_roomManager.getRoom(client);
             if (room) {
                 room->feed_broadcast(message, client);
             }
         }),
-        RTYPE_SERVER_FEED_HANDLE_THIS_MESSAGE(rtype::net::message_code::UPDATE_VECTOR2_MOVEMENT, {
+        RTYPE_SERVER_FEED_HANDLE_THIS_MESSAGE(rtype::net::message_code::UPDATE_PLAYER, {
             Room *room = this->_roomManager.getRoom(client);
             if (room) {
                 room->feed_broadcast(message, client);
             }
         }),
-        RTYPE_SERVER_FEED_HANDLE_THIS_MESSAGE(rtype::net::message_code::PLAYER_SHOOT, {
-            Room *room = this->_roomManager.getRoom(client);
-            if (room) {
-                room->feed_broadcast(message, client);
-            }
-        })
     };
 
     std::unordered_map<

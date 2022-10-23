@@ -42,7 +42,8 @@ hpp2plantuml \
     -i ${PILEAA_PATH}/Types.hpp \
     -i ${PILEAA_PATH}/VectorExtension.hpp \
     \
-    -i ${PILEAA_EXTERNAL_PATH}/Galbar/InputHandler.hpp \
+    -i ${PILEAA_EXTERNAL_PATH}/obscur/InputHandler.hpp \
+    -i ${PILEAA_EXTERNAL_PATH}/obscur/Math.hpp \
     \
     -i ${PILEAA_EXTERNAL_PATH}/HelifeWasTaken/Silva \
     -i ${PILEAA_EXTERNAL_PATH}/HelifeWasTaken/SilvaState \

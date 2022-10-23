@@ -60,7 +60,8 @@ void setup_ecs(hl::silva::registry& r)
         Depth,
         SCollisionBox,
         InputManagement,
-        Controller
+        Controller,
+        Id
     >().add_system(sys_animated_sprite_system)
         .add_system(sys_controller_input_manager_system)
         .add_system(sys_sprite_position_updater)

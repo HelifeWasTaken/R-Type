@@ -8,7 +8,6 @@
 
 #include "RServer/async_queue.hpp"
 #include "RServer/async_automated_sparse_array.hpp"
-#include "RServer/utils.hpp"
 
 namespace rtype {
 namespace net {

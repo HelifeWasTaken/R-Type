@@ -3,9 +3,6 @@
 
 using namespace rtype::net;
 
-#include "RServer/Messages/Types.hpp"
-#include "Bullet.hpp"
-
 static PAA_SCENE_DECL(game_scene) *self = nullptr;
 
 PAA_ENTITY new_player(int id)

@@ -257,7 +257,8 @@ void setup_paa_system(const std::string& configuration_filename)
 
     load_configuration_file(configuration_filename);
 
-    ImGui::SFML::Init(Screen::get());
+    spdlog::info("PileAA: ImGui setup");
+    assert(ImGui::SFML::Init(Screen::get()));
     spdlog::info("PileAA: ImGui created");
 
     spdlog::info("PileAA: system setup complete");

@@ -76,14 +76,8 @@ namespace net {
             return from<T>(data.data(), data.size());
         }
 
-        Serializable(Byte type) : _type(type) {}
         Serializable() = default;
         virtual ~Serializable() = default;
-
-        Byte type() const { return _type; }
-
-    protected:
-        Byte _type = 0xFF;
     };
 
     enum class message_code : Byte {
@@ -111,6 +105,7 @@ namespace net {
 
         // Sync messages
         SYNC_PLAYER,
+        SYNC_SRAND,
 
         // Update messages
         UPDATE_PLAYER
@@ -151,6 +146,7 @@ namespace net {
         // Sync messages
         SYNC_MESSAGE,
         SYNC_PLAYER = SYNC_MESSAGE,
+        SYNC_SRAND = SYNC_MESSAGE,
 
         // Update messages
         UPDATE_MESSAGE,

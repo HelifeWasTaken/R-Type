@@ -2,6 +2,8 @@
 
 #include <vector>
 #include "Types.hpp"
+#include "paa_commands/paa_command_ecs.hpp"
+#include <spdlog/spdlog.h>
 
 namespace paa {
 

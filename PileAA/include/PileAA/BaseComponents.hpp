@@ -2,6 +2,7 @@
 
 #include "AnimatedSprite.hpp"
 #include "external/HelifeWasTaken/Silva"
+#include "QuadTree.hpp"
 
 namespace paa {
 

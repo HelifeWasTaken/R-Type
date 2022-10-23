@@ -178,23 +178,47 @@ namespace silva
                 });
             return register_component<OtherComponents...>();
         }
+
         /**
-         * @brief  Return true if the entity has the component
-         * @retval true if the entity has the component
+         * @brief   Get the component array
+         *          if SILVA_DYNAMIC_REGISTER is defined,
+         *          the component will be registered if not already registered
+         * @retval component_array<Component>
          */
         template <class Component>
         component_array<Component> &get_components()
         {
-            return component_cast<Component>(_components[type_index<Component>()]);
+            try {
+                return component_cast<Component>(_components[type_index<Component>()]);
+            } catch (const std::exception &e) {
+#ifndef SILVA_DYNAMIC_REGISTER
+                throw Error(std::string("Component not registered: \"") + typeid(Component).name() + "\" -> " + e.what());
+#else
+                register_component<Component>();
+                return get_components<Component>();
+#endif
+            }
         }
         /**
-         * @brief  Return true if the entity has the component
-         * @retval true if the entity has the component
+         * @brief  Get the component array (const)
+         *         if SILVA_DYNAMIC_REGISTER is defined,
+         *         the component will be registered if not already registered
+         *         even if this is const (performs a const_cast on the registry)
+         * @retval component_array<Component> const
          */
         template <class Component>
         component_array<Component> const &get_components() const
         {
-            return component_cast<Component>(_components[type_index<Component>()]);
+            try {
+                return component_cast<Component>(_components[type_index<Component>()]);
+            } catch (std::exception const &e) {
+#ifndef SILVA_DYNAMIC_REGISTER
+                throw Error(std::string("Component not registered: \"") + typeid(Component).name() + "\" -> " + e.what());
+#else
+                const_cast<registry *>(this)->register_component<Component>();
+                return get_components<Component>();
+#endif
+            }
         }
         /**
          * @brief  Create a new entity
@@ -365,6 +389,17 @@ namespace silva
             if (comps.non_null(e.get_id()))
                 return comps[e.get_id()].value();
             throw Error("Entity does not have the component");
+        }
+
+        /**
+         * @brief Tells wheter the entity has the component
+         * @param e: The entity
+         * @tparam Component: The component
+         */
+        template<typename T>
+        bool has_component(entity_t const &e)
+        {
+            return get_components<T>().non_null(e.get_id());
         }
 
         /**

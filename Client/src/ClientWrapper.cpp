@@ -23,6 +23,7 @@ namespace game {
             spdlog::error("ClientWrapper::run: tcp({}:{}) or udp({}:{}) "
                             "could not be reached or permission was denied.",
                             host, tcp_port, host, udp_port);
+            client = nullptr;
         }
         return false;
     }

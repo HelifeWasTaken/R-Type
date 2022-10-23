@@ -2,6 +2,7 @@
 
 #include "external/HelifeWasTaken/Silva"
 #include "App.hpp"
+#include "BaseComponents.hpp"
 
 namespace paa {
 
@@ -22,7 +23,7 @@ namespace paa {
         using registry_t = hl::silva::registry;
         using entity_t = hl::silva::Entity;
         using entity_id_t = hl::silva::Entity::Id;
-        using component_t = hl::silva::anonymous_t;
+        using component_t = hl::silva::registry::anonymous_t;
 
     private:
         hl::silva::registry& _registry = EcsInstance::get();
@@ -60,8 +61,8 @@ namespace paa {
          * @brief Get the Id object
          * @return const entity_id_t& 
          */
-        const entity_id_t& getId() const
-        { return _entity; }
+        const entity_id_t getId() const
+        { return _entity.get_id(); }
 
         /**
          * @brief Get the Entity object
@@ -87,7 +88,7 @@ namespace paa {
          * @return T& The component
          */
         template<typename Component>
-        T& getComponent()
+        Component& getComponent()
         { return _registry.get_component<Component>(_entity); }
 
         /**
@@ -97,7 +98,7 @@ namespace paa {
          * @return const T& The component
          */
         template<typename Component>
-        const T& getComponent() const
+        const Component& getComponent() const
         { return _registry.get_component<Component>(_entity); }
 
         /**
@@ -150,7 +151,7 @@ namespace paa {
          *        (This also attach a Depth component of 0 for the z-index)
          * @return The sprite
          */
-        paa::Sprite& attachSprite(const std::string& path)
+        Sprite& attachSprite(const std::string& path)
         {
             PAA_SET_SPRITE(_entity, path);
             return getComponent<paa::Sprite>();
@@ -160,45 +161,50 @@ namespace paa {
          * @brief Attach a position component to the entity
          * @return The position
          */
-        paa::Position& attachPosition(const paa::Position& pos)
+        Position& attachPosition(const Position& pos)
         {
-            return emplaceComponent<paa::Position>(pos);
+            emplaceComponent<Position>(pos);
+            return getComponent<Position>();
         }
 
         /**
          * @brief Attach a position component to the entity
          * @return The Velocity
          */
-        paa::Velocity& attachVelocity(const paa::Velocity& vel)
+        Velocity& attachVelocity(const Velocity& vel)
         {
-            return emplaceComponent<paa::Velocity>(vel);
+            emplaceComponent<Velocity>(vel);
+            return getComponent<Velocity>();
         }
 
         /**
          * @brief Attach a health component to the entity
          * @return The health
          */
-        paa::Health &attachHealth(const paa::Health& health)
+        Health &attachHealth(const Health& health)
         {
-            return emplaceComponent<paa::Health>(health);
+            emplaceComponent<Health>(health);
+            return getComponent<Health>();
         }
 
         /**
          * @brief Attach an id component to the entity
          * @return The id
          */
-        paa::Id& attachId(const paa::Id& id)
+        Id& attachId(const Id& id)
         {
-            return emplaceComponent<paa::Id>(id);
+            emplaceComponent<Id>(id);
+            return getComponent<Id>();
         }
 
         /**
          * @brief Attach a CollisionBox component to the entity
          * @return The collision
          */
-        paa::CollisionBox& attachCollision(const paa::CollisionBox& collision)
+        SCollisionBox& attachCollision(const SCollisionBox& collision)
         {
-            return emplaceComponent<paa::CollisionBox>(collision);
+            emplaceComponent<SCollisionBox>(collision);
+            return getComponent<SCollisionBox>();
         }
     };
 }

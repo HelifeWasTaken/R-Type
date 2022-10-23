@@ -2,8 +2,8 @@
 
 #include "PileAA/meta.hpp"
 
-#include <queue>
 #include <mutex>
+#include <queue>
 
 namespace rtype {
 namespace net {

@@ -6,8 +6,8 @@
 #include "AnimatedSprite.hpp"
 #include "AnimationRegister.hpp"
 #include "BaseComponents.hpp"
-#include "InputHandler.hpp"
 #include "BatchRenderer.hpp"
+#include "InputHandler.hpp"
 #include "ResourceManager.hpp"
 #include "Timer.hpp"
 
@@ -39,7 +39,7 @@ HL_SINGLETON_IMPL(RenderWindow, Screen);
 
 /**
  * @brief Construct a new hl singleton impl object
- * 
+ *
  */
 HL_SINGLETON_IMPL(DeltaTimer, DeltaTimerInstance);
 

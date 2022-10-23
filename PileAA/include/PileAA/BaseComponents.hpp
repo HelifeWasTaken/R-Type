@@ -1,8 +1,8 @@
 #pragma once
 
 #include "AnimatedSprite.hpp"
-#include "external/HelifeWasTaken/Silva"
 #include "QuadTree.hpp"
+#include "external/HelifeWasTaken/Silva"
 
 namespace paa {
 
@@ -10,7 +10,11 @@ struct Vec2 {
     double x;
     double y;
 
-    Vec2(const double& x=0, const double& y=0) : x(x), y(y) {}
+    Vec2(const double& x = 0, const double& y = 0)
+        : x(x)
+        , y(y)
+    {
+    }
     Vec2(const Vec2& other) = default;
 
     ~Vec2() = default;
@@ -34,27 +38,32 @@ struct Vec2 {
 };
 
 struct Position : public Vec2 {
-    Position(const double& x=0, const double& y=0)
+    Position(const double& x = 0, const double& y = 0)
         : Vec2(x, y)
-    {}
+    {
+    }
 
     HL_AUTO_COMPLETE_CANONICAL_FORM(Position);
 };
 
 struct Velocity : public Vec2 {
-    Velocity(const double& x=0, const double& y=0)
+    Velocity(const double& x = 0, const double& y = 0)
         : Vec2(x, y)
-    {}
+    {
+    }
 
     HL_AUTO_COMPLETE_CANONICAL_FORM(Velocity);
 };
 
-#define PAA_SINGLE_INTEGER_COMPONENT(name, __v) \
-struct name { \
-    int __v; \
-    name(const int& __value=0) : __v(__value) {} \
-    HL_AUTO_COMPLETE_CANONICAL_FORM(name); \
-};
+#define PAA_SINGLE_INTEGER_COMPONENT(name, __v)                                \
+    struct name {                                                              \
+        int __v;                                                               \
+        name(const int& __value = 0)                                           \
+            : __v(__value)                                                     \
+        {                                                                      \
+        }                                                                      \
+        HL_AUTO_COMPLETE_CANONICAL_FORM(name);                                 \
+    };
 
 PAA_SINGLE_INTEGER_COMPONENT(Depth, z);
 PAA_SINGLE_INTEGER_COMPONENT(Id, id);

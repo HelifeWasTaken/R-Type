@@ -21,7 +21,7 @@ namespace net {
 
         /**
          * @brief Polls the client for new messages
-         * 
+         *
          * @param message The message to fill
          * @return true If a message was received
          * @return false  If no message was received
@@ -29,8 +29,9 @@ namespace net {
         bool poll(shared_message_t& message);
 
         /**
-         * @brief Tells whether if a service is down, the server should be restarted
-         * 
+         * @brief Tells whether if a service is down, the server should be
+         * restarted
+         *
          * @return true If the client is stopped
          */
         bool stopped() const;
@@ -41,7 +42,7 @@ namespace net {
     protected:
         /**
          * @brief Adds an event to the queue
-         * 
+         *
          * @param message The message to add
          */
         void add_event(shared_message_t message);

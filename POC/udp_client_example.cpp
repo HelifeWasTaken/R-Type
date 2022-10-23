@@ -1,5 +1,5 @@
-#include "poc.hpp"
 #include "RServer/Client/Client.hpp"
+#include "poc.hpp"
 #include <iostream>
 
 void poc_udp_client_example(void)
@@ -10,12 +10,8 @@ void poc_udp_client_example(void)
     while (true) {
         if (client.tcp().is_connected()) {
 
-            client.udp().send(
-                rtype::net::udp_server::new_message(
-                    0,
-                    rtype::net::FeedInitRequest(0, 42)
-                )
-            );
+            client.udp().send(rtype::net::udp_server::new_message(
+                0, rtype::net::FeedInitRequest(0, 42)));
 
             while (client.udp().poll(s)) {
                 std::cout << "Received: ";

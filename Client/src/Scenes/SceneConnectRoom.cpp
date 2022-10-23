@@ -3,9 +3,9 @@
 
 using namespace rtype::net;
 
-static PAA_SCENE_DECL(connect_room) *self = nullptr;
+static PAA_SCENE_DECL(connect_room) * self = nullptr;
 
-static void check_connect_room_reply(shared_message_t &msg)
+static void check_connect_room_reply(shared_message_t& msg)
 {
     auto rep = parse_message<RequestConnectRoomReply>(msg.get());
 
@@ -13,7 +13,8 @@ static void check_connect_room_reply(shared_message_t &msg)
     // failed to parse message or if player id is invalid
     if (!rep) {
         spdlog::error("Client: Failed to parse CONNECT_ROOM_REPLY message");
-        self->text->setText("Failed to connect to room invalid packet received from server");
+        self->text->setText(
+            "Failed to connect to room invalid packet received from server");
     } else if (rep->playerID() == RTYPE_INVALID_PLAYER_ID) {
         spdlog::error("Client: Failed to connect to room");
         self->text->setText("The room is full or does not exist");
@@ -37,7 +38,8 @@ static void manage_server_events()
         check_connect_room_reply(msg);
         break;
     default:
-        spdlog::info("Client connect_room: Received message of type {}", (int)msg->code());
+        spdlog::info("Client connect_room: Received message of type {}",
+            (int)msg->code());
         break;
     }
 }

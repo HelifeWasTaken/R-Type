@@ -24,29 +24,32 @@ namespace net {
 
         /**
          * @brief Sends a message to the server (async)
-         * 
+         *
          * @param message The message to send
-         * @param size The size of the message (if -1 size is tcp_buffer_t::size)
+         * @param size The size of the message (if -1 size is
+         * tcp_buffer_t::size)
          */
-        void send(boost::shared_ptr<tcp_buffer_t> message, BufferSizeType size = -1);
+        void send(
+            boost::shared_ptr<tcp_buffer_t> message, BufferSizeType size = -1);
 
         /**
          * @brief Sends a message to the server (async)
          * @param message The message to send
-         * @param size The size of the message (if -1 size is tcp_buffer_t::size)
+         * @param size The size of the message (if -1 size is
+         * tcp_buffer_t::size)
          */
         void send(const tcp_buffer_t& message, BufferSizeType size = -1);
 
         /**
          * @brief Sends a message to the server (async)
-         * 
+         *
          * @param message The message to send
          */
         void send(const IMessage& message);
 
         /**
          * @brief Tells you whether the client is sync with the server
-         * 
+         *
          */
         bool is_connected() const;
 
@@ -61,15 +64,14 @@ namespace net {
         ClientID id() const;
 
     private:
-
         /**
          * @brief Receives a message from the server (async)
          */
         void receive();
 
         /**
-         * @brief Gets the last event and parses it may chose to not add the event
-         * if the server can handle it itself
+         * @brief Gets the last event and parses it may chose to not add the
+         * event if the server can handle it itself
          */
         void _add_event(shared_message_t message);
 

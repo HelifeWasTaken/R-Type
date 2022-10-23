@@ -3,7 +3,7 @@
 
 using namespace rtype::net;
 
-static PAA_SCENE_DECL(game_scene) *self = nullptr;
+static PAA_SCENE_DECL(game_scene) * self = nullptr;
 
 PAA_ENTITY new_player(int id)
 {
@@ -24,12 +24,9 @@ PAA_START_CPP(game_scene)
     }
 }
 
-
 PAA_UPDATE_CPP(game_scene)
 {
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
 }
 
-PAA_EVENTS_CPP(game_scene)
-{
-}
+PAA_EVENTS_CPP(game_scene) { }

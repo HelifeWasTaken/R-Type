@@ -1,6 +1,6 @@
 #pragma once
-#include "PileAA/external/nlohmann/json.hpp"
 #include "PileAA/ResourceManager.hpp"
+#include "PileAA/external/nlohmann/json.hpp"
 #include <SFML/Graphics.hpp>
 #include <filesystem>
 #include <fstream>
@@ -35,10 +35,10 @@ public:
     void printCollisionData(std::ostream& os, const BoxCollision& box) const
     {
         os << "x:\t" << box.getX() << "\n"
-                  << "y:\t" << box.getY() << "\n"
-                  << "width:\t" << box.getWidth() << "\n"
-                  << "height:\t" << box.getHeight() << "\n"
-                  << "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓\n";
+           << "y:\t" << box.getY() << "\n"
+           << "width:\t" << box.getWidth() << "\n"
+           << "height:\t" << box.getHeight() << "\n"
+           << "▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓\n";
     }
     /**
      * @brief Get the X object
@@ -76,7 +76,7 @@ public:
         nlohmann::json properties;
 
         EffectZoneData(BoxCollision box, std::string type,
-                        nlohmann::json properties=nlohmann::json())
+            nlohmann::json properties = nlohmann::json())
             : box(box)
             , type(type)
             , properties(properties)
@@ -100,7 +100,7 @@ public:
     }
 
     void addEffect(BoxCollision box, std::string type,
-                    nlohmann::json properties=nlohmann::json())
+        nlohmann::json properties = nlohmann::json())
     {
         _effects.push_back(std::unique_ptr<EffectZoneData>(
             new EffectZoneData(box, type, properties)));
@@ -115,7 +115,10 @@ public:
      * @return std::vector<std::unique_ptr<EffectZoneData>>&: vector of
      * EffectZoneData
      */
-    std::vector<std::unique_ptr<EffectZoneData>>& getEffects() { return (_effects); }
+    std::vector<std::unique_ptr<EffectZoneData>>& getEffects()
+    {
+        return (_effects);
+    }
 };
 
 class Wave {
@@ -140,9 +143,10 @@ public:
         _effects.push_back(std::unique_ptr<WaveData>(data));
     }
 
-    void addWaveData(std::string enemy_type, uint64_t enemy_id, float x, float y)
+    void addWaveData(
+        std::string enemy_type, uint64_t enemy_id, float x, float y)
     {
-        addWaveData(new WaveData{enemy_type, enemy_id, x, y});
+        addWaveData(new WaveData { enemy_type, enemy_id, x, y });
     }
 
     // TODO
@@ -191,7 +195,7 @@ public:
 
 class Map {
 public:
-    using BackgroundList = std::vector<sf::Image *>;
+    using BackgroundList = std::vector<sf::Image*>;
     using CollisionList = std::vector<std::shared_ptr<BoxCollision>>;
 
 private:
@@ -221,24 +225,24 @@ private:
             if (layer["name"] == "collisions") {
                 for (const auto& j : layer["objects"]) {
                     this->_map_collisions.push_back(
-                        std::make_shared<BoxCollision>(j["x"], j["y"],
-                            j["width"], j["height"])
-                    );
+                        std::make_shared<BoxCollision>(
+                            j["x"], j["y"], j["width"], j["height"]));
                 }
             } else if (layer["name"] == "EffectZones") {
                 for (const auto& j : layer["objects"]) {
                     nlohmann::json properties = j.find("properties") != j.end()
-                                                    ? j["properties"]
-                                                    : nlohmann::json();
+                        ? j["properties"]
+                        : nlohmann::json();
                     _zones.addEffect(
-                            BoxCollision(j["x"], j["y"], j["width"], j["height"]),
-                            j["type"], properties);
+                        BoxCollision(j["x"], j["y"], j["width"], j["height"]),
+                        j["type"], properties);
                 }
             } else if (layer["type"] == "imagelayer") {
                 paa::ResourceManagerInstance::get().load<sf::Image>(
                     layer["image"], layer["name"]);
-                auto& image = paa::ResourceManagerInstance::get().get<sf::Image>(
-                    layer["name"]);
+                auto& image
+                    = paa::ResourceManagerInstance::get().get<sf::Image>(
+                        layer["name"]);
                 _images.push_back(&image);
             }
 
@@ -250,10 +254,7 @@ private:
                         continue;
                     std::unique_ptr<Wave> wave = std::make_unique<Wave>();
                     for (const auto& j : layers["objects"]) {
-                        wave->addWaveData(
-                            j["type"], j["id"],
-                            j["x"], j["y"]
-                        );
+                        wave->addWaveData(j["type"], j["id"], j["x"], j["y"]);
                     }
                     _waves.addWave(zone->properties["value"], std::move(wave));
                 }
@@ -267,18 +268,11 @@ public:
      * @param  filepath: The path to the file
      * @retval None
      */
-    void loadMap(const std::string& filepath)
-    {
-        parseEffects(filepath);
-    }
+    void loadMap(const std::string& filepath) { parseEffects(filepath); }
 
     /**
      * @brief  Get the std::vector of the parsed map
      * @retval std::vector<BoxCollision*>: The vector of the parsed map
      */
-    const CollisionList& getMapParsed()
-    {
-        return (_map_collisions);
-    }
-
+    const CollisionList& getMapParsed() { return (_map_collisions); }
 };

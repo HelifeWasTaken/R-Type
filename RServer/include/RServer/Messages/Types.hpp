@@ -1,9 +1,9 @@
 #pragma once
 
+#include "PileAA/meta.hpp"
+#include "RServer/Messages/Messages.hpp"
 #include <cstring>
 #include <vector>
-#include "RServer/Messages/Messages.hpp"
-#include "PileAA/meta.hpp"
 
 namespace rtype {
 namespace net {
@@ -15,22 +15,23 @@ namespace net {
         vector2i() = default;
 
         vector2i(int x, int y)
-            : x(x) , y(y)
-        {}
+            : x(x)
+            , y(y)
+        {
+        }
 
         vector2i(const vector2i& other)
-            : x(other.x) , y(other.y)
-        {}
+            : x(other.x)
+            , y(other.y)
+        {
+        }
 
         vector2i(const std::vector<uint8_t>& data)
         {
             from(data.data(), data.size());
         }
 
-        vector2i(const uint8_t *data, const size_t size)
-        {
-            from(data, size);
-        }
+        vector2i(const uint8_t* data, const size_t size) { from(data, size); }
 
         vector2i& operator=(const vector2i& other) = default;
 
@@ -41,7 +42,7 @@ namespace net {
             return s.data;
         }
 
-        void from(const uint8_t *data, const size_t size) override
+        void from(const uint8_t* data, const size_t size) override
         {
             Serializer s(data, size);
             s >> x >> y;
@@ -63,21 +64,20 @@ namespace net {
 
         srand_sync()
             : seed(std::time(nullptr))
-        {}
+        {
+        }
 
         srand_sync(int32_t seed)
             : seed(seed)
-        {}
+        {
+        }
 
         srand_sync(const std::vector<uint8_t>& data)
         {
             from(data.data(), data.size());
         }
 
-        srand_sync(const uint8_t *data, const size_t size)
-        {
-            from(data, size);
-        }
+        srand_sync(const uint8_t* data, const size_t size) { from(data, size); }
 
         std::vector<uint8_t> serialize() const override
         {
@@ -86,7 +86,7 @@ namespace net {
             return s.data;
         }
 
-        void from(const uint8_t *data, const size_t size) override
+        void from(const uint8_t* data, const size_t size) override
         {
             Serializer s(data, size);
             s >> seed;

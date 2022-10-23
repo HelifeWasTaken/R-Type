@@ -1,16 +1,17 @@
 #pragma once
 
-#include <vector>
 #include "Types.hpp"
 #include "paa_commands/paa_command_ecs.hpp"
 #include <spdlog/spdlog.h>
+#include <vector>
 
 namespace paa {
 
 class CollisionBox {
 public:
     using Id = int64_t;
-    using callback_t = std::function<void(const CollisionBox& self, const CollisionBox& other)>;
+    using callback_t = std::function<void(
+        const CollisionBox& self, const CollisionBox& other)>;
 
     static constexpr int64_t INVALID_ID = std::numeric_limits<int64_t>::min();
 
@@ -21,14 +22,16 @@ private:
     paa::IntRect _r;
 
 public:
-    CollisionBox(const paa::IntRect& r,
-                 const callback_t& callback,
-                 int64_t id=INVALID_ID,
-                 const PAA_ENTITY& e=PAA_ENTITY())
-        : _e(e), _r(r), _callback(callback), _id(id)
-    {}
+    CollisionBox(const paa::IntRect& r, const callback_t& callback,
+        int64_t id = INVALID_ID, const PAA_ENTITY& e = PAA_ENTITY())
+        : _e(e)
+        , _r(r)
+        , _callback(callback)
+        , _id(id)
+    {
+    }
 
-    const int64_t& get_id()        const { return _id; }
+    const int64_t& get_id() const { return _id; }
     const PAA_ENTITY& get_entity() const { return _e; }
     const paa::IntRect& get_rect() const { return _r; }
 
@@ -37,24 +40,36 @@ public:
     int get_w() const { return _r.width; }
     int get_h() const { return _r.height; }
 
-    bool collides(const CollisionBox& box) const {
-        return this->get_x() < box.get_x() + box.get_w() &&
-               this->get_x() + this->get_w() > box.get_x() &&
-               this->get_y() < box.get_y() + box.get_h() &&
-               this->get_h() + this->get_y() > box.get_y();
+    bool collides(const CollisionBox& box) const
+    {
+        return this->get_x() < box.get_x() + box.get_w()
+            && this->get_x() + this->get_w() > box.get_x()
+            && this->get_y() < box.get_y() + box.get_h()
+            && this->get_h() + this->get_y() > box.get_y();
     }
 
-    void set_position(const paa::Vector2i& pos) { _r.left = pos.x; _r.top = pos.y; }
-    void set_size(const paa::Vector2i& size)    { _r.width = size.x; _r.height = size.y; }
+    void set_position(const paa::Vector2i& pos)
+    {
+        _r.left = pos.x;
+        _r.top = pos.y;
+    }
+    void set_size(const paa::Vector2i& size)
+    {
+        _r.width = size.x;
+        _r.height = size.y;
+    }
 
-    void collision_callback(const CollisionBox& other) { _callback(*this, other); }
+    void collision_callback(const CollisionBox& other)
+    {
+        _callback(*this, other);
+    }
 };
 
 using SCollisionBox = std::shared_ptr<paa::CollisionBox>;
 
 class Quadtree {
 public:
-    using collision_t = std::vector<CollisionBox *>;
+    using collision_t = std::vector<CollisionBox*>;
     static constexpr int kQuadtreeNodeCapacity = 5;
 
     /**
@@ -65,7 +80,8 @@ public:
      */
     Quadtree(const paa::IntRect& rect)
         : _rect(rect)
-    {}
+    {
+    }
 
     /**
      * @brief Construct a new Quadtree object
@@ -75,7 +91,8 @@ public:
      */
     Quadtree(const int& x, const int& y, const int& w, const int& h)
         : _rect(paa::IntRect(x, y, w, h))
-    {}
+    {
+    }
 
     /**
      * @brief Destroy the Quadtree object
@@ -124,11 +141,15 @@ public:
      */
     bool insert_collision(CollisionBox* collision)
     {
-        const bool inter_left = collision->get_x() >= get_rect().left - collision->get_rect().width / 2;
-        const bool inter_right = collision->get_x() <= get_rect().left + get_rect().width + collision->get_rect().width / 2;
+        const bool inter_left = collision->get_x()
+            >= get_rect().left - collision->get_rect().width / 2;
+        const bool inter_right = collision->get_x() <= get_rect().left
+                + get_rect().width + collision->get_rect().width / 2;
         const bool inter_horizontal = inter_left && inter_right;
-        const bool inter_top = collision->get_y() >= get_rect().top - collision->get_rect().width / 2;
-        const bool inter_bottom = collision->get_y() <= get_rect().top + get_rect().height + collision->get_rect().width / 2;
+        const bool inter_top = collision->get_y()
+            >= get_rect().top - collision->get_rect().width / 2;
+        const bool inter_bottom = collision->get_y() <= get_rect().top
+                + get_rect().height + collision->get_rect().width / 2;
         const bool inter_vertical = inter_top && inter_bottom;
         const bool inter = inter_horizontal && inter_vertical;
 
@@ -158,10 +179,14 @@ public:
     {
         const int new_width = get_rect().width / 2;
         const int new_height = get_rect().height / 2;
-        _northWest = new Quadtree(get_rect().left, get_rect().top, new_width, new_height);
-        _northEast = new Quadtree(get_rect().left + new_width, get_rect().top, new_width, new_height);
-        _southWest = new Quadtree(get_rect().left, get_rect().top + new_height, new_width, new_height);
-        _southEast = new Quadtree(get_rect().left + new_width, get_rect().top + new_height, new_width, new_height);
+        _northWest = new Quadtree(
+            get_rect().left, get_rect().top, new_width, new_height);
+        _northEast = new Quadtree(
+            get_rect().left + new_width, get_rect().top, new_width, new_height);
+        _southWest = new Quadtree(get_rect().left, get_rect().top + new_height,
+            new_width, new_height);
+        _southEast = new Quadtree(get_rect().left + new_width,
+            get_rect().top + new_height, new_width, new_height);
         for (auto& node : root->_collisions) {
             _northWest->insert_collision(node);
             _northEast->insert_collision(node);
@@ -195,7 +220,9 @@ public:
                 if (node_one == node_two)
                     continue;
                 if (node_one->collides(*node_two) == true) {
-                    spdlog::info("Collision {} entered in collision with collision {}.", node_one->get_id(), node_two->get_id());
+                    spdlog::info(
+                        "Collision {} entered in collision with collision {}.",
+                        node_one->get_id(), node_two->get_id());
                     node_one->collision_callback(*node_two);
                 }
             }

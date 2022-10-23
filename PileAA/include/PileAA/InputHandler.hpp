@@ -1,7 +1,7 @@
 #pragma once
 
-#include "external/obscur/InputHandler.hpp"
 #include "Types.hpp"
+#include "external/obscur/InputHandler.hpp"
 #include "meta.hpp"
 #include <memory>
 

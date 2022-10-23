@@ -5,13 +5,13 @@
 namespace rtype {
 namespace net {
 
-    CreateRoomReply::CreateRoomReply(const std::string& token) :
-                                        _token(token),
-                                        Message(message_code::CREATE_ROOM_REPLY)
+    CreateRoomReply::CreateRoomReply(const std::string& token)
+        : _token(token)
+        , Message(message_code::CREATE_ROOM_REPLY)
     {
     }
 
-    void CreateRoomReply::from(const Byte *data, const BufferSizeType size)
+    void CreateRoomReply::from(const Byte* data, const BufferSizeType size)
     {
         Serializer s(data, size);
 
@@ -37,10 +37,7 @@ namespace net {
         return sizeof(_message_code) + _token.size();
     }
 
-    const std::string& CreateRoomReply::token() const
-    {
-        return _token;
-    }
+    const std::string& CreateRoomReply::token() const { return _token; }
 
 }
 }

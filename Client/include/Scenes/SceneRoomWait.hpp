@@ -2,7 +2,8 @@
 
 #include "ClientScenes.hpp"
 
-PAA_SCENE(waiting_room) {
+PAA_SCENE(waiting_room)
+{
 
     PAA_START(waiting_room);
     PAA_END(waiting_room) = default;
@@ -11,5 +12,6 @@ PAA_SCENE(waiting_room) {
 
     paa::Gui gui;
 
-    paa::shared_gui_text server_log = paa::GuiFactory::new_gui_text("No log from server yet");
+    paa::shared_gui_text server_log
+        = paa::GuiFactory::new_gui_text("No log from server yet");
 };

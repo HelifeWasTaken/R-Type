@@ -182,7 +182,8 @@ static inline void load_configuration_file_window(nlohmann::json& json)
     auto& screen = Screen::get();
 
     if (json.find("window") == json.end()) {
-        spdlog::info("PileAA: No window configuration found using default (800,600) 120fps");
+        spdlog::info("PileAA: No window configuration found using default "
+                     "(800,600) 120fps");
         screen.create(VideoMode(800, 600), "PileAA");
         screen.setFramerateLimit(120);
         DeltaTimerInstance::get().setFpsTarget(120);
@@ -197,12 +198,12 @@ static inline void load_configuration_file_window(nlohmann::json& json)
         screen.create(VideoMode(width, height), title);
         screen.setFramerateLimit(fps);
         DeltaTimerInstance::get().setFpsTarget(fps);
-        spdlog::info("PileAA: Window created: {} {}x{} at {}fps", title, width, height, fps);
+        spdlog::info("PileAA: Window created: {} {}x{} at {}fps", title, width,
+            height, fps);
     } catch (const nlohmann::json::exception& e) {
         throw App::Error(
             std::string("window: load_configuration_file - Invalid json file: ")
-            + e.what()
-        );
+            + e.what());
     }
 }
 

@@ -14,7 +14,7 @@ namespace net {
         return sizeof(_message_code) + sizeof(_yes);
     }
 
-    void YesNoMarker::from(const Byte *data, BufferSizeType size)
+    void YesNoMarker::from(const Byte* data, BufferSizeType size)
     {
         Serializer s(data, size);
         s >> _message_code >> _yes;
@@ -28,9 +28,6 @@ namespace net {
         return s.data;
     }
 
-    Bool YesNoMarker::yes() const
-    {
-        return _yes;
-    }
+    Bool YesNoMarker::yes() const { return _yes; }
 }
 }

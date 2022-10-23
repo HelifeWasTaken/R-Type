@@ -3,13 +3,14 @@
 namespace rtype {
 namespace net {
 
-    RequestConnectRoomReply::RequestConnectRoomReply(PlayerID playerID) :
-                                    Message(message_code::CONNECT_ROOM_REQ_REP),
-                                    _playerID(playerID)
+    RequestConnectRoomReply::RequestConnectRoomReply(PlayerID playerID)
+        : Message(message_code::CONNECT_ROOM_REQ_REP)
+        , _playerID(playerID)
     {
     }
 
-    void RequestConnectRoomReply::from(const Byte *data, const BufferSizeType size)
+    void RequestConnectRoomReply::from(
+        const Byte* data, const BufferSizeType size)
     {
         Serializer s(data, size);
         s >> _message_code >> _playerID;
@@ -27,10 +28,7 @@ namespace net {
         return sizeof(_message_code) + sizeof(_playerID);
     }
 
-    PlayerID RequestConnectRoomReply::playerID() const
-    {
-        return _playerID;
-    }
+    PlayerID RequestConnectRoomReply::playerID() const { return _playerID; }
 
 }
 }

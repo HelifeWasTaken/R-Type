@@ -1,5 +1,5 @@
-#include "poc.hpp"
 #include "PileAA/InputHandler.hpp"
+#include "poc.hpp"
 #include <iostream>
 
 void poc_joystick_example(void)
@@ -8,6 +8,7 @@ void poc_joystick_example(void)
 
     while (true) {
         // std::cout << joystick << std::endl;
-        // std::cout << "Joystick " << joystick.getId() << " is connected: " << joystick.isConnected() << std::endl;
+        // std::cout << "Joystick " << joystick.getId() << " is connected: " <<
+        // joystick.isConnected() << std::endl;
     }
 }

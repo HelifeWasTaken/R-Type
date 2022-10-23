@@ -4,7 +4,7 @@
 
 using namespace rtype::net;
 
-static PAA_SCENE_DECL(client_connect) *self = nullptr;
+static PAA_SCENE_DECL(client_connect) * self = nullptr;
 
 static bool connect_server_if_not_connected()
 {
@@ -15,7 +15,8 @@ static bool connect_server_if_not_connected()
     auto& udp = g_game.service.udp();
     shared_message_t msg;
 
-    while (tcp.poll(msg) || udp.poll(msg)); // Auto manage event polling and connection
+    while (tcp.poll(msg) || udp.poll(msg))
+        ; // Auto manage event polling and connection
 
     if (tcp.is_connected()) {
         if (!udp.is_connected() && self->timer.isFinished()) {
@@ -26,7 +27,8 @@ static bool connect_server_if_not_connected()
         return true;
     } else if (self->timer.isFinished()) {
         self->timer.restart();
-        g_game.service.run(); // Restart the service so the tcp send another CONN_INIT request
+        g_game.service.run(); // Restart the service so the tcp send another
+                              // CONN_INIT request
         return false;
     }
     return false;

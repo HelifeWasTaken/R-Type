@@ -267,6 +267,7 @@ public:
         _syncTimer.setTarget(RTYPE_PLAYER_SYNC_RATE);
         _frameTimer.setTarget(RTYPE_PLAYER_FRAME_RATE);
         _original_scale = _spriteRef->getScale();
+        use_frame();
     }
 
     ~APlayer() = default;
@@ -278,8 +279,8 @@ public:
         _controllerRef->simulateAxisMovement(paa::Joystick::Axis::Y, (info.get_move_up() - info.get_move_down()) * 100.f);
         _healthRef.hp = info.get_hp();
 
-        info.get_shoot() ? _controllerRef->simulateButtonPress(0) :
-                           _controllerRef->simulateButtonRelease(0);
+        info.get_shoot() ? _controllerRef->simulateButtonPress(RTYPE_SHOOT_BUTTON) :
+                           _controllerRef->simulateButtonIdle(RTYPE_SHOOT_BUTTON);
     }
 
     void update_shoot() {
@@ -318,26 +319,27 @@ public:
         }
     }
 
+    void use_frame() {
+        _spriteRef->useAnimation(_y_frame);
+    }
+
     void update_position()
     {
         auto axis = _controllerRef->getAxisXY();
+        const double cspeed = RTYPE_PLAYER_SPEED * g_game.service.deltaTime();
 
-        _positionRef.x += axis.x() > 0 ? RTYPE_PLAYER_SPEED * PAA_DELTA_TIMER.getDeltaTime() : 0;
-        _positionRef.x -= axis.x() < 0 ? RTYPE_PLAYER_SPEED * PAA_DELTA_TIMER.getDeltaTime() : 0;
-        _positionRef.y += axis.y() > 0 ? RTYPE_PLAYER_SPEED * PAA_DELTA_TIMER.getDeltaTime() : 0;
-        _positionRef.y -= axis.y() < 0 ? RTYPE_PLAYER_SPEED * PAA_DELTA_TIMER.getDeltaTime() : 0;
+        _positionRef.x += axis.x() > 0 ? cspeed : 0;
+        _positionRef.x -= axis.x() < 0 ? cspeed : 0;
+        _positionRef.y += axis.y() > 0 ? cspeed : 0;
+        _positionRef.y -= axis.y() < 0 ? cspeed : 0;
 
         if (_frameTimer.isFinished()) {
-            if (axis.y()) {
-                axis.y() > 0 ? ++_y_frame : --_y_frame;
-            } else {
-                --_y_frame;
-            }
+            axis.y() < 0 ? ++_y_frame : --_y_frame;
         }
         _y_frame = std::clamp(_y_frame, 0, RTYPE_PLAYER_Y_FRAMES - 1);
 
         // TODO: Change sprite texture based on input
-        // _spriteRef->useAnimation("frame_" + std::to_string(_y_frame));
+        // use_frame();
     }
 
     void update()
@@ -359,13 +361,14 @@ public:
         }
 
         const bool hurtable_object = other.get_id() == CollisionType::ENEMY_BULLET
-                                    || other.get_id() == CollisionType::ENEMY;
+                                  || other.get_id() == CollisionType::ENEMY;
         if (hurtable_object && !_is_hurt) {
             // Only local player can be hurt
             // Damage is calculated on server
             if (_is_local) 
                 _healthRef.hp -= 1;
             _hurtTimer.restart();
+            _is_hurt = true;
         }
     }
 
@@ -395,18 +398,12 @@ public:
         const std::string texture = "player" + std::to_string(pid);
 
         paa::DynamicEntity entity = PAA_NEW_ENTITY();
+        const paa::Id &id = entity.attachId(paa::Id{pid});
         paa::Position &position = entity.attachPosition(sposition);
         paa::Health &health = entity.attachHealth(paa::Health{RTYPE_PLAYER_MAX_HEALTH});
         paa::Sprite &sprite = entity.attachSprite(texture);
-        paa::Id &id = entity.attachId(paa::Id{pid});
 
         sprite->setPosition(position.x, position.y);
-        sprite->useAnimation("frame_0");
-
-        paa::FloatRect g_bounds(sprite->getGlobalBounds());
-        paa::IntRect irect(g_bounds.left, g_bounds.top, g_bounds.width, g_bounds.height);
-
-        entity.attachCollision(CollisionFactory::makePlayerCollision(irect, entity.getId()));
 
         Player player = Player(new APlayer(entity.getEntity(),
                                             id,
@@ -415,6 +412,13 @@ public:
                                             sprite,
                                             controller,
                                             pid == g_game.id));
+
+        // After creating the player, the sprite frame should be updated
+        // So that the player has a the correct collision box
+        const paa::FloatRect g_bounds(sprite->getGlobalBounds());
+        const paa::IntRect irect(g_bounds.left, g_bounds.top, g_bounds.width, g_bounds.height);
+        entity.attachCollision(CollisionFactory::makePlayerCollision(irect, entity.getId()));
+
         entity.insertComponent(std::move(player));
     }
 };

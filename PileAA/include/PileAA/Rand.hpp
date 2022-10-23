@@ -2,7 +2,7 @@ namespace paa {
 
     class Random {
     private:
-        static inline int _seed = 0;
+        static inline int _seed = std::time(nullptr);
 
     public:
         static void srand(const int& seed) {

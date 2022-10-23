@@ -36,6 +36,16 @@
 
 #include "sparse_array"
 
+#ifndef SILVA_PRETTY_FUNCTION
+    #if defined(_MSC_VER)
+        #define SILVA_PRETTY_FUNCTION __FUNCSIG__
+    #elif defined(__GNUC__) || defined(__GNUG__) || defined(__clang__)
+        #define SILVA_PRETTY_FUNCTION __PRETTY_FUNCTION__
+    #else
+        #define SILVA_PRETTY_FUNCTION __func__ " (pretty function not supported)"
+    #endif
+#endif
+
 namespace hl
 {
 namespace silva
@@ -192,7 +202,7 @@ namespace silva
                 return component_cast<Component>(_components[type_index<Component>()]);
             } catch (const std::exception &e) {
 #ifndef SILVA_DYNAMIC_REGISTER
-                throw Error(std::string("Component not registered: \"") + typeid(Component).name() + "\" -> " + e.what());
+                throw Error(std::string("Component not registered: \"") + SILVA_PRETTY_FUNCTION + "\" -> " + e.what());
 #else
                 register_component<Component>();
                 return get_components<Component>();
@@ -213,7 +223,7 @@ namespace silva
                 return component_cast<Component>(_components[type_index<Component>()]);
             } catch (std::exception const &e) {
 #ifndef SILVA_DYNAMIC_REGISTER
-                throw Error(std::string("Component not registered: \"") + typeid(Component).name() + "\" -> " + e.what());
+                throw Error(std::string("Component not registered: \"") + SILVA_PRETTY_FUNCTION + "\" -> " + e.what());
 #else
                 const_cast<registry *>(this)->register_component<Component>();
                 return get_components<Component>();

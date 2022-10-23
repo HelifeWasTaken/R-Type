@@ -320,13 +320,13 @@ public:
     }
 
     void use_frame() {
-        _spriteRef->useAnimation(_y_frame);
+        // _spriteRef->useAnimation(std::string("frame_") + std::to_string(_y_frame));
     }
 
     void update_position()
     {
         auto axis = _controllerRef->getAxisXY();
-        const double cspeed = RTYPE_PLAYER_SPEED * g_game.service.deltaTime();
+        const double cspeed = RTYPE_PLAYER_SPEED * PAA_DELTA_TIMER.getDeltaTime();
 
         _positionRef.x += axis.x() > 0 ? cspeed : 0;
         _positionRef.x -= axis.x() < 0 ? cspeed : 0;

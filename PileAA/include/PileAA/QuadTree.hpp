@@ -4,6 +4,7 @@
 #include "paa_commands/paa_command_ecs.hpp"
 #include <spdlog/spdlog.h>
 #include <vector>
+#include "external/HelifeWasTaken/Silva"
 
 namespace paa {
 

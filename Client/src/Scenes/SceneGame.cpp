@@ -1,25 +1,34 @@
 
 #include "ClientScenes.hpp"
+#include "Player.hpp"
 
 using namespace rtype::net;
 
 static PAA_SCENE_DECL(game_scene) * self = nullptr;
 
-PAA_ENTITY new_player(int id)
+static paa::Controller new_keyboard()
 {
-    PAA_ENTITY e = PAA_NEW_ENTITY();
-    paa::AnimatedSprite& s = PAA_SET_SPRITE(e, "spaceship");
+    paa::ControllerKeyboard *keyboard = new paa::ControllerKeyboard();
 
-    s.setPosition(rand() % 500, rand() % 500);
-    s.useAnimation("player" + std::to_string(id + 1));
-    return e;
+    keyboard->setAxis(paa::Joystick::Axis::X, paa::Keyboard::Key::Left, paa::Keyboard::Key::Right);
+    keyboard->setAxis(paa::Joystick::Axis::Y, paa::Keyboard::Key::Up, paa::Keyboard::Key::Down);
+    keyboard->setKey(RTYPE_SHOOT_BUTTON, paa::Keyboard::Key::Space);
+    return paa::Controller(keyboard);
+}
+
+static paa::Controller new_simulated_controller()
+{
+    paa::SimulatedController *controller = new paa::SimulatedController();
+    return paa::Controller(controller);
 }
 
 PAA_START_CPP(game_scene)
 {
+
     for (int i = 0; i < RTYPE_PLAYER_COUNT; i++) {
         if (g_game.connected_players[i]) {
-            g_game.players_entities[i] = new_player(i);
+            paa::Controller c = i == g_game.id ? new_keyboard() : new_simulated_controller();
+            g_game.players_entities[i] = rtype::game::PlayerFactory::addPlayer(i, c);
         }
     }
 }

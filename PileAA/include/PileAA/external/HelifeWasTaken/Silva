@@ -407,7 +407,7 @@ namespace silva {
             auto& comps = get_components<Component>();
             if (comps.non_null(e.get_id()))
                 return comps[e.get_id()].value();
-            throw Error("Entity does not have the component");
+            throw Error(std::string("Entity does not have the component: ") + SILVA_PRETTY_FUNCTION);
         }
 
         /**

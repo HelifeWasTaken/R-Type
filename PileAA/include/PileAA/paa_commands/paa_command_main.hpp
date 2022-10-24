@@ -16,16 +16,11 @@
 /**
  * @brief Main loop of the game
  */
-#define PAA_PROGRAM_START(baseScene, resources_file, retry)                    \
+#define PAA_PROGRAM_START(baseScene, resources_file)                           \
     int main()                                                                 \
     {                                                                          \
-        do {                                                                   \
             try {                                                              \
-                do {                                                           \
-                    PAA_PROGRAM_START_CONTENT(baseScene, resources_file);      \
-                    if (!res)                                                  \
-                        break;                                                 \
-                } while (1);                                                   \
+                PAA_PROGRAM_START_CONTENT(baseScene, resources_file);          \
                 return 0;                                                      \
             } catch (const paa::AABaseError& e) {                              \
                 spdlog::critical("paa::AABaseError: Error: {}", e.what());     \
@@ -34,11 +29,6 @@
             } catch (...) {                                                    \
                 spdlog::critical("Unknown error");                             \
             }                                                                  \
-            if (retry) {                                                       \
-                spdlog::critical("Retrying in 10 seconds...");                 \
-                std::this_thread::sleep_for(std::chrono::seconds(10));         \
-            }                                                                  \
-        } while (retry);                                                       \
         return 1;                                                              \
     }
 

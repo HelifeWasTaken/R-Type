@@ -415,19 +415,18 @@ namespace game {
 
     class PlayerFactory {
     public:
-        static void addPlayer(
+        static PAA_ENTITY addPlayer(
             const net::PlayerID pid, paa::Controller& controller)
         {
             const paa::Position sposition(
                 0, PAA_SCREEN.getSize().y / RTYPE_PLAYER_COUNT * pid);
-            const std::string texture = "player" + std::to_string(pid);
 
             paa::DynamicEntity entity = PAA_NEW_ENTITY();
             const paa::Id& id = entity.attachId(paa::Id { pid });
             paa::Position& position = entity.attachPosition(sposition);
             paa::Health& health
                 = entity.attachHealth(paa::Health { RTYPE_PLAYER_MAX_HEALTH });
-            paa::Sprite& sprite = entity.attachSprite(texture);
+            paa::Sprite& sprite = entity.attachSprite("player");
 
             sprite->setPosition(position.x, position.y);
 
@@ -443,6 +442,7 @@ namespace game {
                 CollisionFactory::makePlayerCollision(irect, entity.getId()));
 
             entity.insertComponent(std::move(player));
+            return entity.getEntity();
         }
     };
 

@@ -53,7 +53,7 @@ static inline void sys_collision_check(hl::silva::registry& r)
 
 void setup_ecs(hl::silva::registry& r)
 {
-    r.register_component<Position, Velocity, Sprite, Depth, SCollisionBox,
+    r.register_component<Position, Velocity, Sprite, Depth, Health, SCollisionBox,
          InputManagement, Controller, Id>()
         .add_system(sys_animated_sprite_system)
         .add_system(sys_controller_input_manager_system)

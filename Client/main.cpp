@@ -34,4 +34,5 @@ PAA_SCENE(ecs) {
     PAA_UPDATE { PAA_SET_SCENE(client_connect); }
 };
 
-PAA_UNSAFE_PROGRAM_START(ecs, "../Resources.conf");
+// PAA_UNSAFE_PROGRAM_START(ecs, "../Resources.conf");
+PAA_PROGRAM_START(ecs, "../Resources.conf");

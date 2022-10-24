@@ -21,6 +21,8 @@ Documentation about the game engine can be found in the [documentation](./RTYPE_
     - Minimum C++ standard is C++17
     - The project is built with g++ on Linux and MSVC on Windows
 
+> **Note:** The binaries are built in the `${BUILD_FOLDER}/target` directory.
+
 ## Build the project (Unix):
 ```bash
 mkdir build
@@ -28,6 +30,7 @@ cd build
 cmake ..
 cmake --build .
 ```
+> **Note:** The binaries are built in the `build/target` directory.
 
 ## Build the project (Windows):
 Generate the Visual Studio Solution with the provided CMAKE.

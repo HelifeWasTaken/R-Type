@@ -10,7 +10,9 @@
 /**
  * @brief Base for a new scene
  */
-#define PAA_SCENE(name) PAA_SCENE_DECL(name) : public paa::GameState
+#define PAA_SCENE(name)                                                        \
+    PAA_SCENE_DECL(name)                                                       \
+        : public paa::GameState
 
 /**
  * @brief Entry point of the scene
@@ -25,8 +27,8 @@
 /**
  * @brief Default declarations for a scene
  */
-#define PAA_SCENE_DEFAULT(name) \
-    PAA_START(name); \
+#define PAA_SCENE_DEFAULT(name)                                                \
+    PAA_START(name);                                                           \
     PAA_END(name) = default;
 
 /**
@@ -67,7 +69,8 @@
 /**
  * @brief User defined method for cpp
  */
-#define PAA_METHOD_CPP(scene_name, fun_name, ret, ...) ret PAA_FUN_NAMESPACE(scene_name)::fun_name(__VA_ARGS__)
+#define PAA_METHOD_CPP(scene_name, fun_name, ret, ...)                         \
+    ret PAA_FUN_NAMESPACE(scene_name)::fun_name(__VA_ARGS__)
 
 /**
  * @brief Defined call method
@@ -77,12 +80,14 @@
 /**
  * @brief Set the current scene
  */
-#define PAA_SET_SCENE(scene_name) paa::scene_change_meta<PAA_FUN_NAMESPACE(scene_name)>()
+#define PAA_SET_SCENE(scene_name)                                              \
+    paa::scene_change_meta<PAA_FUN_NAMESPACE(scene_name)>()
 
 /**
  * @brief Push a new scene
  */
-#define PAA_PUSH_SCENE(scene_name) paa::scene_push_meta<PAA_FUN_NAMESPACE(scene_name)>()
+#define PAA_PUSH_SCENE(scene_name)                                             \
+    paa::scene_push_meta<PAA_FUN_NAMESPACE(scene_name)>()
 
 /**
  * @brief Pop the current scene

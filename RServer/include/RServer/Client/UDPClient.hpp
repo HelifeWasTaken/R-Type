@@ -41,7 +41,6 @@ namespace net {
              */
             ClientID get_sender_id() const;
 
-
         private:
             MagicNumber _magic;
             ClientID _id;
@@ -54,7 +53,7 @@ namespace net {
          * @param const char * The port the client is listening to
          */
         UDPClient(boost::asio::io_context& io_context, const char* host,
-                                                            const char* port);
+            const char* port);
 
     private:
         /**
@@ -73,9 +72,11 @@ namespace net {
         /**
          * @brief Send a message to the server asynchronously
          * @param shared_message_t The message to send
-         * @param size The size of the message (if -1 size is udp_buffer_t::size)
+         * @param size The size of the message (if -1 size is
+         * udp_buffer_t::size)
          */
-        void send(rtype::net::udp_server::shared_message_info_t message, BufferSizeType size=-1);
+        void send(rtype::net::udp_server::shared_message_info_t message,
+            BufferSizeType size = -1);
 
         /**
          * @brief Send a message to the server asynchronously

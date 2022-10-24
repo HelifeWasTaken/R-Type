@@ -9,7 +9,8 @@ void BatchRenderer::add(std::shared_ptr<Drawable> drawable, Depth depth)
         [&depth](const auto& pair) { return pair.first.z == depth.z; });
 
     if (it == _drawables.end()) {
-        _drawables.emplace_back(depth, std::vector<std::shared_ptr<Drawable>> { drawable });
+        _drawables.emplace_back(
+            depth, std::vector<std::shared_ptr<Drawable>> { drawable });
         std::sort(
             _drawables.begin(), _drawables.end(), [](auto& pair1, auto& pair2) {
                 return pair1.first.z < pair2.first.z;

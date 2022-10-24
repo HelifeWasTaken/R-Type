@@ -9,7 +9,7 @@ namespace net {
     {
     }
 
-    void RequestConnectRoom::from(const Byte *data, const BufferSizeType size)
+    void RequestConnectRoom::from(const Byte* data, const BufferSizeType size)
     {
         Serializer s(data, size);
         s >> _message_code;
@@ -29,9 +29,6 @@ namespace net {
         return sizeof(_message_code) + _roomID.size();
     }
 
-    const std::string& RequestConnectRoom::roomID() const
-    {
-        return _roomID;
-    }
+    const std::string& RequestConnectRoom::roomID() const { return _roomID; }
 }
 }

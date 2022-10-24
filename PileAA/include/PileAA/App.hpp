@@ -6,8 +6,8 @@
 #include "AnimatedSprite.hpp"
 #include "AnimationRegister.hpp"
 #include "BaseComponents.hpp"
-#include "InputHandler.hpp"
 #include "BatchRenderer.hpp"
+#include "InputHandler.hpp"
 #include "ResourceManager.hpp"
 #include "Timer.hpp"
 
@@ -39,7 +39,7 @@ HL_SINGLETON_IMPL(RenderWindow, Screen);
 
 /**
  * @brief Construct a new hl singleton impl object
- * 
+ *
  */
 HL_SINGLETON_IMPL(DeltaTimer, DeltaTimerInstance);
 
@@ -93,7 +93,7 @@ protected:
     paa::Window& window = PAA_SCREEN;
     paa::App& app = PAA_APP;
     hl::silva::StateManager& scene_manager = PAA_SCENE_MANAGER;
-    galbar::InputHandler& input = PAA_INPUT;
+    obscur::InputHandler& input = PAA_INPUT;
     paa::ResourceManager& resource_manager = PAA_RESOURCE_MANAGER;
     paa::AnimationRegister& animation_register = PAA_ANIMATION_REGISTER;
     paa::BatchRenderer& batch_renderer = PAA_BATCH_RENDERER;

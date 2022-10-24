@@ -7,9 +7,11 @@ static void manage_create_room_reply(shared_message_t msg)
     auto rep = parse_message<CreateRoomReply>(msg.get());
     if (!rep) {
         spdlog::error("Client: Failed to parse CREATE_ROOM_REPLY message");
-        PAA_SET_SCENE(connect_room); // Go back to choice between host and connect
+        PAA_SET_SCENE(
+            connect_room); // Go back to choice between host and connect
     }
-    spdlog::info("Client create_room: Created room with token {}", rep->token());
+    spdlog::info(
+        "Client create_room: Created room with token {}", rep->token());
     g_game.room_token = rep->token();
     g_game.id = 0;
     g_game.is_host = true;
@@ -30,7 +32,8 @@ static void manage_server_events()
         manage_create_room_reply(msg);
         break;
     default:
-        spdlog::info("Client create_room: Received message of type {}", msg->type());
+        spdlog::info(
+            "Client create_room: Received message of type {}", msg->type());
         break;
     }
 }

@@ -9,7 +9,7 @@ void InputManagement::update(PAA_ENTITY entity, IController& controller)
             callback(entity);
     }
     for (const auto& [button, callback] : _isButtonDownCallbacks) {
-        if (controller.isButtonDown(button))
+        if (controller.isButtonHeld(button))
             callback(entity);
     }
     for (const auto& [button, callback] : _isbButtonReleasedCallbacks) {

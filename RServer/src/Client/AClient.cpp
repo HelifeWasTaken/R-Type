@@ -3,17 +3,11 @@
 namespace rtype {
 namespace net {
 
-    AClient::AClient()
-    {
-        _stopped = false;
-    }
+    AClient::AClient() { _stopped = false; }
 
-    bool AClient::stopped() const
-    {
-        return _stopped;
-    }
+    bool AClient::stopped() const { return _stopped; }
 
-    //Abstract Client class implémentation
+    // Abstract Client class implémentation
     bool AClient::poll(shared_message_t& message)
     {
         return _queue.async_pop(message);

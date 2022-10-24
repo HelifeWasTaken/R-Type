@@ -10,18 +10,21 @@ namespace net {
     {
     }
 
-    void FeedInitRequest::from(const Byte *data, const BufferSizeType size) {
+    void FeedInitRequest::from(const Byte* data, const BufferSizeType size)
+    {
         Serializer s(data, size);
         s >> _message_code >> _playerId >> _token;
     }
 
-    std::vector<Byte> FeedInitRequest::serialize() const {
+    std::vector<Byte> FeedInitRequest::serialize() const
+    {
         Serializer s;
         s << _message_code << _playerId << _token;
         return s.data;
     }
 
-    BufferSizeType FeedInitRequest::size() const {
+    BufferSizeType FeedInitRequest::size() const
+    {
         return sizeof(_message_code) + sizeof(_playerId) + sizeof(_token);
     }
 

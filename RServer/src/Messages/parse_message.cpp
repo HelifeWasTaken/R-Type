@@ -1,8 +1,8 @@
 #include "RServer/Messages/Messages.hpp"
 
-#include <unordered_map>
 #include <iostream>
 #include <spdlog/spdlog.h>
+#include <unordered_map>
 
 namespace rtype {
 namespace net {
@@ -22,49 +22,58 @@ namespace net {
     }
 
     // message_code to message_type
-    static std::unordered_map<message_code, message_type> message_code_to_type_map = {
-        // Signal Markers
-        {message_code::CONN_INIT, message_type::SIGNAL_MARKER},
-        {message_code::CREATE_ROOM, message_type::SIGNAL_MARKER},
-        {message_code::LAUNCH_GAME, message_type::SIGNAL_MARKER},
+    static std::unordered_map<message_code, message_type>
+        message_code_to_type_map = {
+            // Signal Markers
+            { message_code::CONN_INIT, message_type::SIGNAL_MARKER },
+            { message_code::CREATE_ROOM, message_type::SIGNAL_MARKER },
+            { message_code::LAUNCH_GAME, message_type::SIGNAL_MARKER },
 
-        // YesNo messages
-        {message_code::LAUNCH_GAME_REP, message_type::YES_NO_MESSAGES},
+            // YesNo messages
+            { message_code::LAUNCH_GAME_REP, message_type::YES_NO_MESSAGES },
 
-        // Special messages
-        {message_code::CONN_INIT_REP, message_type::CONNECTION_INIT_REPLY},
-        {message_code::FEED_INIT, message_type::FEED_INIT_REQUEST},
-        {message_code::FEED_INIT_REP, message_type::FEED_INIT_REPLY},
+            // Special messages
+            { message_code::CONN_INIT_REP,
+                message_type::CONNECTION_INIT_REPLY },
+            { message_code::FEED_INIT, message_type::FEED_INIT_REQUEST },
+            { message_code::FEED_INIT_REP, message_type::FEED_INIT_REPLY },
 
-        {message_code::TEXT_MESSAGE, message_type::TEXT_MESSAGE},
-        {message_code::REQUEST_CONNECT_ROOM, message_type::REQUEST_CONNECT_ROOM},
-        {message_code::CONNECT_ROOM_REQ_REP, message_type::CONNECT_ROOM_REQ_REP},
-        {message_code::CREATE_ROOM_REPLY, message_type::CREATE_ROOM_REPLY},
-        {message_code::ROOM_CLIENT_DISCONNECT, message_type::ROOM_CLIENT_DISCONNECT},
-        {message_code::ROOM_CLIENT_CONNECT, message_type::ROOM_CLIENT_CONNECT},
+            { message_code::TEXT_MESSAGE, message_type::TEXT_MESSAGE },
+            { message_code::REQUEST_CONNECT_ROOM,
+                message_type::REQUEST_CONNECT_ROOM },
+            { message_code::CONNECT_ROOM_REQ_REP,
+                message_type::CONNECT_ROOM_REQ_REP },
+            { message_code::CREATE_ROOM_REPLY,
+                message_type::CREATE_ROOM_REPLY },
+            { message_code::ROOM_CLIENT_DISCONNECT,
+                message_type::ROOM_CLIENT_DISCONNECT },
+            { message_code::ROOM_CLIENT_CONNECT,
+                message_type::ROOM_CLIENT_CONNECT },
 
-        // Sync messages
-        {message_code::SYNC_VECTOR2_POSITION, message_type::SYNC_MESSAGE},
+            // Sync messages
+            { message_code::SYNC_PLAYER, message_type::SYNC_MESSAGE },
 
-        // Update messages
-        {message_code::UPDATE_VECTOR2_MOVEMENT, message_type::UPDATE_MESSAGE},
-        {message_code::PLAYER_SHOOT, message_type::UPDATE_MESSAGE},
-    };
+            // Update messages
+            { message_code::UPDATE_PLAYER, message_type::UPDATE_MESSAGE },
+        };
 
-    message_type message_code_to_type(const message_code& code) {
+    message_type message_code_to_type(const message_code& code)
+    {
         return message_code_to_type_map[code];
     }
 
-    message_code message_type_to_code(const message_type& type) {
-        auto it = std::find_if(
-            message_code_to_type_map.begin(), message_code_to_type_map.end(),
+    message_code message_type_to_code(const message_type& type)
+    {
+        auto it = std::find_if(message_code_to_type_map.begin(),
+            message_code_to_type_map.end(),
             [type](const std::pair<message_code, message_type>& p) {
                 return p.second == type;
             });
         return message_code::DUMMY;
     }
 
-    boost::shared_ptr<IMessage> parse_message(const Byte* buffer, BufferSizeType size)
+    boost::shared_ptr<IMessage> parse_message(
+        const Byte* buffer, BufferSizeType size)
     {
         try {
             assert(size > 0);
@@ -90,7 +99,8 @@ namespace net {
             case message_type::TEXT_MESSAGE:
                 return Message::deserialize<TextMessage>(buffer, size);
             case message_type::CONNECT_ROOM_REQ_REP:
-                return Message::deserialize<RequestConnectRoomReply>(buffer, size);
+                return Message::deserialize<RequestConnectRoomReply>(
+                    buffer, size);
             case message_type::REQUEST_CONNECT_ROOM:
                 return Message::deserialize<RequestConnectRoom>(buffer, size);
             case message_type::CREATE_ROOM_REPLY:
@@ -98,9 +108,11 @@ namespace net {
             case message_type::ROOM_CLIENT_CONNECT:
                 return Message::deserialize<UserConnectRoom>(buffer, size);
             case message_type::ROOM_CLIENT_DISCONNECT:
-                return Message::deserialize<UserDisconnectFromRoom>(buffer, size);
+                return Message::deserialize<UserDisconnectFromRoom>(
+                    buffer, size);
             default:
-                spdlog::error("Unknown message type of code/type: {}/{}", (int)code, (int)type);
+                spdlog::error("Unknown message type of code/type: {}/{}",
+                    (int)code, (int)type);
             }
         } catch (...) {
             spdlog::error("Error while parsing message");
@@ -108,7 +120,8 @@ namespace net {
         return nullptr;
     }
 
-    std::vector<boost::shared_ptr<IMessage>> parse_messages(const Byte* buffer, BufferSizeType size)
+    std::vector<boost::shared_ptr<IMessage>> parse_messages(
+        const Byte* buffer, BufferSizeType size)
     {
         std::vector<boost::shared_ptr<IMessage>> messages;
         BufferSizeType offset = 0;
@@ -119,7 +132,8 @@ namespace net {
 
             auto msg = parse_message(buffer + offset, size - offset);
             if (msg == nullptr) {
-                spdlog::error("MessageList::parse_messages: Message is null skipping everything else");
+                spdlog::error("MessageList::parse_messages: Message is null "
+                              "skipping everything else");
                 return messages;
             }
             messages.push_back(msg);

@@ -2,6 +2,7 @@
 #define MyAppVersion "1.0"
 #define MyAppPublisher "PileAA Corp."
 #define MyAppExeName "r-type_client.exe"
+#define MyAppServerExeName "r-type_server.exe"
 #define BuildType "Debug"
 
 [Setup]
@@ -25,15 +26,14 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]  
-Source: "..\build\client\{#BuildType}\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\build\server\{#BuildType}\r-type_server.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "..\assets\*"; DestDir: "{app}\assets\"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\target\*"; DestDir: "{app}\"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
-Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\Client\binary\{#MyAppExeName}"
+Name: "{autoprograms}\{#MyAppName} Server"; Filename: "{app}\Server\binary\{#MyAppServerExeName}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\Client\binary\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\Client\binary\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 

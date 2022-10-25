@@ -313,7 +313,7 @@ namespace game {
             _controllerRef->simulateAxisMovement(paa::Joystick::Axis::X,
                 (info.get_move_left() - info.get_move_right()) * 100.f);
             _controllerRef->simulateAxisMovement(paa::Joystick::Axis::Y,
-                (info.get_move_up() - info.get_move_down()) * 100.f);
+                (info.get_move_down() - info.get_move_up()) * 100.f);
             _healthRef.hp = info.get_hp();
 
             info.get_shoot()

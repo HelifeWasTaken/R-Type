@@ -32,7 +32,7 @@ namespace net {
         , _buf_recv(new udp_buffer_t)
     {
         _socket.open(boost::asio::ip::udp::v4());
-        _socket.bind(_receiver_endpoint);
+        _socket.connect(_receiver_endpoint);
         _stopped = false;
 
         receive();

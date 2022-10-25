@@ -26,6 +26,7 @@ private:
     Animation* _currentAnimation = nullptr;
     Timer _timer;
     unsigned int _animationIndex = 0;
+    bool _uses_default;
 
     void _setRect(const unsigned int& index);
 

@@ -11,17 +11,50 @@ namespace paa {
 
 enum GuiObjectType { MENU_ITEM, MENU_BAR, BUTTON, INPUT_TEXT, TEXT };
 
+/**
+ * @brief Interface for any GuiObject of ImGUI
+ * 
+ */
 class GuiObject {
 public:
+    /**
+     * @brief Updates the object
+     */
     virtual void update() = 0;
+
+    /**
+     * @brief Returns the type of the object
+     * 
+     * @return GuiObjectType 
+     */
     virtual GuiObjectType type() const = 0;
 
+    /**
+     * @brief Construct a new Gui Object object
+     */
     GuiObject() = default;
+
+    /**
+     * @brief Destroy the Gui Object object
+     */
     virtual ~GuiObject() = default;
 };
 
-template <typename T> using shared_gui = std::shared_ptr<T>;
+template<typename T>
+concept isGuiObject = std::is_base_of_v<GuiObject, T>;
 
+/**
+ * @brief Abstraction of a gui element
+ * 
+ * @tparam T 
+ */
+template <isGuiObject T>
+using shared_gui = std::shared_ptr<T>;
+
+/**
+ * @brief Menu item of the menu bar
+ * 
+ */
 class MenuItem : public GuiObject {
 private:
     struct MenuItemData {
@@ -35,32 +68,39 @@ private:
     std::vector<MenuItemData> _items;
 
 public:
-    MenuItem(const std::string& sectionName)
-        : _sectionName(sectionName)
-    {
-    }
+    /**
+     * @brief Construct a new Menu Item object
+     * 
+     * @param sectionName The name of the menu section
+     */
+    MenuItem(const std::string& sectionName);
 
+    /**
+     * @brief Destroy the Menu Item object
+     */
     ~MenuItem() override = default;
 
+    /**
+     * @brief Add an item to the menu section
+     * 
+     * @param name The name of the item
+     * @param shortcut The shortcut of the item
+     * @param callback The callback of the item
+     */
     void addItem(const std::string& name, const std::string& shortcut,
-        std::function<void()> callback)
-    {
-        _items.push_back({ name, shortcut, callback });
-    }
+        std::function<void()> callback);
 
-    void update() override
-    {
-        if (ImGui::BeginMenu(_sectionName.c_str())) {
-            for (auto& item : _items) {
-                if (ImGui::MenuItem(item.name.c_str(), item.shortcut.c_str())) {
-                    item.callback();
-                }
-            }
-            ImGui::EndMenu();
-        }
-    }
+    /**
+     * @brief Update the menu item
+     */
+    void update() override;
 
-    GuiObjectType type() const override { return GuiObjectType::MENU_ITEM; }
+    /**
+     * @brief Get the type of the object
+     * 
+     * @return GuiObjectType 
+     */
+    GuiObjectType type() const override;
 };
 
 class MenuBar : public GuiObject {
@@ -68,22 +108,34 @@ private:
     std::vector<MenuItem> _items;
 
 public:
+    /**
+     * @brief Construct a new Menu Bar object
+     */
     MenuBar() = default;
+
+    /**
+     * @brief Destroy the Menu Bar object
+     */
     ~MenuBar() override = default;
 
-    void addItem(const MenuItem& item) { _items.push_back(item); }
+    /**
+     * @brief Add an item to the menu bar
+     * 
+     * @param item The item to add
+     */
+    void addItem(const MenuItem& item);
 
-    void update() override
-    {
-        if (ImGui::BeginMenuBar()) {
-            for (auto& item : _items) {
-                item.update();
-            }
-            ImGui::EndMenuBar();
-        }
-    }
+    /**
+     * @brief Update the menu bar
+     */
+    void update() override;
 
-    GuiObjectType type() const override { return GuiObjectType::MENU_BAR; }
+    /**
+     * @brief Get the type of the object
+     * 
+     * @return GuiObjectType 
+     */
+    GuiObjectType type() const override;
 };
 
 using shared_menu_bar = shared_gui<MenuBar>;
@@ -94,22 +146,30 @@ private:
     std::function<void()> _callback;
 
 public:
-    Button(const std::string& name, std::function<void()> callback)
-        : _name(name)
-        , _callback(callback)
-    {
-    }
+    /**
+     * @brief Construct a new Button object
+     * 
+     * @param name The name of the button
+     * @param callback The callback of the button
+     */
+    Button(const std::string& name, std::function<void()> callback);
 
+    /**
+     * @brief Destroy the Button object
+     */
     ~Button() override = default;
 
-    void update() override
-    {
-        if (ImGui::Button(_name.c_str())) {
-            _callback();
-        }
-    }
+    /**
+     * @brief Update the button
+     */
+    void update() override;
 
-    GuiObjectType type() const override { return GuiObjectType::BUTTON; }
+    /**
+     * @brief Get the type of the object
+     * 
+     * @return GuiObjectType 
+     */
+    GuiObjectType type() const override;
 };
 
 using shared_button = shared_gui<Button>;
@@ -119,17 +179,41 @@ private:
     std::string _text = "Hello World";
 
 public:
-    GuiText(const std::string& text)
-        : _text(text)
-    {
-    }
+    /**
+     * @brief Construct a new Gui Text object
+     * 
+     * @param text The text to display
+     */
+    GuiText(const std::string& text);
+
+    /**
+     * @brief Construct a new Gui Text object
+     */
+    GuiText() = default;
+
+    /**
+     * @brief Destroy the Gui Text object
+     */
     ~GuiText() override = default;
 
-    void update() override { ImGui::Text(_text.c_str()); }
+    /**
+     * @brief Update the text
+     */
+    void update() override;
 
-    void setText(const std::string& text) { _text = text; }
+    /**
+     * @brief Get the type of the object
+     * 
+     * @return GuiObjectType 
+     */
+    GuiObjectType type() const override;
 
-    GuiObjectType type() const override { return GuiObjectType::TEXT; }
+    /**
+     * @brief Set the text
+     * 
+     * @param text The text to set
+     */
+    void setText(const std::string& text);
 };
 
 using shared_gui_text = shared_gui<GuiText>;
@@ -140,25 +224,39 @@ private:
     std::string _label;
 
 public:
+    /**
+     * @brief Construct a new Input Text object
+     * 
+     * @param text The text to display
+     * @param label The label of the input text
+     * @param maxSize The maximum size of the input text
+     */
     InputText(const std::string& text, const std::string& label,
-        const size_t maxSize = 512)
-        : _label(label)
-    {
-        _buffer.resize(maxSize);
-        std::copy(text.begin(), text.end(), _buffer.begin());
-        _buffer[text.size()] = '\0';
-    }
+        const size_t maxSize = 512);
 
+    /**
+     * @brief Destroy the Input Text object
+     */
     ~InputText() override = default;
 
-    void update() override
-    {
-        ImGui::InputText(_label.c_str(), _buffer.data(), _buffer.size());
-    }
+    /**
+     * @brief Update the input text
+     */
+    void update() override;
 
-    std::string getText() const { return std::string(_buffer.data()); }
+    /**
+     * @brief Get the text
+     * 
+     * @return std::string 
+     */
+    std::string getText() const;
 
-    GuiObjectType type() const override { return GuiObjectType::INPUT_TEXT; }
+    /**
+     * @brief Get the type of the object
+     * 
+     * @return GuiObjectType 
+     */
+    GuiObjectType type() const override;
 };
 
 using shared_input_text = shared_gui<InputText>;
@@ -168,57 +266,69 @@ private:
     std::vector<shared_gui<GuiObject>> _objects;
 
 public:
+    /**
+     * @brief Construct a new Gui object
+     */
     Gui() = default;
+
+    /**
+     * @brief Destroy the Gui object
+     */
     ~Gui() = default;
 
-    void addObject(const shared_gui<GuiObject>& object)
-    {
-        _objects.push_back(object);
-    }
+    /**
+     * @brief Add an object to the gui
+     * 
+     * @tparam T 
+     * @param object The object to add
+     */
+    void addObject(const shared_gui<GuiObject>& object);
 
-    void addObject(GuiObject* object)
-    {
-        _objects.push_back(shared_gui<GuiObject>(object));
-    }
+    /**
+     * @brief Update the gui
+     */
+    void addObject(GuiObject* object);;
 
-    void update()
-    {
-        for (auto& object : _objects) {
-            object->update();
-        }
-    }
+    /**
+     * @brief Update the gui
+     */
+    void update();
+
+    /**
+     * @brief Render the gui
+     */
+    void clear();
 };
 
 class GuiFactory {
 public:
-    template <typename T, typename... Args,
-        typename std::enable_if<std::is_base_of<GuiObject, T>::value, int>::type
-        = 0>
+    template <isGuiObject T, typename ...Args>
     static shared_gui<T> new_gui_object(Args&&... args)
     {
-        return std::make_shared<T>(std::forward<Args>(args)...);
+        GuiObject *obj = new T(std::forward<Args>(args)...);
+        return std::shared_ptr<T>(static_cast<T*>(obj));
     }
 
     template <typename... Args>
-    static shared_gui<MenuItem> new_menu_bar(Args&&... args)
+    static shared_menu_bar new_menu_bar(Args&&... args)
     {
         return GuiFactory::new_gui_object<MenuBar>(std::forward<Args>(args)...);
     }
 
     template <typename... Args>
-    static shared_gui<Button> new_button(Args&&... args)
+    static shared_button new_button(Args&&... args)
     {
         return GuiFactory::new_gui_object<Button>(std::forward<Args>(args)...);
     }
 
     template <typename... Args>
-    static shared_gui<GuiText> new_gui_text(Args&&... args)
+    static shared_gui_text new_gui_text(Args&&... args)
     {
         return GuiFactory::new_gui_object<GuiText>(std::forward<Args>(args)...);
     }
 
     template <typename... Args>
-    static shared_gui<InputText> new_input_text(Args&&... args)
+    static shared_input_text new_input_text(Args&&... args)
     {
         return GuiFactory::new_gui_object<InputText>(
             std::forward<Args>(args)...);

@@ -4,9 +4,11 @@
 
 PAA_SCENE(connect_room)
 {
-    PAA_START(connect_room);
+    PAA_SCENE_DEFAULT(connect_room);
+
+    PAA_START;
     PAA_UPDATE;
-    PAA_END(connect_room) = default;
+    PAA_END;
 
     paa::Gui gui;
     paa::shared_gui<paa::InputText> input

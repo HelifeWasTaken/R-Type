@@ -12,12 +12,15 @@ void AnimatedSprite::_setRect(const unsigned int& index)
 
 AnimatedSprite::AnimatedSprite(const std::string& textureName)
 {
-    this->setTexture(
-        ResourceManagerInstance::get().get<sf::Texture>(textureName));
+    auto& tx = ResourceManagerInstance::get().get<sf::Texture>(textureName);
+    const auto& def = ResourceManagerInstance::get().getDefaultTexture();
+
+    this->setTexture(tx);
 
     const IntRect rect(
         0, 0, getTexture()->getSize().x, getTexture()->getSize().y);
 
+    _uses_default = &tx == &def;
     registerAnimation("DEFAULT", paa::Animation { { rect }, 1000000.f });
     useAnimation("DEFAULT");
     setPosition(0, 0);
@@ -32,10 +35,14 @@ void AnimatedSprite::registerAnimation(
 void AnimatedSprite::useAnimation(const std::string& animationName)
 {
     try {
-        _currentAnimation = &_reg.at(animationName);
+        if (_uses_default)
+            _currentAnimation = &_reg.at("DEFAULT");
+        else
+            _currentAnimation = &_reg.at(animationName);
     } catch (...) {
-        throw Error(std::string("AnimatedSprite: Could not find animtion: [")
-            + animationName + "]");
+        spdlog::warn("PileAA::AnimatedSprite: Could not find animtion: [{}] using default",
+                    animationName);
+        useAnimation("DEFAULT");
     }
     _timer.setTarget(_currentAnimation->speed);
     _setRect(0);

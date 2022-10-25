@@ -4,9 +4,10 @@
 
 PAA_SCENE(game_scene)
 {
+    PAA_SCENE_DEFAULT(game_scene);
 
-    PAA_START(game_scene);
-    PAA_END(game_scene) = default;
+    PAA_START;
+    PAA_END;
 
     PAA_EVENTS;
     PAA_UPDATE;

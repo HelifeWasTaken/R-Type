@@ -36,29 +36,35 @@
 
 #include "sparse_array"
 
-#ifndef SILVA_PRETTY_FUNCTION
+#ifndef SILVA_ECS_PRETTY_FUNCTION
     #if defined(_MSC_VER)
-        #define SILVA_PRETTY_FUNCTION __FUNCSIG__
+        #define SILVA_ECS_PRETTY_FUNCTION __FUNCSIG__
     #elif defined(__GNUC__) || defined(__GNUG__) || defined(__clang__)
-        #define SILVA_PRETTY_FUNCTION __PRETTY_FUNCTION__
+        #define SILVA_ECS_PRETTY_FUNCTION __PRETTY_FUNCTION__
     #else
-        #define SILVA_PRETTY_FUNCTION __func__ " (pretty function not supported)"
+        #define SILVA_ECS_PRETTY_FUNCTION __func__ " (pretty function not supported)"
     #endif
 #endif
 
-#ifdef SILVA_LOG_SPDLOG
+#ifdef SILVA_ECS_LOG_SPDLOG
     #include <spdlog/spdlog.h>
     #include <iostream>
-    #define SILVA_LOG(msg, ...) spdlog::info(msg, __VA_ARGS__);
-#elif SILVA_LOG_FMT
+    #define SILVA_ECS_LOG(msg, ...) spdlog::info(msg, __VA_ARGS__);
+#elif SILVA_ECS_LOG_FMT
     #include <format>
-    #define SILVA_LOG(msg, ...) std::cout << std::format(msg, __VA_ARGS__) << std::endl
+    #define SILVA_ECS_LOG(msg, ...) std::cout << std::format(msg, __VA_ARGS__) << std::endl
 #else
-    #define SILVA_LOG(msg, ...)
+    #define SILVA_ECS_LOG(msg, ...)
 #endif
 
 namespace hl {
 namespace silva {
+    template<typename ...Args>
+    concept has_arguments_t = sizeof...(Args) > 0;
+
+    template<typename ...Args>
+    concept has_no_arguments_t = sizeof...(Args) == 0;
+
     class Error : public std::exception {
     public:
         Error(const std::string& msg)
@@ -176,15 +182,14 @@ namespace silva {
          * @brief  Register a new component
          * @retval Reference of the class registry
          */
-        template <class Component, typename... OtherComponents,
-            typename std::enable_if<sizeof...(OtherComponents)
-                == 0>::type* = nullptr>
+        template <class Component,typename ...OtherComponents>
+        requires has_no_arguments_t<OtherComponents...>
         registry& register_component()
         {
             anonymous_t anonyme = component_array<Component>();
 
-            SILVA_LOG("silva::registry: Registering component {} -> {}",
-                typeid(Component).name(), SILVA_PRETTY_FUNCTION);
+            SILVA_ECS_LOG("silva::registry: Registering component {} -> {}",
+                typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
 
             _components_types_index[std::type_index(typeid(Component))]
                 = _last_component_index++;
@@ -199,15 +204,14 @@ namespace silva {
          * @brief  Register a new component
          * @retval Reference of the class registry
          */
-        template <class Component, typename... OtherComponents,
-            typename std::enable_if<sizeof...(OtherComponents)
-                != 0>::type* = nullptr>
+        template <class Component, typename ...OtherComponents>
+        requires has_arguments_t<OtherComponents...>
         inline registry& register_component()
         {
             anonymous_t anonyme = component_array<Component>();
 
-            SILVA_LOG("silva::registry: Registering component {} -> {}",
-                typeid(Component).name(), SILVA_PRETTY_FUNCTION);
+            SILVA_ECS_LOG("silva::registry: Registering component {} -> {}",
+                typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
 
             _components_types_index[std::type_index(typeid(Component))]
                 = _last_component_index++;
@@ -228,13 +232,13 @@ namespace silva {
         template <class Component> component_array<Component>& get_components()
         {
             try {
-                SILVA_LOG("silva::registry: Getting component {} -> {}", typeid(Component).name(), SILVA_PRETTY_FUNCTION);
+                SILVA_ECS_LOG("silva::registry: Getting component {} -> {}", typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
                 return component_cast<Component>(
                     _components[type_index<Component>()]);
             } catch (const std::exception& e) {
 #ifndef SILVA_DYNAMIC_REGISTER
                 throw Error(std::string("Component not registered: \"")
-                    + SILVA_PRETTY_FUNCTION + "\" -> " + e.what());
+                    + SILVA_ECS_PRETTY_FUNCTION + "\" -> " + e.what());
 #else
                 register_component<Component>();
                 return get_components<Component>();
@@ -252,13 +256,13 @@ namespace silva {
         component_array<Component> const& get_components() const
         {
             try {
-                SILVA_LOG("silva::registry: Getting component (const) {} -> {}", typeid(Component).name(), SILVA_PRETTY_FUNCTION);
+                SILVA_ECS_LOG("silva::registry: Getting component (const) {} -> {}", typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
                 return component_cast<Component>(
                     _components[type_index<Component>()]);
             } catch (std::exception const& e) {
 #ifndef SILVA_DYNAMIC_REGISTER
                 throw Error(std::string("Component not registered: \"")
-                    + SILVA_PRETTY_FUNCTION + "\" -> " + e.what());
+                    + SILVA_ECS_PRETTY_FUNCTION + "\" -> " + e.what());
 #else
                 const_cast<registry*>(this)->register_component<Component>();
                 return get_components<Component>();
@@ -272,12 +276,12 @@ namespace silva {
         entity_t spawn_entity()
         {
             if (_killed_entities.empty()) {
-                SILVA_LOG("silva::registry: Spawning entity {} -> {}", _last_entity_id, SILVA_PRETTY_FUNCTION);
+                SILVA_ECS_LOG("silva::registry: Spawning entity {} -> {}", _last_entity_id, SILVA_ECS_PRETTY_FUNCTION);
                 return entity_t(_entities_count++);
             }
             const entity_id_t random_id = *_killed_entities.begin();
             _killed_entities.erase(random_id);
-            SILVA_LOG("silva::registry: Spawning entity {} -> {}", random_id, SILVA_PRETTY_FUNCTION);
+            SILVA_ECS_LOG("silva::registry: Spawning entity {} -> {}", random_id, SILVA_ECS_PRETTY_FUNCTION);
             return entity_t(random_id);
         }
         /**
@@ -287,7 +291,7 @@ namespace silva {
          */
         void kill_entity(entity_t const& e)
         {
-            SILVA_LOG("silva::registry: Killing entity {} -> {} (killed next frame)", e.get_id(), SILVA_PRETTY_FUNCTION);
+            SILVA_ECS_LOG("silva::registry: Killing entity {} -> {} (killed next frame)", e.get_id(), SILVA_ECS_PRETTY_FUNCTION);
             _to_kill_entities.insert(e.get_id());
         }
 
@@ -308,7 +312,7 @@ namespace silva {
          * @param  &&c: The component to add
          * @retval Entity with the component
          */
-        template <typename Component>
+        template <class Component>
         registry& insert(entity_t const& to, Component&& c)
         {
             _last_entity_id = to.get_id();
@@ -320,10 +324,11 @@ namespace silva {
          * @param  &&c: The component to add
          * @retval Entity with the component
          */
-        template <typename Component> registry& insert_r(Component&& c)
+        template <class Component>
+        registry& insert_r(Component&& c)
         {
-            SILVA_LOG("silva::registry: Inserting component {} to entity {} -> {}",
-                        typeid(Component).name(), _last_entity_id, SILVA_PRETTY_FUNCTION);
+            SILVA_ECS_LOG("silva::registry: Inserting component {} to entity {} -> {}",
+                        typeid(Component).name(), _last_entity_id, SILVA_ECS_PRETTY_FUNCTION);
             get_components<Component>().insert(_last_entity_id, std::move(c));
             return *this;
         }
@@ -332,7 +337,7 @@ namespace silva {
          * @param  &from: The entity to remove the component
          * @retval Entity without the component
          */
-        template <typename Component, typename... Params>
+        template <class Component, typename... Params>
         registry& emplace(entity_t const& to, Params&&... p)
         {
             _last_entity_id = to.get_id();
@@ -343,12 +348,12 @@ namespace silva {
          * @param  &&from: The entity to remove the component
          * @retval Entity without the component
          */
-        template <typename Component, typename... Params>
+        template <class Component, typename... Params>
         registry& emplace_r(Params&&... p)
         {
             Component c = { std::forward<Params>(p)... };
-            SILVA_LOG("silva::registry: Emplacing component {} to entity {} -> {}",
-                    typeid(Component).name(), _last_entity_id, SILVA_PRETTY_FUNCTION);
+            SILVA_ECS_LOG("silva::registry: Emplacing component {} to entity {} -> {}",
+                    typeid(Component).name(), _last_entity_id, SILVA_ECS_PRETTY_FUNCTION);
             get_components<Component>().insert(entity_t(_last_entity_id), std::move(c));
             return *this;
         }
@@ -357,11 +362,11 @@ namespace silva {
          * @param  &from: The entity to remove the component
          * @retval Entity without the component
          */
-        template <typename Component>
+        template <class Component>
         registry& remove_component(entity_t const& from)
         {
-            SILVA_LOG("silva::registry: Removing component {} from entity {} -> {}",
-                    typeid(Component).name(), from.get_id(), SILVA_PRETTY_FUNCTION);
+            SILVA_ECS_LOG("silva::registry: Removing component {} from entity {} -> {}",
+                    typeid(Component).name(), from.get_id(), SILVA_ECS_PRETTY_FUNCTION);
             get_components<Component>().erase(from.get_id());
             return *this;
         }
@@ -372,8 +377,8 @@ namespace silva {
          */
         registry& add_system(const system_t& sys)
         {
-            SILVA_LOG("silva::registry: Adding system {} -> {}",
-                    typeid(sys).name(), SILVA_PRETTY_FUNCTION);
+            SILVA_ECS_LOG("silva::registry: Adding system {} -> {}",
+                    typeid(sys).name(), SILVA_ECS_PRETTY_FUNCTION);
             _systems.push_back(sys);
             return *this;
         }
@@ -384,8 +389,8 @@ namespace silva {
          */
         registry& add_system(system_t&& sys)
         {
-            SILVA_LOG("silva::registry: Adding system {} -> {}",
-                    typeid(sys).name(), SILVA_PRETTY_FUNCTION);
+            SILVA_ECS_LOG("silva::registry: Adding system {} -> {}",
+                    typeid(sys).name(), SILVA_ECS_PRETTY_FUNCTION);
             _systems.push_back(sys);
             return *this;
         }
@@ -434,15 +439,15 @@ namespace silva {
          * @param e: The entity
          * @tparam Component: The component
          */
-        template <typename Component>
+        template <class Component>
         Component& get_component(entity_t const& e)
         {
-            SILVA_LOG("silva::registry: Getting component {} from entity {} -> {}",
-                    typeid(Component).name(), e.get_id(), SILVA_PRETTY_FUNCTION);
+            SILVA_ECS_LOG("silva::registry: Getting component {} from entity {} -> {}",
+                    typeid(Component).name(), e.get_id(), SILVA_ECS_PRETTY_FUNCTION);
             auto& comps = get_components<Component>();
             if (comps.non_null(e.get_id()))
                 return comps[e.get_id()].value();
-            throw Error(std::string("Entity does not have the component: ") + SILVA_PRETTY_FUNCTION);
+            throw Error(std::string("Entity does not have the component: ") + SILVA_ECS_PRETTY_FUNCTION);
         }
 
         /**
@@ -496,7 +501,8 @@ namespace silva {
         system_array _systems;
     };
 
-    template <class... Containers> class zipper {
+    template <class... Containers>
+    class zipper {
     public:
         using value_type = std::tuple<sparse_array<Containers>&...>;
         using reference = value_type;
@@ -582,37 +588,28 @@ namespace silva {
                 for (++_idx; !all_set<ContainersL...>() && _idx != _end; ++_idx)
                     ;
             }
-            /**
-             * @brief  Check if all the containers have a value at the current
-             * index
-             * @retval true if all the containers have a value at the current
-             * index
-             */
-            template <typename T1, typename... Others,
-                typename std::enable_if<sizeof...(Others)
-                    == 0>::type* = nullptr>
-            /**
-             * @brief  Check if all the containers have the same index
-             * @retval True if all the containers have the same index
-             */
-            bool all_set() const
-            {
-                return std::get<sparse_array<T1>&>(_current).non_null(_idx);
-            }
+
             /**
              * @brief  Check if all the containers are set at the current index
              * @param  T1: The first container
              * @param  Others: The other containers
              * @retval True if all the containers are set at the current index
              */
-            template <typename T1, typename... Others,
-                typename std::enable_if<sizeof...(Others)
-                    != 0>::type* = nullptr>
-            /** @brief  Check if all the containers are set at the current index
+            template <typename T1, typename... Others>
+            requires has_no_arguments_t<Others...>
+            bool all_set() const
+            {
+                return std::get<sparse_array<T1>&>(_current).non_null(_idx);
+            }
+
+            /**
+             * @brief  Check if all the containers are set at the current index
              * @param  T1: The first container
              * @param  Others: The other containers
              * @retval True if all the containers are set at the current index
              */
+            template <typename T1, typename... Others>
+            requires has_arguments_t<Others...>
             bool all_set() const
             {
                 if (std::get<sparse_array<T1>&>(_current).non_null(_idx))

@@ -36,13 +36,12 @@ static bool connect_server_if_not_connected()
 
 PAA_START_CPP(client_connect)
 {
-    std::cout << "Wesh " << std::endl;
-
     self = this;
 
     PAA_ECS.clear();
 
-    g_game.service.run("../Client.conf");
+    if (g_game.service.is_service_on() == false)
+        g_game.service.run("../Client.conf");
 
     // 1 second for each try to connect to feed or server
     timer.setTarget(1000);
@@ -50,21 +49,29 @@ PAA_START_CPP(client_connect)
     gui.addObject(new paa::Button("Connect", [this]() {
         if (g_game.service.connected()) {
             PAA_SET_SCENE(connect_room);
-            std::cout << "Connected to server" << std::endl;
         } else {
             text->setText("Cannot connect to room as server is not connected");
         }
     }));
 
     gui.addObject(new paa::Button("Host", [this]() {
+        std::cout << "Hmm" << std::endl;
         if (g_game.service.connected()) {
+            std::cout << "Hmm" << std::endl;
             PAA_SET_SCENE(create_room);
+            std::cout << "Hmm" << std::endl;
         } else {
             text->setText("Cannot host room as server is not connected");
         }
     }));
 
     gui.addObject(text);
+    spdlog::warn("Client: Waiting for other players to connect...");
+}
+
+PAA_END_CPP(client_connect)
+{
+    gui.clear();
 }
 
 PAA_UPDATE_CPP(client_connect)

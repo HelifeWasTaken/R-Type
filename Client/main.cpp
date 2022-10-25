@@ -9,8 +9,12 @@ Game g_game;
 
 PAA_SCENE(ecs) {
 
-    PAA_START(ecs) {
-        PAA_REGISTER_COMPONENTS(rtype::game::Enemy, rtype::game::Bullet);
+    PAA_SCENE_DEFAULT(ecs);
+
+    PAA_START {
+        PAA_REGISTER_COMPONENTS(rtype::game::Enemy, rtype::game::Bullet,
+                                rtype::game::Player);
+
         PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
             for (const auto&& [_, b] : r.view<rtype::game::Bullet>())
                 b->update();
@@ -18,7 +22,6 @@ PAA_SCENE(ecs) {
                 e->update();
         });
 
-        PAA_REGISTER_COMPONENTS(rtype::game::Player);
         PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
             for (auto&& [e, player, id] : r.view<rtype::game::Player, paa::Id>()) {
                 player->update();
@@ -28,13 +31,37 @@ PAA_SCENE(ecs) {
                 }
             }
         });
-
-        std::cout << "size: " <<
-            sizeof(rtype::net::MagicNumber) + sizeof(rtype::net::ClientID) << std::endl;
     }
+
+    PAA_END {}
 
     PAA_UPDATE { PAA_SET_SCENE(client_connect); }
 };
 
-// PAA_UNSAFE_PROGRAM_START(ecs, "../Resources.conf");
-PAA_PROGRAM_START(ecs, "../Resources.conf");
+int main(int argc, char** argv)
+{
+    try {
+        std::filesystem::current_path(std::filesystem::path(argv[0]).parent_path());
+        paa::setup_paa_system("../Resources.conf");
+
+        PAA_REGISTER_SCENE(ecs);
+        PAA_REGISTER_SCENE(create_room);
+        PAA_REGISTER_SCENE(client_connect);
+        PAA_REGISTER_SCENE(connect_room);
+        PAA_REGISTER_SCENE(game_scene);
+        PAA_REGISTER_SCENE(waiting_room);
+
+        PAA_SET_SCENE(ecs);
+
+        bool res = PAA_APP.run();
+        paa::stop_paa_system();
+        return 0;
+    } catch (const paa::AABaseError& e) {
+        spdlog::critical("paa::AABaseError: Error: {}", e.what());
+    } catch (const std::exception& e) {
+        spdlog::critical("std::exception: Error: {}", e.what());
+    } catch (...) {
+        spdlog::critical("Unknown error");
+    }
+    return 1;
+}

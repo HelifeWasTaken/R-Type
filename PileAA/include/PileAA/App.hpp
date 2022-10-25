@@ -12,7 +12,6 @@
 #include "Timer.hpp"
 
 #include "paa_commands/paa_command_ecs.hpp"
-#include "paa_commands/paa_command_main.hpp"
 #include "paa_commands/paa_command_state.hpp"
 #include "paa_commands/paa_getters.hpp"
 #include "paa_commands/paa_utilities.hpp"
@@ -119,32 +118,17 @@ public:
      * @brief Default handleEvent function
      */
     void handleEvent() override { }
+
+    /**
+     * @brief Default start function
+     */
+    void start() override { }
+
+    /**
+     * @brief Default stop function
+     */
+    void end() override { }
 };
-
-/**
- * @brief Changes the current state of the app
- *
- * @tparam T The next scene
- */
-template <typename T> static inline void scene_change_meta()
-{
-    paa::SceneManager::get().changeState<T>();
-}
-
-/**
- * @brief Push a new scene on the current state of the app
- *
- * @tparam T The next scene
- */
-template <typename T> static inline void scene_push_meta()
-{
-    paa::SceneManager::get().pushState<T>();
-}
-
-/**
- * @brief Pop the current state of the app
- */
-static inline void scene_pop_meta() { paa::SceneManager::get().popState(); }
 
 /**
  * @brief Load a configuration file and setup the system

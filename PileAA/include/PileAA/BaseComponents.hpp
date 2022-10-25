@@ -55,15 +55,18 @@ struct Velocity : public Vec2 {
     HL_AUTO_COMPLETE_CANONICAL_FORM(Velocity);
 };
 
-#define PAA_SINGLE_INTEGER_COMPONENT(name, __v)                                \
-    struct name {                                                              \
-        int __v;                                                               \
-        name(const int& __value = 0)                                           \
+#define PAA_SINGLE_VALUE_COMPONENT(__name, __t, __v)                           \
+    struct __name {                                                            \
+        __t __v;                                                               \
+        __name(const __t& __value)                                             \
             : __v(__value)                                                     \
         {                                                                      \
         }                                                                      \
-        HL_AUTO_COMPLETE_CANONICAL_FORM(name);                                 \
-    };
+        HL_AUTO_COMPLETE_CANONICAL_FORM(__name);                               \
+    }
+
+#define PAA_SINGLE_INTEGER_COMPONENT(__name, __v)                              \
+    PAA_SINGLE_VALUE_COMPONENT(__name, int, __v)
 
 PAA_SINGLE_INTEGER_COMPONENT(Depth, z);
 PAA_SINGLE_INTEGER_COMPONENT(Id, id);

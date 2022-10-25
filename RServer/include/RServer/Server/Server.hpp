@@ -32,15 +32,9 @@ namespace net {
                 this->buffer.c_array() + StartOffset + this->size);
         }
 
-        std::string to_string()
-        {
-            return to<std::string>();
-        }
+        std::string to_string() { return to<std::string>(); }
 
-        std::vector<Byte> to_vec()
-        {
-            return to<std::vector<Byte>>();
-        }
+        std::vector<Byte> to_vec() { return to<std::vector<Byte>>(); }
 
         boost::shared_ptr<IMessage> to_msg()
         {
@@ -75,10 +69,10 @@ namespace net {
 
         using shared_message_info_t = boost::shared_ptr<message_info>;
 
-        static shared_message_info_t new_message(const void* data, BufferSizeType size);
+        static shared_message_info_t new_message(
+            const void* data, BufferSizeType size);
 
         static shared_message_info_t new_message(const IMessage& msg);
-
 
         static shared_message_info_t new_message(const std::string& s);
 
@@ -90,9 +84,7 @@ namespace net {
 
         void send(shared_message_info_t message);
 
-
         bool poll(shared_message_info_t& message);
-
 
         bool should_exit() const;
 
@@ -158,7 +150,12 @@ namespace net {
         HL_AUTO_COMPLETE_CANONICAL_FORM(tcp_event_message);
     };
 
-    enum class tcp_event_type : Byte { Invalid, Connexion, Disconnexion, Message };
+    enum class tcp_event_type : Byte {
+        Invalid,
+        Connexion,
+        Disconnexion,
+        Message
+    };
 
     using tcp_event_container = std::variant<void*, tcp_event_connexion,
         tcp_event_disconnexion, tcp_event_message>;
@@ -184,13 +181,14 @@ namespace net {
         template <typename T> T& get() { return std::get<T>(_container); }
 
         tcp_event_type get_type() const
-        { return static_cast<tcp_event_type>(_container.index()); }
+        {
+            return static_cast<tcp_event_type>(_container.index());
+        }
     };
 
     class tcp_server {
     public:
         tcp_server(boost::asio::io_context& io_context, PortType port);
-
 
         ~tcp_server();
 
@@ -203,7 +201,6 @@ namespace net {
 
         void handle_accept(tcp_connection::pointer new_connection,
             const boost::system::error_code& error);
-
 
         void poll_tcp_connections();
 
@@ -221,14 +218,15 @@ namespace net {
 
     class udp_server {
     public:
-        class message_info : public base_message_info<udp_buffer_t, RTYPE_UDP_MESSAGE_HEADER> {
+        class message_info
+            : public base_message_info<udp_buffer_t, RTYPE_UDP_MESSAGE_HEADER> {
         public:
-            message_info(
-                udp::endpoint sender, udp_buffer_t&& buffer, BufferSizeType size);
+            message_info(udp::endpoint sender, udp_buffer_t&& buffer,
+                BufferSizeType size);
 
-            Byte *msg() const;
+            Byte* msg() const;
 
-            void set_msg(Byte *msg);
+            void set_msg(Byte* msg);
 
             BufferSizeType size();
 
@@ -241,7 +239,7 @@ namespace net {
             HL_AUTO_COMPLETE_CANONICAL_FORM(message_info);
 
         private:
-            Byte *_msg;
+            Byte* _msg;
             BufferSizeType _size;
             udp::endpoint _sender;
 
@@ -268,7 +266,6 @@ namespace net {
         void start_receive();
 
     public:
-
         bool poll(shared_message_info_t& info);
 
         void send_to(udp::endpoint target, shared_message_info_t message);
@@ -337,7 +334,11 @@ namespace net {
     class server {
     public:
         server(PortType tcp_port, PortType udp_port, Bool authenticate = false);
-        ~server() { _is_running = false; _thread_io_context_runner->join(); }
+        ~server()
+        {
+            _is_running = false;
+            _thread_io_context_runner->join();
+        }
 
         enum class event_type : Byte {
             Invalid,
@@ -363,7 +364,7 @@ namespace net {
             //     tcp_connection::shared_message_info_t msg);
 
             main_message(remote_client::pointer sender,
-                        tcp_connection::shared_message_info_t msg);
+                tcp_connection::shared_message_info_t msg);
 
             remote_client::pointer sender() const override;
             std::string to_string() const override;
@@ -423,8 +424,10 @@ namespace net {
         bool on_tcp_event_message(event& event, tcp_event& tcp_event);
 
         bool poll_udp(event& event, udp_server::shared_message_info_t& msg);
-        bool on_udp_feed_init(event& event, udp_server::shared_message_info_t& msg);
-        bool on_udp_event_message(event& event, udp_server::shared_message_info_t& msg);
+        bool on_udp_feed_init(
+            event& event, udp_server::shared_message_info_t& msg);
+        bool on_udp_event_message(
+            event& event, udp_server::shared_message_info_t& msg);
 
     public:
         remote_client::pointer get_client(ClientID id);

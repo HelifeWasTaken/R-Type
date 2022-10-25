@@ -23,7 +23,7 @@
 /**
  * @brief Gets the input handler
  */
-#define PAA_INPUT paa::InputHandler::get()
+#define PAA_INPUT paa::InputHandler::getInstance()
 
 /**
  * @brief Gets the resource manager

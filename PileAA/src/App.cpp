@@ -33,7 +33,7 @@ bool App::isRunning() const
 bool App::run()
 {
     auto& window = paa::Screen::get();
-    auto& input = paa::InputHandler::get();
+    auto& input = paa::InputHandler::getInstance();
     auto& ecs = paa::EcsInstance::get();
     auto& scene = paa::SceneManager::get();
     auto& batch = paa::BatchRendererInstance::get();
@@ -46,10 +46,9 @@ bool App::run()
     while (isRunning()) {
         Event event;
 
-        input.update(); // TODO: Should it be here?
+        input.update();
         delta.update();
 
-        // TODO: Maybe change this to an if statement instead of a while
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
@@ -61,7 +60,7 @@ bool App::run()
 
             ImGui::SFML::ProcessEvent(event);
 
-            input.handleEvent(event); // TODO: Have a better input manager
+            input.eventUpdate(event);
 
             scene.handleEvent();
         }
@@ -183,7 +182,8 @@ static inline void load_configuration_file_window(nlohmann::json& json)
     auto& screen = Screen::get();
 
     if (json.find("window") == json.end()) {
-        spdlog::info("PileAA: No window configuration found using default (800,600) 120fps");
+        spdlog::info("PileAA: No window configuration found using default "
+                     "(800,600) 120fps");
         screen.create(VideoMode(800, 600), "PileAA");
         screen.setFramerateLimit(120);
         DeltaTimerInstance::get().setFpsTarget(120);
@@ -198,12 +198,12 @@ static inline void load_configuration_file_window(nlohmann::json& json)
         screen.create(VideoMode(width, height), title);
         screen.setFramerateLimit(fps);
         DeltaTimerInstance::get().setFpsTarget(fps);
-        spdlog::info("PileAA: Window created: {} {}x{} at {}fps", title, width, height, fps);
+        spdlog::info("PileAA: Window created: {} {}x{} at {}fps", title, width,
+            height, fps);
     } catch (const nlohmann::json::exception& e) {
         throw App::Error(
             std::string("window: load_configuration_file - Invalid json file: ")
-            + e.what()
-        );
+            + e.what());
     }
 }
 
@@ -232,7 +232,7 @@ void setup_paa_system(const std::string& configuration_filename)
 {
     spdlog::info("PileAA: Setting up system");
 
-    InputHandler::get();
+    InputHandler::getInstance();
     spdlog::info("PileAA: InputHandler created");
 
     ResourceManagerInstance::get();
@@ -258,7 +258,8 @@ void setup_paa_system(const std::string& configuration_filename)
 
     load_configuration_file(configuration_filename);
 
-    ImGui::SFML::Init(Screen::get());
+    spdlog::info("PileAA: ImGui setup");
+    assert(ImGui::SFML::Init(Screen::get()));
     spdlog::info("PileAA: ImGui created");
 
     spdlog::info("PileAA: system setup complete");
@@ -268,13 +269,13 @@ void stop_paa_system()
 {
     spdlog::info("PileAA: Stopping PileAA system");
 
-    InputHandler::release();
+    InputHandler::destroyInstance();
     spdlog::info("PileAA: InputHandler released");
 
     ResourceManagerInstance::release();
     spdlog::info("PileAA: ResourceManager released");
 
-    AnimationRegisterInstance::get();
+    AnimationRegisterInstance::release();
     spdlog::info("PileAA: AnimationRegister released");
 
     EcsInstance::release();

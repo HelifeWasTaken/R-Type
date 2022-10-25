@@ -1,15 +1,16 @@
 #include "RServer/Messages/Types.hpp"
 #include "RServer/Server/Server.hpp"
 #include <algorithm>
-#include <unordered_map>
 #include <functional>
+#include <unordered_map>
 
 class Room {
 private:
     rtype::net::PlayerID _hostID = 0;
 
     std::array<rtype::net::Bool, RTYPE_PLAYER_COUNT> _connected_players;
-    std::unordered_map<rtype::net::ClientID, rtype::net::PlayerID> _client_to_index;
+    std::unordered_map<rtype::net::ClientID, rtype::net::PlayerID>
+        _client_to_index;
 
     rtype::net::server& _server;
 
@@ -31,7 +32,8 @@ public:
     rtype::net::PlayerID getHostID() const { return _hostID; }
     void setHostID(rtype::net::PlayerID id) { _hostID = id; }
 
-    rtype::net::PlayerID addPlayer(rtype::net::ClientID client) {
+    rtype::net::PlayerID addPlayer(rtype::net::ClientID client)
+    {
         if (hasStarted()) {
             return RTYPE_INVALID_PLAYER_ID;
         }
@@ -45,7 +47,8 @@ public:
         return RTYPE_INVALID_PLAYER_ID;
     }
 
-    void removePlayer(rtype::net::ClientID client) {
+    void removePlayer(rtype::net::ClientID client)
+    {
         auto index = _client_to_index[client];
 
         if (index == _hostID) {
@@ -61,21 +64,24 @@ public:
         _client_to_index.erase(client);
     }
 
-    bool clientIsInRoom(rtype::net::ClientID client) const {
+    bool clientIsInRoom(rtype::net::ClientID client) const
+    {
         return _client_to_index.find(client) != _client_to_index.end();
     }
 
-    bool isFull() const {
-        return std::all_of(_connected_players.begin(),
-                            _connected_players.end(),
-                            [](bool b) { return b; });
+    bool isFull() const
+    {
+        return std::all_of(_connected_players.begin(), _connected_players.end(),
+            [](bool b) { return b; });
     }
 
-    bool isEmpty() const {
+    bool isEmpty() const
+    {
         return _hostID == RTYPE_INVALID_PLAYER_ID || _client_to_index.empty();
     }
 
-    bool launchGame() {
+    bool launchGame()
+    {
         if (isEmpty()) {
             return false;
         }
@@ -83,11 +89,10 @@ public:
         return true;
     }
 
-    bool hasStarted() const {
-        return _started;
-    }
+    bool hasStarted() const { return _started; }
 
-    bool stop() {
+    bool stop()
+    {
         if (isEmpty()) {
             return false;
         }
@@ -95,27 +100,33 @@ public:
         return true;
     }
 
-    void main_broadcast(const rtype::net::IMessage& message, rtype::net::ClientID except = 0xFFFF) {
+    void main_broadcast(const rtype::net::IMessage& message,
+        rtype::net::ClientID except = 0xFFFF)
+    {
         auto buffer = message.serialize();
         for (auto& client : _client_to_index) {
             if (client.first != except) {
-                _server.get_client(client.first)->send_main(
-                    buffer.data(), buffer.size());
+                _server.get_client(client.first)
+                    ->send_main(buffer.data(), buffer.size());
             }
         }
     }
 
-    void feed_broadcast(const rtype::net::IMessage& message, rtype::net::ClientID except = 0xFFFF) {
+    void feed_broadcast(const rtype::net::IMessage& message,
+        rtype::net::ClientID except = 0xFFFF)
+    {
         auto buffer = message.serialize();
         for (auto& client : _client_to_index) {
             if (client.first != except) {
-                _server.get_client(client.first)->send_feed(
-                    buffer.data(), buffer.size());
+                _server.get_client(client.first)
+                    ->send_feed(buffer.data(), buffer.size());
             }
         }
     }
 
-    std::unordered_map<rtype::net::ClientID, rtype::net::PlayerID> get_clients() const {
+    std::unordered_map<rtype::net::ClientID, rtype::net::PlayerID>
+    get_clients() const
+    {
         return _client_to_index;
     }
 };

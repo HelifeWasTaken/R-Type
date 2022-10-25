@@ -1,5 +1,5 @@
-#include "poc.hpp"
 #include "RServer/Server/Server.hpp"
+#include "poc.hpp"
 #include <iostream>
 
 static rtype::net::tcp_server* ref_s;
@@ -18,9 +18,7 @@ static void display_event(rtype::net::tcp_event& event)
             ref.get_message()->to_string());
         ref_s->send(ref.get_id(),
             rtype::net::tcp_connection::new_message(
-                rtype::net::TextMessage("pong\n")
-            )
-        );
+                rtype::net::TextMessage("pong\n")));
     }
 }
 

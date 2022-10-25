@@ -3,18 +3,17 @@
 namespace rtype {
 namespace net {
 
-    TCPClient::TCPClient(boost::asio::io_context& io_context, const char* host,
-                                                            const char* port)
-                                                    : _resolver(io_context)
-                                                    , _query(host, "daytime")
-                                                    , _endpoint_iterator(_resolver.resolve({ host, port }))
-                                                    , _socket(io_context)
-                                                    , _buf_recv(new tcp_buffer_t)
+    TCPClient::TCPClient(
+        boost::asio::io_context& io_context, const char* host, const char* port)
+        : _resolver(io_context)
+        , _query(host, "daytime")
+        , _endpoint_iterator(_resolver.resolve({ host, port }))
+        , _socket(io_context)
+        , _buf_recv(new tcp_buffer_t)
     {
         _is_connected = false;
 
-        boost::system::error_code error
-                = boost::asio::error::host_not_found;
+        boost::system::error_code error = boost::asio::error::host_not_found;
         boost::asio::ip::tcp::resolver::iterator end;
         while (error && _endpoint_iterator != end) {
             _socket.close();
@@ -29,7 +28,8 @@ namespace net {
 
         receive();
 
-        auto msg = tcp_connection::new_message(SignalMarker(message_code::CONN_INIT));
+        auto msg = tcp_connection::new_message(
+            SignalMarker(message_code::CONN_INIT));
         // CONN_INIT
         send(msg->buffer, msg->size);
     }
@@ -37,11 +37,12 @@ namespace net {
     void TCPClient::_add_event(shared_message_t message)
     {
         if (message->code() == message_code::CONN_INIT_REP) {
-            auto msg = dynamic_cast<ConnectionInitReply *>(message.get());
+            auto msg = dynamic_cast<ConnectionInitReply*>(message.get());
             _id = msg->playerId();
             _token = msg->token();
             _is_connected = true;
-            spdlog::info("TCPClient: Client is syncronised: Id({}) Token({})", _id, _token);
+            spdlog::info("TCPClient: Client is syncronised: Id({}) Token({})",
+                _id, _token);
         } else {
             add_event(message);
         }
@@ -54,7 +55,8 @@ namespace net {
             [this, buf_recv = _buf_recv](
                 const boost::system::error_code& ec, BufferSizeType bytes) {
                 if (!ec) {
-                    spdlog::info("TCPClient::receive: Received {} bytes", bytes);
+                    spdlog::info(
+                        "TCPClient::receive: Received {} bytes", bytes);
                     auto msg = parse_messages(_buf_recv->c_array(), bytes);
                     for (auto& m : msg) {
                         _add_event(m);
@@ -64,11 +66,11 @@ namespace net {
                     spdlog::error("UDPClient::receive: {}", ec.message());
                     _stopped = true;
                 }
-            }
-        );
+            });
     }
 
-    void TCPClient::send(boost::shared_ptr<tcp_buffer_t> message, BufferSizeType size)
+    void TCPClient::send(
+        boost::shared_ptr<tcp_buffer_t> message, BufferSizeType size)
     {
         if (size == (BufferSizeType)-1)
             size = message->size();
@@ -82,8 +84,7 @@ namespace net {
                 } else {
                     spdlog::error("UDPClient::send: {}", ec.message());
                 }
-            }
-        );
+            });
     }
 
     void TCPClient::send(const tcp_buffer_t& message, BufferSizeType size)

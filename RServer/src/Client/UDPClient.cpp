@@ -20,19 +20,16 @@ namespace net {
         return sizeof(_magic) + sizeof(_id);
     }
 
-    ClientID UDPClient::HeaderMessage::get_sender_id() const
-    {
-        return _id;
-    }
+    ClientID UDPClient::HeaderMessage::get_sender_id() const { return _id; }
 
-    UDPClient::UDPClient(boost::asio::io_context& io_context, const char* host,
-                                                            const char* port)
-                                    : _resolver(io_context)
-                                    , _query(boost::asio::ip::udp::v4(), host, "daytime")
-                                    , _receiver_endpoint(*_resolver.resolve({ host, port }))
-                                    , _socket(io_context)
-                                    , _sender_endpoint()
-                                    , _buf_recv(new udp_buffer_t)
+    UDPClient::UDPClient(
+        boost::asio::io_context& io_context, const char* host, const char* port)
+        : _resolver(io_context)
+        , _query(boost::asio::ip::udp::v4(), host, "daytime")
+        , _receiver_endpoint(*_resolver.resolve({ host, port }))
+        , _socket(io_context)
+        , _sender_endpoint()
+        , _buf_recv(new udp_buffer_t)
     {
         _socket.open(boost::asio::ip::udp::v4());
         _stopped = false;
@@ -55,8 +52,8 @@ namespace net {
             _token = feedinit->token();
             _connected = true;
             spdlog::info("UDPClient::receive: "
-                        "You are Sync with the server now: token({})",
-                        feedinit->token());
+                         "You are Sync with the server now: token({})",
+                feedinit->token());
         } else {
             add_event(message);
         }
@@ -66,10 +63,11 @@ namespace net {
     {
         spdlog::info("UDPClient::receive: Started receiving");
         _socket.async_receive_from(boost::asio::buffer(*_buf_recv),
-        _sender_endpoint,
-        [this, buf_recv = _buf_recv](
-            const boost::system::error_code& ec, BufferSizeType bytes) {
-                spdlog::info("UDPClient::receive: readed a message of size: {}", bytes);
+            _sender_endpoint,
+            [this, buf_recv = _buf_recv](
+                const boost::system::error_code& ec, BufferSizeType bytes) {
+                spdlog::info(
+                    "UDPClient::receive: readed a message of size: {}", bytes);
                 if (ec) {
                     spdlog::error("UDPClient::receive: {}", ec.message());
                     _stopped = true;
@@ -80,38 +78,36 @@ namespace net {
                     spdlog::info("UDPClient::receive: Invalid Magic !");
                     return;
                 }
-                auto msg = parse_message(
-                    reinterpret_cast<Byte*>(
-                        _buf_recv->c_array() + RTYPE_UDP_MESSAGE_HEADER),
-                    bytes - RTYPE_UDP_MESSAGE_HEADER);
+                auto msg
+                    = parse_message(reinterpret_cast<Byte*>(_buf_recv->c_array()
+                                        + RTYPE_UDP_MESSAGE_HEADER),
+                        bytes - RTYPE_UDP_MESSAGE_HEADER);
                 if (msg == nullptr) {
-                    spdlog::error(
-                        "UDPClient::receive: Invalid message");
+                    spdlog::error("UDPClient::receive: Invalid message");
                 } else {
                     _add_event(msg);
                 }
                 receive();
-            }
-        );
+            });
     }
 
-    void UDPClient::send(rtype::net::udp_server::shared_message_info_t message, BufferSizeType size)
+    void UDPClient::send(rtype::net::udp_server::shared_message_info_t message,
+        BufferSizeType size)
     {
         spdlog::info("UDPClient::send: Sending message");
         if (size == (BufferSizeType)-1)
             size = message->size();
-        _socket.async_send_to(
-        boost::asio::buffer(message->msg(), size),
-        _receiver_endpoint,
-            [message](const boost::system::error_code& ec, BufferSizeType bytes) {
+        _socket.async_send_to(boost::asio::buffer(message->msg(), size),
+            _receiver_endpoint,
+            [message](
+                const boost::system::error_code& ec, BufferSizeType bytes) {
                 (void)bytes;
                 if (!ec) {
                     spdlog::info("UDPClient::send: Sent {} bytes", bytes);
                 } else {
                     spdlog::error("UDPClient::receive: {}", ec.message());
                 }
-            }
-        );
+            });
     }
 
     void UDPClient::send(const IMessage& msg)
@@ -120,15 +116,9 @@ namespace net {
         this->send(shared_message, shared_message->size());
     }
 
-    bool UDPClient::is_connected() const
-    {
-        return _connected;
-    }
+    bool UDPClient::is_connected() const { return _connected; }
 
-    TokenType UDPClient::token() const
-    {
-        return _token;
-    }
+    TokenType UDPClient::token() const { return _token; }
 
 }
 }

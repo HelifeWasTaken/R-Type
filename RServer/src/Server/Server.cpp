@@ -1,14 +1,14 @@
 #include "RServer/Server/Server.hpp"
-#include <vector>
 #include <assert.h>
 #include <boost/endian.hpp>
 #include <iostream>
+#include <vector>
 
 namespace rtype {
 namespace net {
 
-
-    tcp_connection::shared_message_info_t tcp_connection::new_message(const void* data, BufferSizeType size)
+    tcp_connection::shared_message_info_t tcp_connection::new_message(
+        const void* data, BufferSizeType size)
     {
         assert(size < tcp_buffer_t::size());
         message_info* mesg = new message_info;
@@ -17,74 +17,63 @@ namespace net {
         return shared_message_info_t(mesg);
     }
 
-    tcp_connection::shared_message_info_t tcp_connection::new_message(const IMessage& msg)
+    tcp_connection::shared_message_info_t tcp_connection::new_message(
+        const IMessage& msg)
     {
         auto buffer = msg.serialize();
         return new_message(buffer.data(), buffer.size());
     }
 
-    tcp_connection::shared_message_info_t tcp_connection::new_message(const std::string& s)
+    tcp_connection::shared_message_info_t tcp_connection::new_message(
+        const std::string& s)
     {
-        return new_message(
-            reinterpret_cast<const void*>(s.c_str()), s.size()
-        );
+        return new_message(reinterpret_cast<const void*>(s.c_str()), s.size());
     }
 
-    void tcp_connection::start()
-    {
-        handle_read();
-    }
+    void tcp_connection::start() { handle_read(); }
 
-    tcp_connection::pointer tcp_connection::create(boost::asio::io_context& io_context)
+    tcp_connection::pointer tcp_connection::create(
+        boost::asio::io_context& io_context)
     {
         return tcp_connection::pointer(new tcp_connection(io_context));
     }
 
-    tcp::socket& tcp_connection::socket()
-    {
-        return _socket;
-    }
+    tcp::socket& tcp_connection::socket() { return _socket; }
 
     void tcp_connection::send(tcp_connection::shared_message_info_t message)
-        {
-            spdlog::info(
-                "tcp_connection({}): Starting to send a message!", _id);
-            BufferSizeType index = _send_message_list->async_set(message);
-            _socket.async_send(
-                boost::asio::buffer(message->buffer, message->size),
-                [should_exit = _should_exit,
-                    send_message_list = _send_message_list, index, id = _id](
-                    boost::system::error_code ec, BufferSizeType sended_bytes) {
-                    // TODO: Maybe check sended bytes
-                    (void)sended_bytes;
-                    if (ec) {
-                        // TODO: Maybe check error type
-                        spdlog::error("tcp_connection({}): Error while sending "
-                                      "message({}): {}",
-                            id, index, ec.message());
-                    } else {
-                        spdlog::info("tcp_connection({}): Sucessfully sended "
-                                     "message({})",
-                            id, index);
-                    }
-                    send_message_list->async_remove(index);
-                });
-        }
+    {
+        spdlog::info("tcp_connection({}): Starting to send a message!", _id);
+        BufferSizeType index = _send_message_list->async_set(message);
+        _socket.async_send(boost::asio::buffer(message->buffer, message->size),
+            [should_exit = _should_exit, send_message_list = _send_message_list,
+                index, id = _id](
+                boost::system::error_code ec, BufferSizeType sended_bytes) {
+                // TODO: Maybe check sended bytes
+                (void)sended_bytes;
+                if (ec) {
+                    // TODO: Maybe check error type
+                    spdlog::error("tcp_connection({}): Error while sending "
+                                  "message({}): {}",
+                        id, index, ec.message());
+                } else {
+                    spdlog::info("tcp_connection({}): Sucessfully sended "
+                                 "message({})",
+                        id, index);
+                }
+                send_message_list->async_remove(index);
+            });
+    }
 
     bool tcp_connection::poll(tcp_connection::shared_message_info_t& message)
     {
         return _readed_messages_queue->async_pop(message);
     }
 
-    bool tcp_connection::should_exit() const
-    {
-        return *_should_exit;
-    }
+    bool tcp_connection::should_exit() const { return *_should_exit; }
 
     void tcp_connection::handle_read()
     {
-        spdlog::info(
-            "tcp_connection({}): Starting to read a message!", _id);
+        spdlog::info("tcp_connection({}): Starting to read a message!", _id);
 
         _socket.async_receive(boost::asio::buffer(*_buffer_reader),
             [this, should_exit = _should_exit,
@@ -95,83 +84,90 @@ namespace net {
                 if (error) {
                     // TODO: Maybe check error type
                     spdlog::error("tcp_connection({}): Error while reading "
-                                    "from socket: {}",
+                                  "from socket: {}",
                         id, error.message());
                     *should_exit = true;
                 } else {
                     // TODO: Maybe handle in list there too
                     if (bytes_transferred) {
-                        readed_messages_queue->async_push(
-                            shared_message_info_t(
-                                new tcp_connection::message_info(std::move(*buffer_reader),
-                                    bytes_transferred)));
+                        readed_messages_queue->async_push(shared_message_info_t(
+                            new tcp_connection::message_info(
+                                std::move(*buffer_reader), bytes_transferred)));
                         spdlog::info("tcp_connection({}): Added to message "
-                                        "queue a new message",
+                                     "queue a new message",
                             id);
                     } else {
-                        spdlog::warn("tcp_connection({}): Received empty message");
+                        spdlog::warn(
+                            "tcp_connection({}): Received empty message");
                     }
                     if (!(*should_exit))
                         handle_read();
                 }
-            }
-        );
+            });
     }
 
     tcp_connection::tcp_connection(boost::asio::io_context& io_context)
-                                    : _socket(io_context)
-                                    , _send_message_list(new async_automated_sparse_array<tcp_connection::message_info>)
-                                    , _should_exit(new std::atomic_bool)
-                                    , _buffer_reader(new tcp_buffer_t)
-                                    , _readed_messages_queue(new async_queue<shared_message_info_t>)
+        : _socket(io_context)
+        , _send_message_list(
+              new async_automated_sparse_array<tcp_connection::message_info>)
+        , _should_exit(new std::atomic_bool)
+        , _buffer_reader(new tcp_buffer_t)
+        , _readed_messages_queue(new async_queue<shared_message_info_t>)
     {
         *_should_exit = false;
     }
 
-    tcp_event_connexion::tcp_event_connexion(ClientID id) : _id(id)
-    {
-
-    }
-
-    ClientID tcp_event_connexion::get_id() const
-    { return _id; }
-
-    tcp_event_disconnexion::tcp_event_disconnexion(ClientID id) : _id(id)
+    tcp_event_connexion::tcp_event_connexion(ClientID id)
+        : _id(id)
     {
     }
 
-    ClientID tcp_event_disconnexion::get_id() const
-    { return _id; }
+    ClientID tcp_event_connexion::get_id() const { return _id; }
 
-    tcp_event_message::tcp_event_message(ClientID id,
-                    tcp_connection::shared_message_info_t message)
-                    : _id(id)
-                    , _message(message)
+    tcp_event_disconnexion::tcp_event_disconnexion(ClientID id)
+        : _id(id)
     {
     }
 
-    ClientID tcp_event_message::get_id() const
-    { return _id; }
+    ClientID tcp_event_disconnexion::get_id() const { return _id; }
+
+    tcp_event_message::tcp_event_message(
+        ClientID id, tcp_connection::shared_message_info_t message)
+        : _id(id)
+        , _message(message)
+    {
+    }
+
+    ClientID tcp_event_message::get_id() const { return _id; }
 
     tcp_connection::shared_message_info_t tcp_event_message::get_message()
-    { return _message; }
+    {
+        return _message;
+    }
 
-    tcp_event::tcp_event() : _container(nullptr)
-    {}
+    tcp_event::tcp_event()
+        : _container(nullptr)
+    {
+    }
 
-    tcp_event::tcp_event(tcp_event_connexion event) : _container(event)
-    {}
+    tcp_event::tcp_event(tcp_event_connexion event)
+        : _container(event)
+    {
+    }
 
     tcp_event::tcp_event(tcp_event_message event)
-                    : _container(event)
-    {}
+        : _container(event)
+    {
+    }
 
-    tcp_event::tcp_event(tcp_event_disconnexion event) : _container(event)
-    {}
+    tcp_event::tcp_event(tcp_event_disconnexion event)
+        : _container(event)
+    {
+    }
 
     tcp_server::tcp_server(boost::asio::io_context& io_context, PortType port)
-                        : _io_context(io_context)
-                        , _acceptor(io_context, tcp::endpoint(tcp::v4(), port))
+        : _io_context(io_context)
+        , _acceptor(io_context, tcp::endpoint(tcp::v4(), port))
     {
         spdlog::info("tcp_server: launched: 127.0.0.1:{}", port);
         _is_started = true;
@@ -187,12 +183,10 @@ namespace net {
             _tcp_connection_polling_thread->join();
     }
 
-    bool tcp_server::poll(tcp_event& event)
-    {
-        return _events.async_pop(event);
-    }
+    bool tcp_server::poll(tcp_event& event) { return _events.async_pop(event); }
 
-    void tcp_server::send(ClientID id, tcp_connection::shared_message_info_t message)
+    void tcp_server::send(
+        ClientID id, tcp_connection::shared_message_info_t message)
     {
         auto it = _connections.async_get(id);
         spdlog::info("tcp_server: Trying to send a message to {}", id);
@@ -200,7 +194,7 @@ namespace net {
             it->send(message);
         else
             spdlog::error("tcp_server: Error while sending message: "
-                            "connection {} not found",
+                          "connection {} not found",
                 id);
     }
 
@@ -238,7 +232,8 @@ namespace net {
             new boost::thread([this]() {
                 while (_is_started) {
                     tcp_connection::shared_message_info_t message;
-                    for (BufferSizeType i = 0; i < _connections.async_size(); ++i) {
+                    for (BufferSizeType i = 0; i < _connections.async_size();
+                         ++i) {
                         auto connection = _connections.async_get(i);
                         if (!connection) {
                             continue;
@@ -251,23 +246,21 @@ namespace net {
                                 "tcp_server: Disconnection from {}", i);
                         } else {
                             while (connection->poll(message)) {
-                                _events.async_push(std::move(
-                                    tcp_event_message(i, message)));
+                                _events.async_push(
+                                    std::move(tcp_event_message(i, message)));
                                 spdlog::info(
-                                    "tcp_server: Polled a message from {}",
-                                    i);
+                                    "tcp_server: Polled a message from {}", i);
                             }
                         }
                     }
                 }
-            })
-        );
+            }));
     }
 
     udp_server::message_info::message_info(
-                udp::endpoint sender, udp_buffer_t&& buffer, BufferSizeType size)
-                : base_message_info(std::move(buffer), size)
-                , _sender(sender)
+        udp::endpoint sender, udp_buffer_t&& buffer, BufferSizeType size)
+        : base_message_info(std::move(buffer), size)
+        , _sender(sender)
     {
         Byte* pos = this->buffer.c_array();
         Serializer serializer(pos, size);
@@ -276,20 +269,23 @@ namespace net {
         _size = buffer.size();
     }
 
-    Byte *udp_server::message_info::msg() const { return _msg; }
+    Byte* udp_server::message_info::msg() const { return _msg; }
 
-    void udp_server::message_info::set_msg(Byte *msg) { _msg = msg; }
+    void udp_server::message_info::set_msg(Byte* msg) { _msg = msg; }
 
     BufferSizeType udp_server::message_info::size() { return _size; }
 
-    void udp_server::message_info::set_size(BufferSizeType size) { _size = size; }
+    void udp_server::message_info::set_size(BufferSizeType size)
+    {
+        _size = size;
+    }
 
     udp::endpoint udp_server::message_info::sender() { return _sender; }
 
     ClientID udp_server::message_info::sender_id() { return _sender_id; }
 
     udp_server::shared_message_info_t udp_server::new_message(
-            ClientID sender, const void* data, BufferSizeType size)
+        ClientID sender, const void* data, BufferSizeType size)
     {
         static const MagicNumber magic = RTYPE_MAGIC_NUMBER;
 
@@ -325,7 +321,7 @@ namespace net {
     }
 
     void udp_server::handle_receive_from(const boost::system::error_code& error,
-                                    BufferSizeType bytes_transferred)
+        BufferSizeType bytes_transferred)
     {
         if (!error && bytes_transferred > 0) {
             _recv_queue->async_push(
@@ -354,7 +350,8 @@ namespace net {
         return _recv_queue->async_pop(info);
     }
 
-    void udp_server::send_to(udp::endpoint target, shared_message_info_t message)
+    void udp_server::send_to(
+        udp::endpoint target, shared_message_info_t message)
     {
         BufferSizeType index = _messages->async_set(message);
 
@@ -367,14 +364,15 @@ namespace net {
                 BufferSizeType bytes_transferred) {
                 (void)bytes_transferred;
                 if (!error) {
-                    spdlog::info("udp_server: Successfully seneded a message of size({})", buffer_copy->size());
+                    spdlog::info("udp_server: Successfully seneded a message "
+                                 "of size({})",
+                        buffer_copy->size());
                 } else {
                     spdlog::error("udp_server: Cannot write: error {}: {}",
                         error.value(), error.message());
                 }
                 messages->async_remove(index);
-            }
-        );
+            });
     }
 
     udp_server::udp_server(boost::asio::io_context& io_context, PortType port)
@@ -394,7 +392,8 @@ namespace net {
     {
     }
 
-    void remote_client::init_main_channel(tcp_server& main_channel, ClientID main_id)
+    void remote_client::init_main_channel(
+        tcp_server& main_channel, ClientID main_id)
     {
         _main_channel = &main_channel;
         _main_id = main_id;
@@ -415,7 +414,7 @@ namespace net {
             _main_channel->send(_main_id, std::move(msg));
         } else {
             spdlog::error("remote_client: Cannot send to main channel: no "
-                            "connection");
+                          "connection");
         }
     }
 
@@ -448,7 +447,7 @@ namespace net {
             _feed_channel->send_to(_feed_endpoint, std::move(msg));
         } else {
             spdlog::error("remote_client: Cannot send to feed channel: no "
-                            "connection");
+                          "connection");
         }
     }
 
@@ -476,13 +475,16 @@ namespace net {
 
     ClientID remote_client::id() const { return _main_id; }
 
-    udp::endpoint remote_client::get_feed_endpoint() const { return _feed_endpoint; }
+    udp::endpoint remote_client::get_feed_endpoint() const
+    {
+        return _feed_endpoint;
+    }
 
     server::server(PortType tcp_port, PortType udp_port, Bool authenticate)
-            : _io_context(boost::asio::io_context())
-            , _tcp_server(new tcp_server(_io_context, tcp_port))
-            , _udp_server(new udp_server(_io_context, udp_port))
-            , _authenticate(authenticate)
+        : _io_context(boost::asio::io_context())
+        , _tcp_server(new tcp_server(_io_context, tcp_port))
+        , _udp_server(new udp_server(_io_context, udp_port))
+        , _authenticate(authenticate)
     {
         _is_running = true;
         run();
@@ -495,22 +497,40 @@ namespace net {
     {
     }
 
-    remote_client::pointer server::main_message::sender() const { return _sender; }
-    std::string server::main_message::to_string() const { return _msg->to_string(); }
-    std::vector<Byte> server::main_message::to_vec() const { return _msg->to_vec(); }
-    boost::shared_ptr<IMessage> server::main_message::to_msg() { return _msg->to_msg(); }
+    remote_client::pointer server::main_message::sender() const
+    {
+        return _sender;
+    }
+    std::string server::main_message::to_string() const
+    {
+        return _msg->to_string();
+    }
+    std::vector<Byte> server::main_message::to_vec() const
+    {
+        return _msg->to_vec();
+    }
+    boost::shared_ptr<IMessage> server::main_message::to_msg()
+    {
+        return _msg->to_msg();
+    }
 
     message_code server::main_message::code() const { return _msg->code(); }
 
-    server::feed_message::feed_message(remote_client::pointer sender,
-                udp_server::shared_message_info_t msg)
-                : _sender(sender)
-                , _msg(msg)
+    server::feed_message::feed_message(
+        remote_client::pointer sender, udp_server::shared_message_info_t msg)
+        : _sender(sender)
+        , _msg(msg)
     {
     }
 
-    remote_client::pointer server::feed_message::sender() const { return _sender; }
-    std::string server::feed_message::to_string() const { return _msg->to_string(); }
+    remote_client::pointer server::feed_message::sender() const
+    {
+        return _sender;
+    }
+    std::string server::feed_message::to_string() const
+    {
+        return _msg->to_string();
+    }
     std::vector<Byte> server::feed_message::to_vec() const
     {
         return _msg->to_vec();
@@ -526,10 +546,13 @@ namespace net {
     bool server::on_tcp_event_connexion(event& event, tcp_event& tcp_event)
     {
         auto conn = tcp_event.get<tcp_event_connexion>();
-        spdlog::info("server: on_tcp_connection: New client connected: {}", conn.get_id());
+        spdlog::info("server: on_tcp_connection: New client connected: {}",
+            conn.get_id());
 
         event.type = rtype::net::server::event_type::Connect;
-        event.client = _clients.insert_or_assign(conn.get_id(), remote_client::create()).first->second;
+        event.client
+            = _clients.insert_or_assign(conn.get_id(), remote_client::create())
+                  .first->second;
         event.client->init_main_channel(*_tcp_server, conn.get_id());
         return true;
     }
@@ -537,7 +560,8 @@ namespace net {
     bool server::on_tcp_event_disconnexion(event& event, tcp_event& tcp_event)
     {
         auto disconn = tcp_event.get<tcp_event_disconnexion>();
-        spdlog::info("server: on_tcp_disconnection: Client disconnected: {}", disconn.get_id());
+        spdlog::info("server: on_tcp_disconnection: Client disconnected: {}",
+            disconn.get_id());
 
         event.type = rtype::net::server::event_type::Disconnect;
         event.client = get_client(disconn.get_id());
@@ -550,14 +574,20 @@ namespace net {
         {
             tcp_event_message& msg_event = tcp_event.get<tcp_event_message>();
             event.client = get_client(msg_event.get_id());
-            event.message = std::make_unique<main_message>(event.client, msg_event.get_message());
+            event.message = std::make_unique<main_message>(
+                event.client, msg_event.get_message());
         }
         if (_authenticate) {
             if (event.message->code() == message_code::CONN_INIT) {
-                spdlog::info("server: on_tcp_message: ConnectionInitReply sent to client: {}", event.client->id());
-                event.client->send_main(ConnectionInitReply(event.client->id(), RTYPE_CONN_INIT_REPLY_TOKEN));
+                spdlog::info("server: on_tcp_message: ConnectionInitReply sent "
+                             "to client: {}",
+                    event.client->id());
+                event.client->send_main(ConnectionInitReply(
+                    event.client->id(), RTYPE_CONN_INIT_REPLY_TOKEN));
             } else {
-                spdlog::info("server: on_tcp_message: New message from client: {}", event.client->id());
+                spdlog::info(
+                    "server: on_tcp_message: New message from client: {}",
+                    event.client->id());
             }
         }
         return true;
@@ -580,18 +610,23 @@ namespace net {
         return true;
     }
 
-    bool server::on_udp_event_message(event& event, udp_server::shared_message_info_t& msg)
+    bool server::on_udp_event_message(
+        event& event, udp_server::shared_message_info_t& msg)
     {
-        spdlog::info("server: on_udp_message: New message from client: {} of code {}", msg->sender_id(), (int8_t)msg->code());
+        spdlog::info(
+            "server: on_udp_message: New message from client: {} of code {}",
+            msg->sender_id(), (int8_t)msg->code());
         event.type = rtype::net::server::event_type::FeedMessage;
         event.client = get_client(msg->sender_id());
         event.message = std::make_unique<feed_message>(event.client, msg);
         return true;
     }
 
-    bool server::on_udp_feed_init(event& event, udp_server::shared_message_info_t& msg)
+    bool server::on_udp_feed_init(
+        event& event, udp_server::shared_message_info_t& msg)
     {
-        spdlog::info("server: on_udp_feed_init: New feed from client: {}", msg->sender_id());
+        spdlog::info("server: on_udp_feed_init: New feed from client: {}",
+            msg->sender_id());
         event.client = get_client(msg->sender_id());
         event.client->init_feed_channel(*_udp_server, msg->sender());
         event.client->send_feed(FeedInitReply(RTYPE_FEED_INIT_TOKEN));
@@ -638,7 +673,7 @@ namespace net {
     void server::run()
     {
         _thread_io_context_runner = boost::shared_ptr<boost::thread>(
-            new boost::thread([&is_running=_is_running, &io = _io_context]() {
+            new boost::thread([&is_running = _is_running, &io = _io_context]() {
                 while (is_running)
                     io.run();
             }));
@@ -655,10 +690,8 @@ namespace net {
 
     remote_client::pointer server::get_client(tcp_connection::pointer conn)
     {
-        auto it = std::find_if(
-            _clients.begin(), _clients.end(), [conn](const auto& c) {
-                return c.second->id() == conn->get_id();
-            });
+        auto it = std::find_if(_clients.begin(), _clients.end(),
+            [conn](const auto& c) { return c.second->id() == conn->get_id(); });
         if (it != _clients.end()) {
             return it->second.get()->shared_from_this();
         } else {

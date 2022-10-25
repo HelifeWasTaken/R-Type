@@ -14,20 +14,14 @@ Timer& Timer::setTarget(const TimeUnit& target)
     return *this;
 }
 
-TimeUnit DeltaTimer::getDeltaTime() const
-{
-    return _deltaTime;
-}
+TimeUnit DeltaTimer::getDeltaTime() const { return _deltaTime; }
 
 void DeltaTimer::setFpsTarget(const unsigned int& fpsTarget)
 {
     _fpsTarget = 1000.f / static_cast<float>(fpsTarget);
 }
 
-unsigned int DeltaTimer::getFpsTarget() const
-{
-    return _fpsTarget;
-}
+unsigned int DeltaTimer::getFpsTarget() const { return _fpsTarget; }
 
 void DeltaTimer::update()
 {

@@ -31,9 +31,11 @@ ControllerKeyboard& internal_paa_setup_base_keyboard(PAA_ENTITY entity)
         Keyboard::Key::Z, Keyboard::Key::X, Keyboard::Key::E, Keyboard::Key::C,
         Keyboard::Key::R, Keyboard::Key::F, Keyboard::Key::V, Keyboard::Key::T,
         Keyboard::Key::G };
+    Controller controller_ptr(new ControllerKeyboard);
+    PAA_ECS.insert<Controller>(entity, std::move(controller_ptr));
 
-    auto& controller
-        = internal_paa_setup_base_and_get<ControllerKeyboard>(entity);
+    ControllerKeyboard& controller = *dynamic_cast<ControllerKeyboard*>(
+        PAA_ECS.get_component<Controller>(entity).get());
 
     for (unsigned int id = 0; id < 10; ++id) {
         controller.setKey(id, keys[id]);

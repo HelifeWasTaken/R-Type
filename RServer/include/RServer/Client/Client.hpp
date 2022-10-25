@@ -1,7 +1,7 @@
 #pragma once
 
-#include "RServer/Client/UDPClient.hpp"
 #include "RServer/Client/TCPClient.hpp"
+#include "RServer/Client/UDPClient.hpp"
 
 namespace rtype {
 namespace net {
@@ -33,7 +33,7 @@ namespace net {
          */
         UDP_TCP_Client(const char* host_tcp, const char* host_udp,
             const char* tcp_port, const char* udp_port);
-        
+
         /**
          * @brief Destroy the udp tcp client object
          */

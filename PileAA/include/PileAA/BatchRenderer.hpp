@@ -12,7 +12,8 @@ namespace paa {
  */
 class BatchRenderer {
 private:
-    std::vector<std::pair<Depth, std::vector<std::shared_ptr<Drawable>>>> _drawables;
+    std::vector<std::pair<Depth, std::vector<std::shared_ptr<Drawable>>>>
+        _drawables;
 
 public:
     /**

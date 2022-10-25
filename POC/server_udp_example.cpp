@@ -1,6 +1,6 @@
+#include "RServer/Server/Server.hpp"
 #include "poc.hpp"
 #include <iostream>
-#include "RServer/Server/Server.hpp"
 
 static rtype::net::udp_server* ref_s;
 
@@ -16,8 +16,8 @@ void poc_udp_server_example()
 
         while (s.poll(msg)) {
             spdlog::info("UDP Message: {}", msg->to_string());
-            ref_s->send_to(
-                msg->sender(), rtype::net::udp_server::new_message(0, "pong\n"));
+            ref_s->send_to(msg->sender(),
+                rtype::net::udp_server::new_message(0, "pong\n"));
         }
     }
 }

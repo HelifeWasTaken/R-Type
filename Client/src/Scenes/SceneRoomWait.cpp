@@ -2,7 +2,7 @@
 
 using namespace rtype::net;
 
-static PAA_SCENE_DECL(waiting_room) *self = nullptr;
+static PAA_SCENE_DECL(waiting_room) * self = nullptr;
 
 static void manage_room_client_connect(shared_message_t msg)
 {
@@ -22,7 +22,8 @@ static void manage_room_client_disconnect(shared_message_t msg)
         spdlog::error("Client: Failed to parse UserDisconnectFromRoom message");
         return;
     }
-    spdlog::info("Client: Player {} disconnected from room", rep->get_disconnected_user_id());
+    spdlog::info("Client: Player {} disconnected from room",
+        rep->get_disconnected_user_id());
     g_game.connected_players[rep->get_disconnected_user_id()] = false;
     if (rep->get_new_host_id() == g_game.id) {
         g_game.is_host = true;
@@ -53,11 +54,15 @@ static void manage_server_events()
         return;
 
     switch (msg->code()) {
-    case message_code::ROOM_CLIENT_CONNECT: return manage_room_client_connect(msg);
-    case message_code::ROOM_CLIENT_DISCONNECT: return manage_room_client_disconnect(msg);
-    case message_code::LAUNCH_GAME_REP: return manage_launch_game(msg);
+    case message_code::ROOM_CLIENT_CONNECT:
+        return manage_room_client_connect(msg);
+    case message_code::ROOM_CLIENT_DISCONNECT:
+        return manage_room_client_disconnect(msg);
+    case message_code::LAUNCH_GAME_REP:
+        return manage_launch_game(msg);
     default:
-        spdlog::info("Client waiting_room: Received message of type {}", (int)msg->code());
+        spdlog::info("Client waiting_room: Received message of type {}",
+            (int)msg->code());
         break;
     }
 }
@@ -68,26 +73,23 @@ PAA_START_CPP(waiting_room)
 {
     self = this;
 
-    std::memset(g_game.connected_players.data(), 0, g_game.connected_players.size());
+    std::memset(
+        g_game.connected_players.data(), 0, g_game.connected_players.size());
     g_game.connected_players[g_game.id] = true;
 
-    gui.addObject(
-        paa::GuiFactory::new_button("Launch game", []() {
-            if (g_game.is_host) {
-                g_game.service.tcp().send(SignalMarker(message_code::LAUNCH_GAME));
-                self->server_log->setText("Requested the server to launch the game...");
-            } else {
-                self->server_log->setText("You are not the host of the room");
-            }
-        })
-    );
+    gui.addObject(paa::GuiFactory::new_button("Launch game", []() {
+        if (g_game.is_host) {
+            g_game.service.tcp().send(SignalMarker(message_code::LAUNCH_GAME));
+            self->server_log->setText(
+                "Requested the server to launch the game...");
+        } else {
+            self->server_log->setText("You are not the host of the room");
+        }
+    }));
     gui.addObject(server_log);
     gui.addObject(paa::GuiFactory::new_gui_text("Token: " + g_game.room_token));
-    gui.addObject(
-        paa::GuiFactory::new_button("Disconnect", []() {
-            PAA_SET_SCENE(client_connect);
-        })
-    );
+    gui.addObject(paa::GuiFactory::new_button(
+        "Disconnect", []() { PAA_SET_SCENE(client_connect); }));
 }
 
 PAA_UPDATE_CPP(waiting_room)

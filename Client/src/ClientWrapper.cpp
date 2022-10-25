@@ -5,24 +5,24 @@ namespace rtype {
 namespace game {
 
     bool ClientWrapper::run(const std::string& host,
-                            const rtype::net::PortType& tcp_port,
-                            const rtype::net::PortType& udp_port)
+        const rtype::net::PortType& tcp_port,
+        const rtype::net::PortType& udp_port)
     {
         try {
             this->host = host;
             this->tcp_port = tcp_port;
             this->udp_port = udp_port;
 
-            client = std::make_shared<net::Client>(
-                host.c_str(), host.c_str(),
+            client = std::make_shared<net::Client>(host.c_str(), host.c_str(),
                 std::to_string(tcp_port).c_str(),
                 std::to_string(udp_port).c_str());
 
             return is_service_on();
         } catch (const std::exception& e) {
             spdlog::error("ClientWrapper::run: tcp({}:{}) or udp({}:{}) "
-                            "could not be reached or permission was denied.",
-                            host, tcp_port, host, udp_port);
+                          "could not be reached or permission was denied.",
+                host, tcp_port, host, udp_port);
+            client = nullptr;
         }
         return false;
     }
@@ -36,20 +36,15 @@ namespace game {
             return run(json["host"], json["tcp_port"], json["udp_port"]);
         } catch (const std::exception& e) {
             spdlog::error("ClientWrapper::run: configuration file {} "
-                            "could not be opened or is invalid.", configuration_file);
+                          "could not be opened or is invalid.",
+                configuration_file);
             return false;
         }
     }
 
-    bool ClientWrapper::run()
-    {
-        return run(host, tcp_port, udp_port);
-    }
+    bool ClientWrapper::run() { return run(host, tcp_port, udp_port); }
 
-    void ClientWrapper::stop()
-    {
-        client = nullptr;
-    }
+    void ClientWrapper::stop() { client = nullptr; }
 
     bool ClientWrapper::is_service_on() const
     {

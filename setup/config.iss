@@ -2,6 +2,7 @@
 #define MyAppVersion "1.0"
 #define MyAppPublisher "PileAA Corp."
 #define MyAppExeName "r-type_client.exe"
+#define MyAppServerExeName "r-type_server.exe"
 #define BuildType "Debug"
 
 [Setup]
@@ -30,8 +31,8 @@ Source: "..\build\target\*"; DestDir: "{app}\"; Flags: ignoreversion recursesubd
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\Client\binary\{#MyAppExeName}"
-Name: "{autoprograms}\{#MyAppName} Server"; Filename: "{app}\Server\binary\{#MyAppExeName}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\Client\binary\\{#MyAppExeName}"; Tasks: desktopicon
+Name: "{autoprograms}\{#MyAppName} Server"; Filename: "{app}\Server\binary\{#MyAppServerExeName}"
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\Client\binary\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\Client\binary\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent

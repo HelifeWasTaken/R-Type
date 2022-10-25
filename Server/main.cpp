@@ -241,7 +241,7 @@ public:
 
 int main()
 {
-    std::ifstream ifs("../Client.conf");
+    std::ifstream ifs("../Server.conf");
     nlohmann::json json;
 
     ifs >> json;

@@ -19,11 +19,15 @@
 #endif
 
 #ifndef RTYPE_PLAYER_SPEED
-#define RTYPE_PLAYER_SPEED 0.5f
+#define RTYPE_PLAYER_SPEED paa::Vector2f(150.f, 100.f)
 #endif
 
 #ifndef RTYPE_PLAYER_FRAME_RATE
 #define RTYPE_PLAYER_FRAME_RATE 50
+#endif
+
+#ifndef RTYPE_PLAYER_SPRITE_SCALE
+#define RTYPE_PLAYER_SPRITE_SCALE paa::Vector2f(2.25, 2.25)
 #endif
 
 #ifndef RTYPE_SHOOT_BUTTON
@@ -87,15 +91,17 @@ namespace game {
         }
 
         SerializablePlayer(const paa::Controller& controller,
-            const paa::Position& position, const paa::Health& health)
+            const paa::Position& position, const paa::Health& health,
+            const paa::Id& id)
         {
-            set_from_components(controller, position, health);
+            set_from_components(controller, position, health, id);
         }
 
         std::vector<net::Byte> serialize() const override
         {
             net::Serializer s;
             s << this->data;
+            s.add_bytes(pos.serialize());
             return s.data;
         }
 
@@ -108,7 +114,8 @@ namespace game {
         }
 
         void set_from_components(const paa::Controller& controller,
-            const paa::Position& pos, const paa::Health& health)
+            const paa::Position& pos, const paa::Health& health,
+            const paa::Id& id)
         {
             const paa::Vector2f xy = controller->getAxisXY();
 
@@ -118,7 +125,8 @@ namespace game {
                 .set_move_right(xy.x > 20.f)
                 .set_move_up(xy.y < -20.f)
                 .set_move_down(xy.y > 20.f)
-                .set_shoot(controller->isButtonPressed(0));
+                .set_shoot(controller->isButtonPressed(0))
+                .set_player(id.id);
         }
 
         void set_from_entity(const PAA_ENTITY& e)
@@ -126,7 +134,8 @@ namespace game {
             paa::DynamicEntity entity = e;
             return set_from_components(entity.getComponent<paa::Controller>(),
                 entity.getComponent<paa::Position>(),
-                entity.getComponent<paa::Health>());
+                entity.getComponent<paa::Health>(),
+                entity.getComponent<paa::Id>());
         }
 
         SerializablePlayer& set_bdata(const bool& value, mask_t mask)
@@ -262,6 +271,7 @@ namespace game {
         paa::Timer _syncTimer;
         paa::Timer _hurtTimer;
         paa::Timer _frameTimer;
+        paa::Timer _yFrameUpdate;
 
         bool _is_hurt = false;
 
@@ -286,8 +296,11 @@ namespace game {
         {
             _syncTimer.setTarget(RTYPE_PLAYER_SYNC_RATE);
             _frameTimer.setTarget(RTYPE_PLAYER_FRAME_RATE);
+
             _original_scale = _spriteRef->getScale();
             use_frame();
+
+            spdlog::warn("Id: {}", id.id);
         }
 
         ~APlayer() = default;
@@ -337,7 +350,7 @@ namespace game {
                 _spriteRef->setScale(_original_scale);
                 _spriteRef->setColor(sf::Color::White);
                 _is_hurt = false;
-            } else {
+            } else if (_is_hurt) {
                 _is_hurt = true;
                 paa::Vector2f scale = _spriteRef->getScale();
                 scale.x += (paa::Random::rand() % 4 - 2) / 10.f;
@@ -349,28 +362,30 @@ namespace game {
 
         void use_frame()
         {
-            // _spriteRef->useAnimation(std::string("frame_") +
-            // std::to_string(_y_frame));
+            const std::string anim = std::to_string(_id.id) + "_" + std::to_string(_y_frame);
+            _spriteRef->useAnimation(anim);
         }
 
         void update_position()
         {
-            auto axis = _controllerRef->getAxisXY();
-            const double cspeed
-                = RTYPE_PLAYER_SPEED * PAA_DELTA_TIMER.getDeltaTime();
+            static const auto speed = RTYPE_PLAYER_SPEED;
 
-            _positionRef.x += axis.x() > 0 ? cspeed : 0;
-            _positionRef.x -= axis.x() < 0 ? cspeed : 0;
-            _positionRef.y += axis.y() > 0 ? cspeed : 0;
-            _positionRef.y -= axis.y() < 0 ? cspeed : 0;
+            const double xspeed = speed.x * PAA_DELTA_TIMER.getDeltaTime();
+            const double yspeed = speed.x * PAA_DELTA_TIMER.getDeltaTime();
+
+            auto axis = _controllerRef->getAxisXY();
+
+            _positionRef.x -= axis.x() > 0 ? xspeed : 0;
+            _positionRef.x += axis.x() < 0 ? xspeed : 0;
+            _positionRef.y -= axis.y() > 0 ? yspeed : 0;
+            _positionRef.y += axis.y() < 0 ? yspeed : 0;
 
             if (_frameTimer.isFinished()) {
-                axis.y() < 0 ? ++_y_frame : --_y_frame;
+                _frameTimer.restart();
+                axis.y() > 0 ? ++_y_frame : --_y_frame;
             }
             _y_frame = std::clamp(_y_frame, 0, RTYPE_PLAYER_Y_FRAMES - 1);
-
-            // TODO: Change sprite texture based on input
-            // use_frame();
+            use_frame();
         }
 
         void update()
@@ -383,6 +398,7 @@ namespace game {
 
         void on_collision(const paa::CollisionBox& other)
         {
+
             if (other.get_id() == CollisionType::POWER_UP) {
                 // TODO: Add power up
                 // This might be a good place to use a visitor pattern
@@ -391,6 +407,7 @@ namespace game {
                 // TODO: Implement wall collision
             }
 
+            /*
             const bool hurtable_object
                 = other.get_id() == CollisionType::ENEMY_BULLET
                 || other.get_id() == CollisionType::ENEMY;
@@ -402,6 +419,7 @@ namespace game {
                 _hurtTimer.restart();
                 _is_hurt = true;
             }
+            */
         }
 
         void add_shooter(Shooter& shooter) { _shooterList.push_back(shooter); }
@@ -427,6 +445,11 @@ namespace game {
             paa::Health& health
                 = entity.attachHealth(paa::Health { RTYPE_PLAYER_MAX_HEALTH });
             paa::Sprite& sprite = entity.attachSprite("player");
+
+            sprite->setScale(RTYPE_PLAYER_SPRITE_SCALE);
+
+            paa::Controller cmove = controller;
+            entity.insertComponent(std::move(cmove));
 
             sprite->setPosition(position.x, position.y);
 

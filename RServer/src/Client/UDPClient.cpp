@@ -7,6 +7,8 @@ namespace net {
     {
         Serializer s(buffer.data(), buffer.size());
 
+        spdlog::warn("Here i readed that: ");
+        dump_memory(buffer.data(), buffer.size());
         s >> _magic >> _id;
     }
 
@@ -97,6 +99,8 @@ namespace net {
         spdlog::info("UDPClient::send: Sending message");
         if (size == (BufferSizeType)-1)
             size = message->size();
+        spdlog::warn("Here i sended that");
+        dump_memory(message->msg(), size);
         _socket.async_send_to(boost::asio::buffer(message->msg(), size),
             _receiver_endpoint,
             [message](

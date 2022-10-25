@@ -24,7 +24,6 @@ static paa::Controller new_simulated_controller()
 
 PAA_START_CPP(game_scene)
 {
-
     for (int i = 0; i < RTYPE_PLAYER_COUNT; i++) {
         if (g_game.connected_players[i]) {
             paa::Controller c = i == g_game.id ? new_keyboard() : new_simulated_controller();
@@ -36,6 +35,20 @@ PAA_START_CPP(game_scene)
 PAA_UPDATE_CPP(game_scene)
 {
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
+
+    auto& tcp = g_game.service.tcp();
+    auto& udp = g_game.service.udp();
+
+    shared_message_t msg;
+    while (tcp.poll(msg) || udp.poll(msg)) {
+        if (msg->code() == message_code::UPDATE_PLAYER) {
+            const auto sp = parse_message<UpdateMessage>(msg);
+            dump_memory(sp->data());
+            const rtype::game::SerializablePlayer p(sp->data());
+            paa::DynamicEntity e = g_game.players_entities[p.get_player()];
+            e.getComponent<rtype::game::Player>()->update_info(p);
+        }
+    }
 }
 
 PAA_EVENTS_CPP(game_scene) { }

@@ -36,6 +36,8 @@ static bool connect_server_if_not_connected()
 
 PAA_START_CPP(client_connect)
 {
+    std::cout << "Wesh " << std::endl;
+
     self = this;
 
     PAA_ECS.clear();

@@ -186,7 +186,6 @@ static inline void load_configuration_file_window(nlohmann::json& json)
                      "(800,600) 120fps");
         screen.create(VideoMode(800, 600), "PileAA");
         screen.setFramerateLimit(120);
-        DeltaTimerInstance::get().setFpsTarget(120);
         return;
     }
     try {
@@ -197,7 +196,6 @@ static inline void load_configuration_file_window(nlohmann::json& json)
         const auto& fps = window["fps"].get<int>();
         screen.create(VideoMode(width, height), title);
         screen.setFramerateLimit(fps);
-        DeltaTimerInstance::get().setFpsTarget(fps);
         spdlog::info("PileAA: Window created: {} {}x{} at {}fps", title, width,
             height, fps);
     } catch (const nlohmann::json::exception& e) {

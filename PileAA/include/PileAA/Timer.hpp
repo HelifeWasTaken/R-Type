@@ -38,7 +38,6 @@ class DeltaTimer : public Clock {
 private:
     TimeUnit _deltaTime = 0.0;
     TimeUnit _lastTime = 0.0;
-    float _fpsTarget = 1000.f / 60.f;
 
 public:
     /**
@@ -57,20 +56,6 @@ public:
      * @return TimeUnit
      */
     TimeUnit getDeltaTime() const;
-
-    /**
-     * @brief Get the Fps Target object
-     *
-     * @return unsigned int
-     */
-    unsigned int getFpsTarget() const;
-
-    /**
-     * @brief Set the Fps Target object
-     *
-     * @param fpsTarget
-     */
-    void setFpsTarget(const unsigned int& fpsTarget);
 
     /**
      * @brief Update the Delta Time object

@@ -9,6 +9,8 @@
 #include <optional>
 #include <queue>
 #include <vector>
+#include <unordered_map>
+#include <functional>
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Joystick.hpp>

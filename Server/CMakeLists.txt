@@ -25,3 +25,7 @@ if(MSVC)
     target_compile_options(${PROJECT_NAME} PUBLIC "/ZI")
     target_link_options(${PROJECT_NAME} PUBLIC "/INCREMENTAL")
 endif()
+
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_SOURCE_DIR}/../Client.conf ${CMAKE_BINARY_DIR}/target/Server/Server.conf
+)

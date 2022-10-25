@@ -63,7 +63,7 @@ namespace net {
                     }
                     receive();
                 } else {
-                    spdlog::error("UDPClient::receive: {}", ec.message());
+                    spdlog::error("TCPClient::receive: {}", ec.message());
                     _stopped = true;
                 }
             });
@@ -82,7 +82,7 @@ namespace net {
                 if (!ec) {
                     spdlog::info("TCPClient::send: Sent {} bytes", bytes);
                 } else {
-                    spdlog::error("UDPClient::send: {}", ec.message());
+                    spdlog::error("TCPClient::send: {}", ec.message());
                 }
             });
     }

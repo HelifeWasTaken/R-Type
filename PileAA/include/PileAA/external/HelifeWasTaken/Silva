@@ -40,7 +40,8 @@
     #if defined(_MSC_VER)
         #define SILVA_ECS_PRETTY_FUNCTION __FUNCSIG__
     #elif defined(__GNUC__) || defined(__GNUG__) || defined(__clang__)
-        #define SILVA_ECS_PRETTY_FUNCTION __PRETTY_FUNCTION__
+//       #define SILVA_ECS_PRETTY_FUNCTION __PRETTY_FUNCTION__
+        #define SILVA_ECS_PRETTY_FUNCTION ""
     #else
         #define SILVA_ECS_PRETTY_FUNCTION __func__ " (pretty function not supported)"
     #endif
@@ -232,7 +233,7 @@ namespace silva {
         template <class Component> component_array<Component>& get_components()
         {
             try {
-                SILVA_ECS_LOG("silva::registry: Getting component {} -> {}", typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
+                // SILVA_ECS_LOG("silva::registry: Getting component {} -> {}", typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
                 return component_cast<Component>(
                     _components[type_index<Component>()]);
             } catch (const std::exception& e) {
@@ -256,7 +257,7 @@ namespace silva {
         component_array<Component> const& get_components() const
         {
             try {
-                SILVA_ECS_LOG("silva::registry: Getting component (const) {} -> {}", typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
+                // SILVA_ECS_LOG("silva::registry: Getting component (const) {} -> {}", typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
                 return component_cast<Component>(
                     _components[type_index<Component>()]);
             } catch (std::exception const& e) {
@@ -276,7 +277,7 @@ namespace silva {
         entity_t spawn_entity()
         {
             if (_killed_entities.empty()) {
-                SILVA_ECS_LOG("silva::registry: Spawning entity {} -> {}", _last_entity_id, SILVA_ECS_PRETTY_FUNCTION);
+                SILVA_ECS_LOG("silva::registry: Spawning entity {} -> {}", _entities_count, SILVA_ECS_PRETTY_FUNCTION);
                 return entity_t(_entities_count++);
             }
             const entity_id_t random_id = *_killed_entities.begin();
@@ -442,8 +443,8 @@ namespace silva {
         template <class Component>
         Component& get_component(entity_t const& e)
         {
-            SILVA_ECS_LOG("silva::registry: Getting component {} from entity {} -> {}",
-                    typeid(Component).name(), e.get_id(), SILVA_ECS_PRETTY_FUNCTION);
+            // SILVA_ECS_LOG("silva::registry: Getting component {} from entity {} -> {}",
+            // typeid(Component).name(), e.get_id(), SILVA_ECS_PRETTY_FUNCTION);
             auto& comps = get_components<Component>();
             if (comps.non_null(e.get_id()))
                 return comps[e.get_id()].value();

@@ -72,5 +72,20 @@ namespace game {
             CollisionType::POWER_UP, e);
     }
 
+    paa::SCollisionBox CollisionFactory::makeEffectZoneCollision(
+            const paa::IntRect& rect, const PAA_ENTITY& e)
+    {
+        return make(
+            rect,
+            [](const paa::CollisionBox& self, const paa::CollisionBox& other) {
+                if (other.get_id() == CollisionType::PLAYER) {
+                    PAA_ECS.kill_entity(self.get_entity());
+                    spdlog::warn("CollisionBox: Player hit effect zone");
+
+                    // GET COMPONENT EffectZoneData
+                }
+            },
+            CollisionType::EFFECT_ZONE, e);
+    }
 }
 }

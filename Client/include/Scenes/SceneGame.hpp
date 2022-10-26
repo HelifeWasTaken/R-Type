@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ClientScenes.hpp"
+#include "Map.hpp"
 
 PAA_SCENE(game_scene)
 {
@@ -12,5 +13,5 @@ PAA_SCENE(game_scene)
     PAA_EVENTS;
     PAA_UPDATE;
 
-    paa::Vector2i movement = { 0, 0 };
+    rtype::game::Map m;
 };

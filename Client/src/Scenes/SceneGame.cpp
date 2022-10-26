@@ -4,6 +4,9 @@
 
 using namespace rtype::net;
 
+unsigned int SCROLL_SPEED = 1;
+unsigned int SCROLL_X = 0;
+
 static paa::Controller new_keyboard()
 {
     paa::ControllerKeyboard *keyboard = new paa::ControllerKeyboard();
@@ -23,6 +26,7 @@ static paa::Controller new_simulated_controller()
 PAA_START_CPP(game_scene)
 {
     spdlog::error("Client: Starting game scene");
+
     for (int i = 0; i < RTYPE_PLAYER_COUNT; i++) {
         spdlog::error("Client: Player {} is {}", i, g_game.connected_players[i] ? "connected" : "disconnected");
         if (g_game.connected_players[i]) {
@@ -31,6 +35,9 @@ PAA_START_CPP(game_scene)
             spdlog::error("Client: Player {} added", i);
         }
     }
+
+    m = rtype::game::Map();
+    m.loadMap("../assets/maps/BydoEmpire/BydoMap.json");
 }
 
 PAA_END_CPP(game_scene)
@@ -47,6 +54,14 @@ PAA_END_CPP(game_scene)
 PAA_UPDATE_CPP(game_scene)
 {
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
+
+    sf::View v = PAA_SCREEN.getView();
+
+    v.setSize(384, 256);
+    v.setCenter(400 + SCROLL_X, 207 / 2);
+
+    PAA_SCREEN.setView(v);
+    SCROLL_X += SCROLL_SPEED;
 
     auto& tcp = g_game.service.tcp();
     auto& udp = g_game.service.udp();

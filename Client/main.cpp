@@ -5,6 +5,7 @@
 #include "Enemies.hpp"
 #include "Bullet.hpp"
 #include "Player.hpp"
+#include "Map.hpp"
 
 Game g_game;
 
@@ -14,7 +15,7 @@ PAA_SCENE(ecs) {
 
     PAA_START {
         PAA_REGISTER_COMPONENTS(rtype::game::Enemy, rtype::game::Bullet,
-                                rtype::game::Player);
+                                rtype::game::Player, rtype::game::EffectZones::EffectZoneData);
 
         PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
             for (const auto&& [e, b] : r.view<rtype::game::Bullet>()) {

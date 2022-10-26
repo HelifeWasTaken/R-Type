@@ -27,7 +27,7 @@
 #endif
 
 #ifndef RTYPE_PLAYER_SPRITE_SCALE
-#define RTYPE_PLAYER_SPRITE_SCALE paa::Vector2f(2.25, 2.25)
+#define RTYPE_PLAYER_SPRITE_SCALE paa::Vector2f(1, 1)
 #endif
 
 #ifndef RTYPE_SHOOT_BUTTON

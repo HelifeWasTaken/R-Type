@@ -184,7 +184,7 @@ static inline void load_configuration_file_window(nlohmann::json& json)
     if (json.find("window") == json.end()) {
         spdlog::info("PileAA: No window configuration found using default "
                      "(800,600) 120fps");
-        screen.create(VideoMode(800, 600), "PileAA");
+        screen.create(VideoMode(800, 600), "PileAA", sf::Style::Close);
         screen.setFramerateLimit(120);
         return;
     }
@@ -194,7 +194,7 @@ static inline void load_configuration_file_window(nlohmann::json& json)
         const auto& height = window["height"].get<int>();
         const auto& title = window["title"].get<std::string>();
         const auto& fps = window["fps"].get<int>();
-        screen.create(VideoMode(width, height), title);
+        screen.create(VideoMode(width, height), title, sf::Style::Close);
         screen.setFramerateLimit(fps);
         spdlog::info("PileAA: Window created: {} {}x{} at {}fps", title, width,
             height, fps);

@@ -12,6 +12,7 @@ namespace game {
         ENEMY_BULLET,
         STATIC_WALL,
         POWER_UP,
+        EFFECT_ZONE,
         NONE
     };
 
@@ -47,6 +48,9 @@ namespace game {
             const paa::IntRect& rect, const PAA_ENTITY& e);
 
         static paa::SCollisionBox makePowerUpCollision(
+            const paa::IntRect& rect, const PAA_ENTITY& e);
+
+        static paa::SCollisionBox makeEffectZoneCollision(
             const paa::IntRect& rect, const PAA_ENTITY& e);
     };
 

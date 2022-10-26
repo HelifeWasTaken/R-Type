@@ -102,7 +102,7 @@ namespace game {
                 paa::DynamicEntity e = PAA_NEW_ENTITY();
 
                 assert(e.getId() > 2);
-                paa::Position& pos = e.attachPosition(posRef);
+                paa::Position& pos = e.attachPosition(paa::Position(posRef));
                 paa::Sprite& sprite = e.attachSprite("bullet");
                 auto bullet = make_bullet<BasicBullet>(aim_angle, pos);
                 e.insertComponent(std::move(bullet));

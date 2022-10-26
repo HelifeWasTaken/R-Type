@@ -44,12 +44,13 @@ namespace game {
         double _aim_angle;
         double _damage;
         bool _destroyed_on_collision;
-        paa::Position& _posRef;
+
+        const PAA_ENTITY _e;
 
     public:
-        ABullet(const BulletType type, const double life_time,
-            const double aim_angle, const double damage,
-            paa::Position& posRef);
+        ABullet(const PAA_ENTITY& e,
+                const BulletType type, const double life_time,
+                const double aim_angle, const double damage);
         virtual ~ABullet() = default;
 
         bool is_alive() const;
@@ -75,8 +76,9 @@ namespace game {
             paa::Vector2f _dir;
 
         public:
-            BasicBullet(const double &aim_angle, paa::Position &posRef)
-                : ABullet(BulletType::BASIC_BULLET, 3000, aim_angle, 1, posRef)
+            BasicBullet(const PAA_ENTITY& e, const double &aim_angle)
+                : ABullet(e, BulletType::BASIC_BULLET,
+                        3000, aim_angle, 1)
                 , _dir(paa::Math::angle_to_direction(aim_angle))
             {
             }
@@ -84,9 +86,10 @@ namespace game {
             void update() override
             {
                 const auto dt = PAA_DELTA_TIMER.getDeltaTime();
+                paa::Position& posRef = PAA_GET_COMPONENT(_e, paa::Position);
 
-                _posRef.x += _dir.x * 200 * dt;
-                _posRef.y += _dir.y * 200 * dt;
+                posRef.x += _dir.x * 200 * dt;
+                posRef.y += _dir.y * 200 * dt;
             }
 
             void on_collision(const paa::CollisionBox& other) override
@@ -101,10 +104,9 @@ namespace game {
             {
                 paa::DynamicEntity e = PAA_NEW_ENTITY();
 
-                assert(e.getId() > 2);
                 paa::Position& pos = e.attachPosition(posRef);
                 paa::Sprite& sprite = e.attachSprite("bullet");
-                auto bullet = make_bullet<BasicBullet>(aim_angle, pos);
+                auto bullet = make_bullet<BasicBullet>(e.getEntity(), aim_angle);
                 e.insertComponent(std::move(bullet));
             }
     };

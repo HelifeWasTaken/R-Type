@@ -10,10 +10,10 @@ namespace game {
     protected:
         paa::Timer _timer;
         double _aim_angle = 0;
-        const paa::Position& _positionRef;
+        paa::DynamicEntity _parentEntity;
 
     public:
-        AShooter(double reloadTime, const paa::Position& posRef);
+        AShooter(const PAA_ENTITY& e, double reloadTime);
         virtual ~AShooter() = default;
 
         bool can_shoot() const;
@@ -36,7 +36,8 @@ namespace game {
 
     class BasicShooter : public AShooter {
         public:
-            BasicShooter(double reloadTime, const paa::Position& posRef) : AShooter(reloadTime, posRef)
+            BasicShooter(const PAA_ENTITY& e, double reloadTime)
+                : AShooter(e, reloadTime)
             {}
 
             ~BasicShooter() = default;

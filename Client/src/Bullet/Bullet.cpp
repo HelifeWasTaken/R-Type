@@ -28,20 +28,23 @@ namespace game {
         s >> id >> type;
     }
 
-    ABullet::ABullet(const BulletType type, const double life_time,
-        const double aim_angle, const double damage, paa::Position& posRef)
-        : _type(type)
+    ABullet::ABullet(const PAA_ENTITY& e,
+                     const BulletType type,
+                     const double life_time,
+                     const double aim_angle,
+                     const double damage)
+        : _e(e)
+        , _type(type)
         , _aim_angle(aim_angle)
         , _damage(damage)
         , _destroyed_on_collision(true)
-        , _posRef(posRef)
     {
         _timer.setTarget(life_time);
     }
 
     bool ABullet::is_alive() const { return !_timer.isFinished(); }
     BulletType ABullet::get_type() const { return _type; }
-    paa::Position& ABullet::get_position() const { return _posRef; }
+    paa::Position& ABullet::get_position() const { return PAA_GET_COMPONENT(_e, paa::Position); }
     double ABullet::get_aim_angle() const { return _aim_angle; }
 
 };

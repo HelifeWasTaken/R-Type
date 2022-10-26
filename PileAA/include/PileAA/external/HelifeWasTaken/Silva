@@ -211,7 +211,7 @@ namespace silva {
             anonymous_t anonyme = component_array<Component>();
 
             SILVA_ECS_LOG("silva::registry: Registering component {} -> {}",
-                typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
+               typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
 
             _components_types_index[std::type_index(typeid(Component))]
                 = _last_component_index++;
@@ -232,7 +232,7 @@ namespace silva {
         template <class Component> component_array<Component>& get_components()
         {
             try {
-                SILVA_ECS_LOG("silva::registry: Getting component {} -> {}", typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
+                //SILVA_ECS_LOG("silva::registry: Getting component {} -> {}", typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
                 return component_cast<Component>(
                     _components[type_index<Component>()]);
             } catch (const std::exception& e) {
@@ -256,7 +256,7 @@ namespace silva {
         component_array<Component> const& get_components() const
         {
             try {
-                SILVA_ECS_LOG("silva::registry: Getting component (const) {} -> {}", typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
+                //SILVA_ECS_LOG("silva::registry: Getting component (const) {} -> {}", typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
                 return component_cast<Component>(
                     _components[type_index<Component>()]);
             } catch (std::exception const& e) {

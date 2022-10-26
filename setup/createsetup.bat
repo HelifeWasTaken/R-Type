@@ -30,5 +30,6 @@ if exist "C:\Program Files (x86)\Inno Setup 6" (
     "%LocalAppData%\Programs\Inno Setup 6\iscc.exe" "%~dp0\config.iss"
 )
 
-
+@if "%1"=="/nopause" goto end
 pause
+:end

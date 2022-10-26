@@ -242,11 +242,16 @@ public:
 int main()
 {
     std::ifstream ifs("../Server.conf");
+    if (!ifs.is_open()) {
+        spdlog::error("Could not open file ../Server.conf");
+        return -1;
+    }
     nlohmann::json json;
 
     ifs >> json;
 
     RTypeServer(json["tcp_port"], json["udp_port"], json["authentificate"])
         .run();
+    ifs.close();
     return 0;
 }

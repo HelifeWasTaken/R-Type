@@ -40,3 +40,8 @@ r-type_client
 
 # Visual Studio
 .vs
+
+# Release
+r-type_setup.exe
+r-type_win32.zip
+r-type_unix.tar.gz

@@ -26,5 +26,7 @@ echo $'#!/bin/sh\npath=$(dirname $0);$path/Server/binary/r-type_server' > RType/
 chmod +x RType/run-server.sh
 chmod +x RType/run-client.sh
 
+tar -czvf r-type_unix.tar.gz RType
+
 echo ""
 echo "The game is into the RType subfolder."

@@ -26,7 +26,7 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]  
-Source: "..\build\target\*"; DestDir: "{app}\"; Flags: ignoreversion recursesubdirs createallsubdirs
+Source: "..\build\target\*"; Excludes: "*.pdb,*.lnk,*.bat"; DestDir: "{app}\"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]

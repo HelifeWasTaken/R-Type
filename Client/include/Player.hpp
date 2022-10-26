@@ -299,7 +299,7 @@ namespace game {
 
             _original_scale = _spriteRef->getScale();
             use_frame();
-
+            _shooterList.push_back(rtype::game::make_shooter<BasicShooter>(BasicShooter(2, positionRef)));
             spdlog::warn("Id: {}", id.id);
         }
 
@@ -323,9 +323,11 @@ namespace game {
 
         void update_shoot()
         {
-            if (_controllerRef->isButtonPressed(0))
+            if (_controllerRef->isButtonPressed(0)) {
+                std::cout << "Shoot" << std::endl;
                 for (auto& shooter : _shooterList)
                     shooter->shoot();
+            }
         }
 
         void update_data()
@@ -458,6 +460,8 @@ namespace game {
 
             // After creating the player, the sprite frame should be updated
             // So that the player has a the correct collision box
+            Shooter shooter = make_shooter<BasicShooter>(200, position);
+            player->add_shooter(shooter);
             const paa::FloatRect g_bounds(sprite->getGlobalBounds());
             const paa::IntRect irect(
                 g_bounds.left, g_bounds.top, g_bounds.width, g_bounds.height);

@@ -29,14 +29,12 @@ namespace game {
     }
 
     ABullet::ABullet(const BulletType type, const double life_time,
-        const double aim_angle, const double damage, const bool from_player,
-        paa::Position& posRef)
+        const double aim_angle, const double damage, paa::Position& posRef)
         : _type(type)
         , _aim_angle(aim_angle)
         , _damage(damage)
         , _destroyed_on_collision(true)
-        , _from_player(from_player)
-        , _posRef(_posRef)
+        , _posRef(posRef)
     {
         _timer.setTarget(life_time);
     }
@@ -45,7 +43,6 @@ namespace game {
     BulletType ABullet::get_type() const { return _type; }
     paa::Position& ABullet::get_position() const { return _posRef; }
     double ABullet::get_aim_angle() const { return _aim_angle; }
-    bool ABullet::is_from_player() const { return _from_player; }
 
 };
 }

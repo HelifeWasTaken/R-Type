@@ -409,8 +409,8 @@ namespace silva {
                     _killed_entities.insert(e);
                 }
                 _to_kill_entities.clear();
-                if (_killed_entities.size() == _entities_count)
-                    _killed_entities.clear();
+                //if (_killed_entities.size() == _entities_count)
+                //    _killed_entities.clear();
             }
             for (const system_t& system : _systems) {
                 system(*this);

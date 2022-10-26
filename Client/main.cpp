@@ -3,6 +3,7 @@
 
 #include "ClientScenes.hpp"
 #include "Enemies.hpp"
+#include "Bullet.hpp"
 #include "Player.hpp"
 
 Game g_game;
@@ -16,8 +17,11 @@ PAA_SCENE(ecs) {
                                 rtype::game::Player);
 
         PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
-            for (const auto&& [_, b] : r.view<rtype::game::Bullet>())
+            for (const auto&& [e, b] : r.view<rtype::game::Bullet>()) {
                 b->update();
+                if (!b->is_alive())
+                    r.kill_entity(e);
+            }
             for (const auto&& [_, e] : r.view<rtype::game::Enemy>())
                 e->update();
         });

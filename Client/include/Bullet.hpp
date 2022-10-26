@@ -1,6 +1,9 @@
 #pragma once
 
 #include "ClientScenes.hpp"
+#include "PileAA/DynamicEntity.hpp"
+#include "PileAA/Math.hpp"
+#include "Bullet.hpp"
 #include <PileAA/Types.hpp>
 #include <cmath>
 
@@ -36,7 +39,6 @@ namespace game {
     private:
         paa::Timer _timer;
         BulletType _type;
-        bool _from_player;
 
     protected:
         double _aim_angle;
@@ -46,7 +48,7 @@ namespace game {
 
     public:
         ABullet(const BulletType type, const double life_time,
-            const double aim_angle, const double damage, const bool from_player,
+            const double aim_angle, const double damage,
             paa::Position& posRef);
         virtual ~ABullet() = default;
 
@@ -55,7 +57,6 @@ namespace game {
         paa::Position& get_position() const;
         double get_aim_angle() const;
         double get_damage() const;
-        bool is_from_player() const;
 
         virtual void update() = 0;
         virtual void on_collision(const paa::CollisionBox& other) = 0;
@@ -69,6 +70,44 @@ namespace game {
         return std::make_shared<B>(std::forward<Args>(args)...);
     }
 
+    class BasicBullet : public ABullet {
+        private:
+            paa::Vector2f _dir;
+
+        public:
+            BasicBullet(const double &aim_angle, paa::Position &posRef)
+                : ABullet(BulletType::BASIC_BULLET, 3000, aim_angle, 1, posRef)
+                , _dir(paa::Math::angle_to_direction(aim_angle))
+            {
+            }
+
+            void update() override
+            {
+                const auto dt = PAA_DELTA_TIMER.getDeltaTime();
+
+                _posRef.x += _dir.x * 200 * dt;
+                _posRef.y += _dir.y * 200 * dt;
+            }
+
+            void on_collision(const paa::CollisionBox& other) override
+            {
+            }
+    };
+
+    class BulletFatory {
+        public:
+            static void make_basic_bullet(float aim_angle,
+                                    paa::Position const& posRef)
+            {
+                paa::DynamicEntity e = PAA_NEW_ENTITY();
+
+                assert(e.getId() > 2);
+                paa::Position& pos = e.attachPosition(posRef);
+                paa::Sprite& sprite = e.attachSprite("bullet");
+                auto bullet = make_bullet<BasicBullet>(aim_angle, pos);
+                e.insertComponent(std::move(bullet));
+            }
+    };
 }
 }
 

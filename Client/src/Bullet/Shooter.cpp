@@ -1,4 +1,6 @@
 #include "Shooter.hpp"
+#include "Bullet.hpp"
+#include "PileAA/Math.hpp"
 
 namespace rtype {
 namespace game {
@@ -24,9 +26,13 @@ namespace game {
 
     void AShooter::aim(const paa::Vector2f& to_aim)
     {
-        const paa::Position fpos = paa::Position(
-            _positionRef.x - to_aim.x, _positionRef.y - to_aim.y);
-        _aim_angle = std::atan2(fpos.y, fpos.x) * 180 / M_PI;
+        _aim_angle = paa::Math::direction_to_angle(_positionRef, to_aim);
+    }
+
+    void BasicShooter::shoot()
+    {
+        if (can_shoot_and_restart())
+            BulletFatory::make_basic_bullet(_aim_angle, _positionRef);
     }
 
 }

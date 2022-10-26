@@ -1,18 +1,15 @@
 #pragma once
 
-#include "Bullet.hpp"
-
-#ifndef M_PI
- #define M_PI       3.14159265358979323846
-#endif
+#include "PileAA/Timer.hpp"
+#include "PileAA/DynamicEntity.hpp"
 
 namespace rtype {
 namespace game {
 
     class AShooter {
-    private:
+    protected:
         paa::Timer _timer;
-        double _aim_angle = -90;
+        double _aim_angle = 0;
         const paa::Position& _positionRef;
 
     public:
@@ -36,5 +33,15 @@ namespace game {
         return std::make_shared<T>(std::forward<Args>(args)...);
     }
 
+
+    class BasicShooter : public AShooter {
+        public:
+            BasicShooter(double reloadTime, const paa::Position& posRef) : AShooter(reloadTime, posRef)
+            {}
+
+            ~BasicShooter() = default;
+
+            void shoot() override final;
+    };
 }
 }

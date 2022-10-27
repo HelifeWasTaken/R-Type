@@ -344,7 +344,7 @@ namespace game {
             // and if the timer is ready
             if (_is_local && _syncTimer.isFinished()) {
                 SerializablePlayer info(_entity.getEntity());
-                if (info != _info) {
+                if (!info.data_is_same(_info)) {
                     g_game.service.udp().send(net::UpdateMessage(
                         _id.id, info, net::message_code::UPDATE_PLAYER));
                     _info = info;

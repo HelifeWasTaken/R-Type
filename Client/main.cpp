@@ -23,16 +23,25 @@ PAA_SCENE(ecs) {
                 if (!b->is_alive())
                     r.kill_entity(e);
             }
-            for (const auto&& [_, e] : r.view<rtype::game::Enemy>())
-                e->update();
-        });
 
-        PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
+            const auto view = PAA_SCREEN.getView();
+            const double left_border = view.getCenter().x - view.getSize().x / 2;
+
+            for (const auto&& [entity, enemy] : r.view<rtype::game::Enemy>()) {
+                enemy->update();
+                const auto& hp = PAA_GET_COMPONENT(entity, paa::Health);
+                const auto& pos = PAA_GET_COMPONENT(entity, paa::Position);
+                if (hp.hp <= 0 || pos.x < left_border) {
+                    r.kill_entity(entity);
+                    // TODO: Sync kill with server
+                }
+            }
+
             for (auto&& [e, player, id] : r.view<rtype::game::Player, paa::Id>()) {
                 player->update();
                 if (player->is_dead()) {
-                    // TODO: Send message to kill player By id
                     r.kill_entity(e);
+                    // TODO: Send message to kill player By id
                 }
             }
         });

@@ -49,7 +49,6 @@ static inline void sys_collision_check(hl::silva::registry& r)
 
     for (auto&& [_, c] : r.view<SCollisionBox>()) {
         q.insert_collision(c.get());
-        spdlog::info("Inserting Collision entity: {}", c->get_entity());
     }
     q.check_collision();
 }

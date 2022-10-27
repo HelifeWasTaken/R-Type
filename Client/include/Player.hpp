@@ -189,7 +189,7 @@ namespace game {
 
         SerializablePlayer& set_pos(const paa::Position& pos)
         {
-            this->pos = { static_cast<int>(pos.x), static_cast<int>(pos.y) };
+            this->pos = { static_cast<int>(pos.x) - g_game.scroll, static_cast<int>(pos.y) };
             return *this;
         }
 
@@ -227,7 +227,7 @@ namespace game {
 
         data_t get_hp() const { return get_data(HEALTH_MASK, HEALTH_SHIFT); }
 
-        const net::vector2i& get_pos() const { return pos; }
+        const net::vector2i get_pos() const { return net::vector2i(pos.x + g_game.scroll, pos.y); }
 
         bool data_is_same(const SerializablePlayer& other) const
         {
@@ -324,7 +324,6 @@ namespace game {
         void update_shoot()
         {
             if (_controllerRef->isButtonPressed(0)) {
-                std::cout << "Shoot" << std::endl;
                 for (auto& shooter : _shooterList)
                     shooter->shoot();
             }
@@ -381,6 +380,8 @@ namespace game {
             _positionRef.x += axis.x() < 0 ? xspeed : 0;
             _positionRef.y -= axis.y() > 0 ? yspeed : 0;
             _positionRef.y += axis.y() < 0 ? yspeed : 0;
+
+            _positionRef.x = _positionRef.x - g_game.old_scroll + g_game.scroll;
 
             if (_frameTimer.isFinished()) {
                 _frameTimer.restart();

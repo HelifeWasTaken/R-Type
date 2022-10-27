@@ -13,9 +13,12 @@ struct Game {
     RTYPE_CLIENT service;
     rtype::net::Bool is_host = false;
     rtype::net::ClientID id = 0;
-    std::array<rtype::net::Bool, RTYPE_PLAYER_COUNT> connected_players;
+    std::array<rtype::net::Bool, RTYPE_PLAYER_COUNT> connected_players = { false };
     std::array<PAA_ENTITY, RTYPE_PLAYER_COUNT> players_entities;
     std::string room_token = "";
+
+    int old_scroll = 0;
+    int scroll = 0;
 };
 
 extern Game g_game;

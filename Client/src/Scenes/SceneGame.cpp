@@ -4,8 +4,7 @@
 
 using namespace rtype::net;
 
-unsigned int SCROLL_SPEED = 1;
-unsigned int SCROLL_X = 0;
+static const int SCROLL_SPEED = 1;
 
 static paa::Controller new_keyboard()
 {
@@ -49,6 +48,8 @@ PAA_END_CPP(game_scene)
         }
     }
     PAA_ECS.clear();
+
+    g_game.scroll = 0;
 }
 
 PAA_UPDATE_CPP(game_scene)
@@ -58,10 +59,12 @@ PAA_UPDATE_CPP(game_scene)
     sf::View v = PAA_SCREEN.getView();
 
     v.setSize(384, 256);
-    v.setCenter(400 + SCROLL_X, 207 / 2);
+    v.setCenter(v.getSize().x / 2 + g_game.scroll, 207 / 2);
 
     PAA_SCREEN.setView(v);
-    SCROLL_X += SCROLL_SPEED;
+
+    g_game.old_scroll = g_game.scroll;
+    g_game.scroll += SCROLL_SPEED;
 
     auto& tcp = g_game.service.tcp();
     auto& udp = g_game.service.udp();

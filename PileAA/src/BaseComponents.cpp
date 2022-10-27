@@ -41,12 +41,15 @@ static inline void sys_collision_box_sync(hl::silva::registry& r)
 
 static inline void sys_collision_check(hl::silva::registry& r)
 {
-    auto& screen = PAA_SCREEN;
-    auto view = screen.getViewport(screen.getView());
-    Quadtree q(view.left, view.top, view.width, view.height);
+    const auto& screen = PAA_SCREEN;
+    const auto view = screen.getView();
+    const auto center = view.getCenter();
+    const auto size = view.getSize();
+    Quadtree q(center.x - size.x / 2, center.y - size.y / 2, size.x, size.y);
 
     for (auto&& [_, c] : r.view<SCollisionBox>()) {
         q.insert_collision(c.get());
+        spdlog::info("Inserting Collision entity: {}", c->get_entity());
     }
     q.check_collision();
 }

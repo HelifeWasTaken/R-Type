@@ -381,7 +381,7 @@ namespace game {
             positionRef.y -= axis.y() > 0 ? yspeed : 0;
             positionRef.y += axis.y() < 0 ? yspeed : 0;
 
-            _positionRef.x = _positionRef.x - g_game.old_scroll + g_game.scroll;
+            positionRef.x = positionRef.x - g_game.old_scroll + g_game.scroll;
 
             if (_frameTimer.isFinished()) {
                 _frameTimer.restart();
@@ -389,6 +389,8 @@ namespace game {
             }
             _y_frame = std::clamp(_y_frame, 0, RTYPE_PLAYER_Y_FRAMES - 1);
             use_frame();
+
+            spdlog::warn("PlayerPosition: {}, {}", positionRef.x, positionRef.y);
         }
 
         void update()
@@ -401,12 +403,14 @@ namespace game {
 
         void on_collision(const paa::CollisionBox& other)
         {
+            spdlog::warn("Player {} touched this {}", _id.id, other.get_id());
 
             if (other.get_id() == CollisionType::POWER_UP) {
                 // TODO: Add power up
                 // This might be a good place to use a visitor pattern
             }
             if (other.get_id() == CollisionType::STATIC_WALL) {
+                spdlog::warn("Player {} is touching a wall!", _id.id);
                 // TODO: Implement wall collision
             }
 

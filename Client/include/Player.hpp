@@ -305,7 +305,6 @@ namespace game {
 
             _info = info;
 
-            // positionRef = { (double)info.get_pos().x, (double)info.get_pos().y };
             healthRef.hp = info.get_hp();
 
             /*

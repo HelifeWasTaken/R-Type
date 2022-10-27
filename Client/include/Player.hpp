@@ -306,14 +306,26 @@ namespace game {
             _info = info;
 
 
-            positionRef
-                = { (double)info.get_pos().x, (double)info.get_pos().y };
+            //positionRef
+            //    = { (double)info.get_pos().x, (double)info.get_pos().y };
             healthRef.hp = info.get_hp();
 
+            /*
             _controllerRef->simulateAxisMovement(paa::Joystick::Axis::X,
                 (info.get_move_left() - info.get_move_right()) * 100.f);
             _controllerRef->simulateAxisMovement(paa::Joystick::Axis::Y,
                 (info.get_move_down() - info.get_move_up()) * 100.f);
+            */
+
+            const bool move_left = positionRef.x < info.get_pos().x;
+            const bool move_right = positionRef.x > info.get_pos().x;
+            const bool move_up = positionRef.y > info.get_pos().y;
+            const bool move_down = positionRef.y < info.get_pos().y;
+
+            _controllerRef->simulateAxisMovement(paa::Joystick::Axis::X,
+                move_left ? -100 : move_right ? 100 : 0);
+            _controllerRef->simulateAxisMovement(paa::Joystick::Axis::Y,
+                move_up ? -100 : move_down ? 100 : 0);
 
             info.get_shoot()
                 ? _controllerRef->simulateButtonPress(RTYPE_SHOOT_BUTTON)

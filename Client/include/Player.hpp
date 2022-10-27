@@ -389,8 +389,6 @@ namespace game {
             }
             _y_frame = std::clamp(_y_frame, 0, RTYPE_PLAYER_Y_FRAMES - 1);
             use_frame();
-
-            spdlog::warn("PlayerPosition: {}, {}", positionRef.x, positionRef.y);
         }
 
         void update()

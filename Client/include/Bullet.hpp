@@ -11,6 +11,8 @@ namespace paa {
 class CollisionBox;
 }
 
+#define BASIC_BULLET_SPEED 800
+
 namespace rtype {
 namespace game {
 
@@ -78,7 +80,7 @@ namespace game {
         public:
             BasicBullet(const PAA_ENTITY& e, const double &aim_angle)
                 : ABullet(e, BulletType::BASIC_BULLET,
-                        3000, aim_angle, 1)
+                        1500, aim_angle, 1)
                 , _dir(paa::Math::angle_to_direction(aim_angle))
             {
             }
@@ -88,8 +90,8 @@ namespace game {
                 const auto dt = PAA_DELTA_TIMER.getDeltaTime();
                 paa::Position& posRef = PAA_GET_COMPONENT(_e, paa::Position);
 
-                posRef.x += _dir.x * 200 * dt;
-                posRef.y += _dir.y * 200 * dt;
+                posRef.x += _dir.x * BASIC_BULLET_SPEED * dt;
+                posRef.y += _dir.y * BASIC_BULLET_SPEED * dt;
             }
 
             void on_collision(const paa::CollisionBox& other) override

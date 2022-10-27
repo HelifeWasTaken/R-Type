@@ -212,7 +212,7 @@ namespace silva {
             anonymous_t anonyme = component_array<Component>();
 
             SILVA_ECS_LOG("silva::registry: Registering component {} -> {}",
-                typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
+               typeid(Component).name(), SILVA_ECS_PRETTY_FUNCTION);
 
             _components_types_index[std::type_index(typeid(Component))]
                 = _last_component_index++;

@@ -257,11 +257,9 @@ namespace game {
 
     class APlayer {
     protected:
-        const PAA_ENTITY _entity;
+        paa::DynamicEntity _entity;
         const paa::Id _id;
 
-        paa::Position& _positionRef;
-        paa::Health& _healthRef;
         paa::Sprite _spriteRef;
         paa::Controller _controllerRef;
         ShooterList _shooterList;
@@ -283,13 +281,10 @@ namespace game {
 
     public:
         APlayer(const PAA_ENTITY& entity, const paa::Id& id,
-            paa::Position& positionRef, paa::Health& health,
             paa::Sprite& spriteRef, paa::Controller& controllerRef,
             bool is_local)
             : _entity(entity)
             , _id(id)
-            , _positionRef(positionRef)
-            , _healthRef(health)
             , _spriteRef(spriteRef)
             , _controllerRef(controllerRef)
             , _is_local(is_local)
@@ -299,22 +294,26 @@ namespace game {
 
             _original_scale = _spriteRef->getScale();
             use_frame();
-            _shooterList.push_back(rtype::game::make_shooter<BasicShooter>(BasicShooter(2, positionRef)));
-            spdlog::warn("Id: {}", id.id);
         }
 
         ~APlayer() = default;
 
         void update_info(const SerializablePlayer& info)
         {
+            auto& positionRef = _entity.getComponent<paa::Position>();
+            auto& healthRef = _entity.getComponent<paa::Health>();
+
             _info = info;
-            _positionRef
+
+
+            positionRef
                 = { (double)info.get_pos().x, (double)info.get_pos().y };
+            healthRef.hp = info.get_hp();
+
             _controllerRef->simulateAxisMovement(paa::Joystick::Axis::X,
                 (info.get_move_left() - info.get_move_right()) * 100.f);
             _controllerRef->simulateAxisMovement(paa::Joystick::Axis::Y,
                 (info.get_move_down() - info.get_move_up()) * 100.f);
-            _healthRef.hp = info.get_hp();
 
             info.get_shoot()
                 ? _controllerRef->simulateButtonPress(RTYPE_SHOOT_BUTTON)
@@ -335,7 +334,7 @@ namespace game {
             // We only sync if the player is local
             // and if the timer is ready
             if (_is_local && _syncTimer.isFinished()) {
-                SerializablePlayer info(_entity);
+                SerializablePlayer info(_entity.getEntity());
                 if (info != _info) {
                     g_game.service.udp().send(net::UpdateMessage(
                         _id.id, info, net::message_code::UPDATE_PLAYER));
@@ -375,11 +374,12 @@ namespace game {
             const double yspeed = speed.x * PAA_DELTA_TIMER.getDeltaTime();
 
             auto axis = _controllerRef->getAxisXY();
+            auto& positionRef = _entity.getComponent<paa::Position>();
 
-            _positionRef.x -= axis.x() > 0 ? xspeed : 0;
-            _positionRef.x += axis.x() < 0 ? xspeed : 0;
-            _positionRef.y -= axis.y() > 0 ? yspeed : 0;
-            _positionRef.y += axis.y() < 0 ? yspeed : 0;
+            positionRef.x -= axis.x() > 0 ? xspeed : 0;
+            positionRef.x += axis.x() < 0 ? xspeed : 0;
+            positionRef.y -= axis.y() > 0 ? yspeed : 0;
+            positionRef.y += axis.y() < 0 ? yspeed : 0;
 
             _positionRef.x = _positionRef.x - g_game.old_scroll + g_game.scroll;
 
@@ -427,7 +427,7 @@ namespace game {
 
         void add_shooter(Shooter& shooter) { _shooterList.push_back(shooter); }
 
-        bool is_dead() const { return _healthRef.hp <= 0; }
+        bool is_dead() const { return _entity.getComponent<paa::Health>().hp <= 0; }
 
         bool is_local() const { return _is_local; }
     };
@@ -456,12 +456,12 @@ namespace game {
 
             sprite->setPosition(position.x, position.y);
 
-            Player player = Player(new APlayer(entity.getEntity(), id, position,
-                health, sprite, controller, pid == g_game.id));
+            Player player = Player(new APlayer(entity.getEntity(), id,
+                sprite, controller, pid == g_game.id));
 
             // After creating the player, the sprite frame should be updated
             // So that the player has a the correct collision box
-            Shooter shooter = make_shooter<BasicShooter>(200, position);
+            Shooter shooter = make_shooter<BasicShooter>(entity.getEntity(), 0);
             player->add_shooter(shooter);
             const paa::FloatRect g_bounds(sprite->getGlobalBounds());
             const paa::IntRect irect(

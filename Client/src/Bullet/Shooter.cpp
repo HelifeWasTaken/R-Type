@@ -5,8 +5,9 @@
 namespace rtype {
 namespace game {
 
-    AShooter::AShooter(double reloadTime, const paa::Position& posRef)
-        : _positionRef(posRef)
+    AShooter::AShooter(const PAA_ENTITY& e,
+                       double reloadTime)
+        : _parentEntity(e)
     {
         _timer.setTarget(reloadTime);
     }
@@ -26,13 +27,15 @@ namespace game {
 
     void AShooter::aim(const paa::Vector2f& to_aim)
     {
-        _aim_angle = paa::Math::direction_to_angle(_positionRef, to_aim);
+        _aim_angle = paa::Math::direction_to_angle(
+            _parentEntity.getComponent<paa::Position>(), to_aim);
     }
 
     void BasicShooter::shoot()
     {
         if (can_shoot_and_restart())
-            BulletFatory::make_basic_bullet(_aim_angle, _positionRef);
+            BulletFatory::make_basic_bullet(_aim_angle,
+                _parentEntity.getComponent<paa::Position>());
     }
 
 }

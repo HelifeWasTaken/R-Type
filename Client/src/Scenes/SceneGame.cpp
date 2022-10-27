@@ -1,6 +1,7 @@
 
 #include "ClientScenes.hpp"
 #include "Player.hpp"
+#include "Enemies.hpp"
 
 using namespace rtype::net;
 
@@ -37,6 +38,13 @@ PAA_START_CPP(game_scene)
 
     m = rtype::game::Map();
     m.loadMap("../assets/maps/BydoEmpire/BydoMap.json");
+    double y = 50;
+    double x = 50;
+
+    for (int i = 0; i < 10; i++) {
+        rtype::game::EnemyFactory::make_basic_enemy(x, y);
+        y += 100;
+    }
 }
 
 PAA_END_CPP(game_scene)

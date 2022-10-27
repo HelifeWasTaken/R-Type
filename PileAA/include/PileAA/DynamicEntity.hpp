@@ -218,5 +218,10 @@ public:
         emplaceComponent<SCollisionBox>(collision);
         return getComponent<SCollisionBox>();
     }
+
+    operator PAA_ENTITY()
+    {
+        return _entity;
+    }
 };
 }

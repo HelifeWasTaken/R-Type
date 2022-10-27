@@ -104,8 +104,9 @@ namespace game {
             {
                 paa::DynamicEntity e = PAA_NEW_ENTITY();
 
-                paa::Position& pos = e.attachPosition(paa::Position(posRef));
-                paa::Sprite& sprite = e.attachSprite("bullet");
+                paa::Position& pos = e.attachPosition(posRef);
+                paa::Sprite& sprite = e.attachSprite("basic_bullet");
+                sprite->useAnimation("base_animation");
                 auto bullet = make_bullet<BasicBullet>(e.getEntity(), aim_angle);
                 e.insertComponent(std::move(bullet));
             }

@@ -19,7 +19,8 @@ namespace game {
         bool can_shoot() const;
         bool can_shoot_and_restart();
         double aim_angle() const;
-        void aim(const paa::Vector2f& to_aim);
+        AShooter& aim(const paa::Vector2f& to_aim);
+        AShooter& aim(float const& aim_angle, bool isRadian=false);
         virtual void shoot() = 0;
     };
 
@@ -36,7 +37,7 @@ namespace game {
 
     class BasicShooter : public AShooter {
         public:
-            BasicShooter(const PAA_ENTITY& e, double reloadTime)
+            BasicShooter(const PAA_ENTITY& e, double reloadTime=200)
                 : AShooter(e, reloadTime)
             {}
 

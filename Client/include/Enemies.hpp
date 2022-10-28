@@ -31,12 +31,15 @@ namespace game {
     };
 
     class BasicEnemy : public AEnemy {
+    private:
+        float _cycle;
     public:
         BasicEnemy(const PAA_ENTITY& e) : AEnemy(e, EnemyType::BASIC_ENEMY)
         {
             auto shooter = make_shooter<BasicShooter>(_e);
             shooter->aim(-180);
             _shooterList.push_back(shooter);
+            _cycle = std::rand() % 20;
         }
 
         ~BasicEnemy() = default;
@@ -45,6 +48,15 @@ namespace game {
 
         void update() override
         {
+            paa::Position& posRef = get_position();
+            const float deltaTime = PAA_DELTA_TIMER.getDeltaTime();
+            _cycle += 1.2f * deltaTime;
+            float value = sin(_cycle);
+
+            spdlog::info("value = {}", value);
+            posRef.x -= 70 * deltaTime;
+            posRef.y += value;
+            // posRef.y += value * deltaTime;
             _shooterList[0]->shoot();
         }
 

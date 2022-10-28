@@ -5,7 +5,7 @@
 
 using namespace rtype::net;
 
-static const int SCROLL_SPEED = 2;
+static const int SCROLL_SPEED = 0;
 
 static paa::Controller new_keyboard()
 {
@@ -38,12 +38,13 @@ PAA_START_CPP(game_scene)
 
     m = rtype::game::Map();
     m.loadMap("../assets/maps/BydoEmpire/BydoMap.json");
-    double y = 50;
-    double x = 50;
+    double y = 80;
+    double x = 400;
 
     for (int i = 0; i < 10; i++) {
         rtype::game::EnemyFactory::make_basic_enemy(x, y);
-        y += 100;
+        y += 5;
+        x += 50;
     }
 }
 

@@ -66,7 +66,6 @@ PAA_START_CPP(client_connect)
     }));
 
     gui.addObject(text);
-    spdlog::warn("Client: Waiting for other players to connect...");
 }
 
 PAA_END_CPP(client_connect)

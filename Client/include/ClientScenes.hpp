@@ -16,6 +16,7 @@ struct Game {
     std::array<rtype::net::Bool, RTYPE_PLAYER_COUNT> connected_players = { false };
     std::array<PAA_ENTITY, RTYPE_PLAYER_COUNT> players_entities;
     std::string room_token = "";
+    std::unordered_map<int, PAA_ENTITY> enemies_to_entities;
 
     int old_scroll = 0;
     int scroll = 0;

@@ -13,5 +13,5 @@ PAA_SCENE(game_scene)
     PAA_EVENTS;
     PAA_UPDATE;
 
-    rtype::game::Map m;
+    std::unique_ptr<rtype::game::Map> map;
 };

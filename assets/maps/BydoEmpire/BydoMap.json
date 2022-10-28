@@ -628,36 +628,14 @@
          "draworder":"topdown",
          "id":8,
          "name":"EffectZones",
-         "objects":[
-                {
-                 "height":205.086667746639,
-                 "id":83,
-                 "name":"End",
-                 "rotation":0,
-                 "type":"end_zone",
-                 "visible":true,
-                 "width":29.4832334359307,
-                 "x":4437.71261947189,
-                 "y":1.29596630487607
-                }, 
-                {
-                 "height":205.831903945112,
-                 "id":85,
-                 "name":"ActivateWaves1",
-                 "properties":[
-                        {
-                         "name":"wave",
-                         "type":"string",
-                         "value":"first_wave"
-                        }],
-                 "rotation":0,
-                 "type":"activate_wave",
-                 "visible":true,
-                 "width":47.4220563010796,
-                 "x":70.6285944909696,
-                 "y":1.00897992129957
-                }],
+         "objects":[],
          "opacity":1,
+         "properties":[
+                {
+                 "name":"activate_wave",
+                 "type":"string",
+                 "value":"first_wave,100"
+                }],
          "type":"objectgroup",
          "visible":true,
          "x":0,
@@ -673,11 +651,11 @@
                  "id":86,
                  "name":"enemy",
                  "rotation":0,
-                 "type":"basic_shooter",
+                 "type":"basic_enemy",
                  "visible":true,
                  "width":60.5919366115125,
-                 "x":39.6178047075274,
-                 "y":48.9396411092985
+                 "x":1639.61319476619,
+                 "y":103.671169650598
                 }],
          "opacity":1,
          "type":"objectgroup",

@@ -36,15 +36,7 @@ PAA_START_CPP(game_scene)
         }
     }
 
-    m = rtype::game::Map();
-    m.loadMap("../assets/maps/BydoEmpire/BydoMap.json");
-    double y = 50;
-    double x = 50;
-
-    for (int i = 0; i < 10; i++) {
-        rtype::game::EnemyFactory::make_basic_enemy(x, y);
-        y += 100;
-    }
+    map = std::make_unique<rtype::game::Map>("../assets/maps/BydoEmpire/BydoMap.json");
 }
 
 PAA_END_CPP(game_scene)
@@ -73,6 +65,8 @@ PAA_UPDATE_CPP(game_scene)
 
     g_game.old_scroll = g_game.scroll;
     g_game.scroll += SCROLL_SPEED;
+
+    map->update();
 
     auto& tcp = g_game.service.tcp();
     auto& udp = g_game.service.udp();

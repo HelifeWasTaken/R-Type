@@ -19,19 +19,16 @@ namespace game {
         bool is_hurt = false;
 
     public:
-        AEnemy(const PAA_ENTITY e, EnemyType type) : _type(type),
-                                                     _e(e)
-        {
-        }
+        AEnemy(const PAA_ENTITY e, EnemyType type);
 
         virtual ~AEnemy() = default;
 
-        bool is_alive() const { return true; };
-        EnemyType get_type() const { return _type; };
-        paa::Position& get_position() const { return PAA_GET_COMPONENT(_e, paa::Position); };
+        bool is_alive() const;
+        EnemyType get_type() const;
+        paa::Position& get_position() const;
 
         virtual void update() = 0;
-        virtual void on_collision(const paa::CollisionBox& other) = 0;
+        virtual void on_collision(const paa::CollisionBox& other);
     };
 
     class BasicEnemy : public AEnemy {
@@ -45,7 +42,6 @@ namespace game {
         BasicEnemy(const PAA_ENTITY& e);
         ~BasicEnemy() = default;
 
-        void on_collision(const paa::CollisionBox& other) override;
         void update() override;
     };
 
@@ -60,7 +56,6 @@ namespace game {
         KeyEnemy(const PAA_ENTITY& e);
         ~KeyEnemy() = default;
 
-        void on_collision(const paa::CollisionBox& other) override;
         void update() override;
     };
 

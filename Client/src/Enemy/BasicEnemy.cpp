@@ -15,12 +15,6 @@ namespace rtype {
             _rand_ampl = 1 + static_cast<float>(paa::Random::rand()) * static_cast<float>(2 - 1) / RAND_MAX;
         }
 
-        void BasicEnemy::on_collision(const paa::CollisionBox& other) {
-            if (other.get_id() == rtype::game::CollisionType::PLAYER_BULLET) {
-                PAA_GET_COMPONENT(_e, paa::Health).hp -= 1;
-            }
-        }
-
         void BasicEnemy::update()
         {
             paa::Position& posRef = get_position();
@@ -40,9 +34,19 @@ namespace rtype {
         PAA_ENTITY EnemyFactory::make_basic_enemy(double const& x, double const& y)
         {
             paa::DynamicEntity e = PAA_NEW_ENTITY();
-            e.attachSprite("basic_enemy")->useAnimation("base_animation");
+            auto& s = e.attachSprite("basic_enemy");
+            s->setPosition(x, y);
+            s->useAnimation("base_animation");
+
             e.attachHealth(paa::Health(5));
             e.attachPosition(paa::Position(x, y));
+            e.attachCollision(
+                CollisionFactory::makeEnemyCollision(
+                    paa::recTo<int>(s->getGlobalBounds()),
+                    e.getEntity()
+                )
+            );
+
             Enemy be = EnemyFactory::make_enemy<BasicEnemy>(e.getEntity());
             e.insertComponent(std::move(be));
             return e.getEntity();

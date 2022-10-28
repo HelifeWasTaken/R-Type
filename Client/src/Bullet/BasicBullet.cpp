@@ -19,11 +19,6 @@ namespace rtype {
             posRef.y += _dir.y * BASIC_BULLET_SPEED * dt;
         }
 
-        void BasicBullet::on_collision(const paa::CollisionBox& other)
-        {
-            ABullet::on_collision(other);
-        }
-
         void BulletFactory::make_basic_bullet(float aim_angle,
                                 paa::Position const& posRef,
                                 const bool& from_player)

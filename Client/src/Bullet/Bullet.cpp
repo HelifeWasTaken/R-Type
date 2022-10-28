@@ -25,14 +25,14 @@ namespace game {
 
     void ABullet::on_collision(const paa::CollisionBox& other)
     {
-        if (other.get_id() == CollisionType::PLAYER_BULLET) {
-            if (!_from_player) {
-                PAA_ECS.kill_entity(_e);
-            }
-        } else if (other.get_id() == CollisionType::ENEMY_BULLET) {
-            if (_from_player) {
-                PAA_ECS.kill_entity(_e);
-            }
+        const int other_type = other.get_id();
+        const bool should_kill =
+            (other_type == CollisionType::PLAYER && !_from_player) |
+            (other_type == CollisionType::ENEMY && _from_player) |
+            (other_type == CollisionType::STATIC_WALL);
+
+        if (should_kill) {
+            PAA_ECS.kill_entity(_e);
         }
     }
 };

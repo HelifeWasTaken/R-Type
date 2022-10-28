@@ -61,7 +61,6 @@ namespace game {
         public:
             BasicBullet(const PAA_ENTITY& e, const double &aim_angle, bool from_player);
             void update() override;
-            void on_collision(const paa::CollisionBox& other) override;
     };
 
     class BulletFactory {

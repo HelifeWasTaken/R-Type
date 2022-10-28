@@ -15,9 +15,6 @@ namespace rtype {
             _rand_ampl = .6f + static_cast<float>(std::rand()) * static_cast<float>(2 - .6f) / RAND_MAX;
         }
 
-        void KeyEnemy::on_collision(const paa::CollisionBox& other)
-        {}
-
         void KeyEnemy::update()
         {
             paa::Position& posRef = get_position();
@@ -38,14 +35,22 @@ namespace rtype {
         {
             paa::DynamicEntity e = PAA_NEW_ENTITY();
 
-            e.attachSprite("key_enemy")->useAnimation("key_animation");
+            auto& s = e.attachSprite("key_enemy");
+            s->setPosition(x, y);
+            s->useAnimation("key_animation");
+
             e.attachHealth(paa::Health(3));
             e.attachPosition(paa::Position(x, y));
+            e.attachCollision(
+                CollisionFactory::makeEnemyCollision(
+                    paa::recTo<int>(s->getGlobalBounds()),
+                    e.getEntity()
+                )
+            );
             Enemy ke = EnemyFactory::make_enemy<KeyEnemy>(e.getEntity());
             e.insertComponent(std::move(ke));
             return e.getEntity();
+
         }
-
-
     }
 }

@@ -20,6 +20,7 @@ struct Game {
 
     int old_scroll = 0;
     int scroll = 0;
+    bool lock_scroll = false;
 };
 
 extern Game g_game;

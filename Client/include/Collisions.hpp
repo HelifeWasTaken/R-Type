@@ -49,9 +49,6 @@ namespace game {
 
         static paa::SCollisionBox makePowerUpCollision(
             const paa::IntRect& rect, const PAA_ENTITY& e);
-
-        static paa::SCollisionBox makeEffectZoneCollision(
-            const paa::IntRect& rect, const PAA_ENTITY& e);
     };
 
 }

@@ -177,8 +177,6 @@ namespace silva {
          */
         void registerState(const std::string& stateName, State *state)
         {
-            assert(state != nullptr);
-
             SILVA_STATE_LOG("silva::StateManager: Registering state {} {}", stateName, SILVA_STATE_PRETTY_FUNCTION);
             if (getState(stateName) != nullptr)
                 throw std::runtime_error(std::string("State ") + stateName + " is already registered");

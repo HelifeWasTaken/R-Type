@@ -5,7 +5,7 @@
 
 using namespace rtype::net;
 
-static const int SCROLL_SPEED = 2;
+static const int SCROLL_SPEED = 1;
 
 static paa::Controller new_keyboard()
 {
@@ -23,8 +23,28 @@ static paa::Controller new_simulated_controller()
     return paa::Controller(controller);
 }
 
+
+static void scroll_map(rtype::game::Map& map)
+{
+
+    if (g_game.lock_scroll == false) {
+        g_game.old_scroll = g_game.scroll;
+        g_game.scroll += SCROLL_SPEED;
+        auto v = PAA_SCREEN.getView();
+        v.move(SCROLL_SPEED, 0);
+        PAA_SCREEN.setView(v);
+    }
+    map.update();
+}
+
 PAA_START_CPP(game_scene)
 {
+    g_game.scroll = 0;
+    sf::View v = PAA_SCREEN.getView();
+    v.setSize(384, 256);
+    v.setCenter(v.getSize().x / 2, v.getSize().y / 2);
+    PAA_SCREEN.setView(v);
+
     spdlog::error("Client: Starting game scene");
 
     for (int i = 0; i < RTYPE_PLAYER_COUNT; i++) {
@@ -52,21 +72,12 @@ PAA_END_CPP(game_scene)
     g_game.scroll = 0;
 }
 
+
 PAA_UPDATE_CPP(game_scene)
 {
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
 
-    sf::View v = PAA_SCREEN.getView();
-
-    v.setSize(384, 256);
-    v.setCenter(v.getSize().x / 2 + g_game.scroll, 207 / 2);
-
-    PAA_SCREEN.setView(v);
-
-    g_game.old_scroll = g_game.scroll;
-    g_game.scroll += SCROLL_SPEED;
-
-    map->update();
+    scroll_map(*map);
 
     auto& tcp = g_game.service.tcp();
     auto& udp = g_game.service.udp();

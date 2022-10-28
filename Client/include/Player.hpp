@@ -6,30 +6,6 @@
 #include "RServer/Messages/Types.hpp"
 #include "Shooter.hpp"
 
-#ifndef RTYPE_PLAYER_MAX_HEALTH
-#define RTYPE_PLAYER_MAX_HEALTH 3
-#endif
-
-#ifndef RTYPE_PLAYER_SYNC_RATE
-#define RTYPE_PLAYER_SYNC_RATE 20
-#endif
-
-#ifndef RTYPE_PLAYER_Y_FRAMES
-#define RTYPE_PLAYER_Y_FRAMES 4
-#endif
-
-#ifndef RTYPE_PLAYER_SPEED
-#define RTYPE_PLAYER_SPEED paa::Vector2f(150.f, 100.f)
-#endif
-
-#ifndef RTYPE_PLAYER_FRAME_RATE
-#define RTYPE_PLAYER_FRAME_RATE 50
-#endif
-
-#ifndef RTYPE_PLAYER_SPRITE_SCALE
-#define RTYPE_PLAYER_SPRITE_SCALE paa::Vector2f(1, 1)
-#endif
-
 #ifndef RTYPE_SHOOT_BUTTON
 // TODO: This might change depending on the controller
 // or of the os
@@ -80,179 +56,50 @@ namespace game {
         SerializablePlayer() = default;
         SerializablePlayer(const SerializablePlayer& other) = default;
 
-        SerializablePlayer(const std::vector<net::Byte>& data)
-        {
-            from(data.data(), data.size());
-        }
+        SerializablePlayer(const std::vector<net::Byte>& data);
 
-        SerializablePlayer(const PAA_ENTITY& entity)
-        {
-            set_from_entity(entity);
-        }
+        SerializablePlayer(const PAA_ENTITY& entity);
 
         SerializablePlayer(const paa::Controller& controller,
             const paa::Position& position, const paa::Health& health,
-            const paa::Id& id)
-        {
-            set_from_components(controller, position, health, id);
-        }
+            const paa::Id& id);
 
-        std::vector<net::Byte> serialize() const override
-        {
-            net::Serializer s;
-            s << this->data;
-            s.add_bytes(pos.serialize());
-            return s.data;
-        }
+        std::vector<net::Byte> serialize() const override;
 
         void from(
-            const net::Byte* data, const net::BufferSizeType size) override
-        {
-            net::Serializer s(data, size);
-            s >> this->data;
-            pos.from(s.data.data(), s.data.size());
-        }
+            const net::Byte* data, const net::BufferSizeType size) override;
 
         void set_from_components(const paa::Controller& controller,
             const paa::Position& pos, const paa::Health& health,
-            const paa::Id& id)
-        {
-            const paa::Vector2f xy = controller->getAxisXY();
+            const paa::Id& id);
 
-            set_pos(pos)
-                .set_hp(health.hp)
-                .set_move_left(xy.x < -20.f)
-                .set_move_right(xy.x > 20.f)
-                .set_move_up(xy.y < -20.f)
-                .set_move_down(xy.y > 20.f)
-                .set_shoot(controller->isButtonPressed(0))
-                .set_player(id.id);
-        }
+        void set_from_entity(const PAA_ENTITY& e);
 
-        void set_from_entity(const PAA_ENTITY& e)
-        {
-            paa::DynamicEntity entity = e;
-            return set_from_components(entity.getComponent<paa::Controller>(),
-                entity.getComponent<paa::Position>(),
-                entity.getComponent<paa::Health>(),
-                entity.getComponent<paa::Id>());
-        }
+        SerializablePlayer& set_bdata(const bool& value, mask_t mask);
 
-        SerializablePlayer& set_bdata(const bool& value, mask_t mask)
-        {
-            data = value ? (data | mask) : (data & ~mask);
-            return *this;
-        }
+        SerializablePlayer& set_move_left(bool value);
+        SerializablePlayer& set_move_right(bool value);
+        SerializablePlayer& set_move_up(bool value);
+        SerializablePlayer& set_move_down(bool value);
+        SerializablePlayer& set_shoot(bool value);
+        SerializablePlayer& set_hp(const paa::u8& hp);
+        SerializablePlayer& set_player(net::PlayerID player);
+        SerializablePlayer& set_pos(const paa::Position& pos);
+        data_t get_data(const mask_t& mask, const mask_t& shift) const;
+        data_t get_move_left() const;
+        data_t get_move_right() const;
+        data_t get_move_up() const;
+        data_t get_move_down() const;
+        data_t get_shoot() const;
+        data_t get_player() const;
+        data_t get_hp() const;
+        const net::vector2i get_pos() const;
 
-        SerializablePlayer& set_move_left(bool value)
-        {
-            return set_bdata(value, MOVE_LEFT_MASK);
-        }
-
-        SerializablePlayer& set_move_right(bool value)
-        {
-            return set_bdata(value, MOVE_RIGHT_MASK);
-        }
-
-        SerializablePlayer& set_move_up(bool value)
-        {
-            return set_bdata(value, MOVE_UP_MASK);
-        }
-
-        SerializablePlayer& set_move_down(bool value)
-        {
-            return set_bdata(value, MOVE_DOWN_MASK);
-        }
-
-        SerializablePlayer& set_shoot(bool value)
-        {
-            return set_bdata(value, SHOOT_MASK);
-        }
-
-        SerializablePlayer& set_hp(const paa::u8& hp)
-        {
-            const data_t value = static_cast<data_t>(hp);
-
-            data &= ~HEALTH_MASK;
-            data |= (value << HEALTH_SHIFT) & HEALTH_MASK;
-            return *this;
-        }
-
-        SerializablePlayer& set_player(net::PlayerID player)
-        {
-            const data_t value = static_cast<data_t>(player);
-
-            data &= ~PLAYER_MASK;
-            data |= (value << PLAYER_SHIFT) & PLAYER_MASK;
-            return *this;
-        }
-
-        SerializablePlayer& set_pos(const paa::Position& pos)
-        {
-            this->pos = { static_cast<int>(pos.x) - g_game.scroll, static_cast<int>(pos.y) };
-            return *this;
-        }
-
-        data_t get_data(const mask_t& mask, const mask_t& shift) const
-        {
-            return (data & mask) >> shift;
-        }
-
-        data_t get_move_left() const
-        {
-            return get_data(MOVE_LEFT_MASK, MOVE_LEFT_SHIFT);
-        }
-
-        data_t get_move_right() const
-        {
-            return get_data(MOVE_RIGHT_MASK, MOVE_RIGHT_SHIFT);
-        }
-
-        data_t get_move_up() const
-        {
-            return get_data(MOVE_UP_MASK, MOVE_UP_SHIFT);
-        }
-
-        data_t get_move_down() const
-        {
-            return get_data(MOVE_DOWN_MASK, MOVE_DOWN_SHIFT);
-        }
-
-        data_t get_shoot() const { return get_data(SHOOT_MASK, SHOOT_SHIFT); }
-
-        data_t get_player() const
-        {
-            return get_data(PLAYER_MASK, PLAYER_SHIFT);
-        }
-
-        data_t get_hp() const { return get_data(HEALTH_MASK, HEALTH_SHIFT); }
-
-        const net::vector2i get_pos() const { return net::vector2i(pos.x + g_game.scroll, pos.y); }
-
-        bool data_is_same(const SerializablePlayer& other) const
-        {
-            return data == other.data;
-        }
-
-        bool pos_is_same(const SerializablePlayer& other) const
-        {
-            return pos == other.pos;
-        }
-
-        bool is_same(const SerializablePlayer& other) const
-        {
-            return data_is_same(other) && pos_is_same(other);
-        }
-
-        bool operator==(const SerializablePlayer& other) const
-        {
-            return is_same(other);
-        }
-
-        bool operator!=(const SerializablePlayer& other) const
-        {
-            return !is_same(other);
-        }
+        bool data_is_same(const SerializablePlayer& other) const;
+        bool pos_is_same(const SerializablePlayer& other) const;
+        bool is_same(const SerializablePlayer& other) const;
+        bool operator==(const SerializablePlayer& other) const;
+        bool operator!=(const SerializablePlayer& other) const;
     };
 
     class APlayer {
@@ -275,213 +122,43 @@ namespace game {
 
         bool _is_local; // is this player local or remote
 
-        paa::Vector2f _original_scale;
-
         int _y_frame = 0;
+
+    public:
+        static constexpr int MAX_HEALTH = 3;
+        static constexpr int SYNC_RATE = 20;
+        static constexpr int Y_FRAMES = 4;
+        static constexpr int SPEED_X = 150;
+        static constexpr int SPEED_Y = 100;
+        static constexpr int FRAME_RATE = 50;
+        static constexpr int HURT_TIME = 800;
 
     public:
         APlayer(const PAA_ENTITY& entity, const paa::Id& id,
             paa::Sprite& spriteRef, paa::Controller& controllerRef,
-            bool is_local)
-            : _entity(entity)
-            , _id(id)
-            , _spriteRef(spriteRef)
-            , _controllerRef(controllerRef)
-            , _is_local(is_local)
-        {
-            _syncTimer.setTarget(RTYPE_PLAYER_SYNC_RATE);
-            _frameTimer.setTarget(RTYPE_PLAYER_FRAME_RATE);
-
-            _original_scale = _spriteRef->getScale();
-            use_frame();
-        }
+            bool is_local);
 
         ~APlayer() = default;
 
-        void update_info(const SerializablePlayer& info)
-        {
-            auto& positionRef = _entity.getComponent<paa::Position>();
-            auto& healthRef = _entity.getComponent<paa::Health>();
-
-            _info = info;
-
-            healthRef.hp = info.get_hp();
-
-            /*
-            _controllerRef->simulateAxisMovement(paa::Joystick::Axis::X,
-                (info.get_move_left() - info.get_move_right()) * 100.f);
-            _controllerRef->simulateAxisMovement(paa::Joystick::Axis::Y,
-                (info.get_move_down() - info.get_move_up()) * 100.f);
-            */
-            const auto minoffset = 10;
-            const auto offsetx = info.get_pos().x - positionRef.x;
-            const auto offsety = info.get_pos().y - positionRef.y;
-
-            _controllerRef->simulateAxisMovement(paa::Joystick::Axis::X,
-                offsetx < -minoffset ? 100 : offsetx > minoffset ? -100 : 0);
-
-            _controllerRef->simulateAxisMovement(paa::Joystick::Axis::Y,
-                offsety < -minoffset ? 100 : offsety > minoffset ? -100 : 0);
-
-            info.get_shoot()
-                ? _controllerRef->simulateButtonPress(RTYPE_SHOOT_BUTTON)
-                : _controllerRef->simulateButtonIdle(RTYPE_SHOOT_BUTTON);
-        }
-
-        void update_shoot()
-        {
-            if (_controllerRef->isButtonPressed(0)) {
-                for (auto& shooter : _shooterList)
-                    shooter->shoot();
-            }
-        }
-
-        void update_data()
-        {
-            // Sync player position and input with server
-            // We only sync if the player is local
-            // and if the timer is ready
-            if (_is_local && _syncTimer.isFinished()) {
-                SerializablePlayer info(_entity.getEntity());
-                if (!info.data_is_same(_info)) {
-                    g_game.service.udp().send(net::UpdateMessage(
-                        _id.id, info, net::message_code::UPDATE_PLAYER));
-                    _info = info;
-                }
-                _syncTimer.restart();
-            }
-        }
-
-        void update_sprite_hurt()
-        {
-            if (_hurtTimer.isFinished() && _is_hurt == true) {
-                _spriteRef->setScale(_original_scale);
-                _spriteRef->setColor(sf::Color::White);
-                _is_hurt = false;
-            } else if (_is_hurt) {
-                _is_hurt = true;
-                paa::Vector2f scale = _spriteRef->getScale();
-                scale.x += (paa::Random::rand() % 4 - 2) / 10.f;
-                scale.y += (paa::Random::rand() % 4 - 2) / 10.f;
-                _spriteRef->setScale(scale);
-                _spriteRef->setColor(sf::Color::Red);
-            }
-        }
-
-        void use_frame()
-        {
-            const std::string anim = std::to_string(_id.id) + "_" + std::to_string(_y_frame);
-            _spriteRef->useAnimation(anim);
-        }
-
-        void update_position()
-        {
-            static const auto speed = RTYPE_PLAYER_SPEED;
-
-            const double xspeed = speed.x * PAA_DELTA_TIMER.getDeltaTime();
-            const double yspeed = speed.x * PAA_DELTA_TIMER.getDeltaTime();
-
-            auto axis = _controllerRef->getAxisXY();
-            auto& positionRef = _entity.getComponent<paa::Position>();
-
-            positionRef.x -= axis.x() > 0 ? xspeed : 0;
-            positionRef.x += axis.x() < 0 ? xspeed : 0;
-            positionRef.y -= axis.y() > 0 ? yspeed : 0;
-            positionRef.y += axis.y() < 0 ? yspeed : 0;
-
-            positionRef.x = positionRef.x - g_game.old_scroll + g_game.scroll;
-
-            if (_frameTimer.isFinished()) {
-                _frameTimer.restart();
-                axis.y() > 0 ? ++_y_frame : --_y_frame;
-            }
-            _y_frame = std::clamp(_y_frame, 0, RTYPE_PLAYER_Y_FRAMES - 1);
-            use_frame();
-        }
-
-        void update()
-        {
-            update_position();
-            update_shoot();
-            update_data();
-            update_sprite_hurt();
-        }
-
-        void on_collision(const paa::CollisionBox& other)
-        {
-            spdlog::warn("Player {} touched this {}", _id.id, other.get_id());
-
-            if (other.get_id() == CollisionType::POWER_UP) {
-                // TODO: Add power up
-                // This might be a good place to use a visitor pattern
-            }
-            if (other.get_id() == CollisionType::STATIC_WALL) {
-                spdlog::warn("Player {} is touching a wall!", _id.id);
-                // TODO: Implement wall collision
-            }
-
-            /*
-            const bool hurtable_object
-                = other.get_id() == CollisionType::ENEMY_BULLET
-                || other.get_id() == CollisionType::ENEMY;
-            if (hurtable_object && !_is_hurt) {
-                // Only local player can be hurt
-                // Damage is calculated on server
-                if (_is_local)
-                    _healthRef.hp -= 1;
-                _hurtTimer.restart();
-                _is_hurt = true;
-            }
-            */
-        }
-
-        void add_shooter(Shooter& shooter) { _shooterList.push_back(shooter); }
-
-        bool is_dead() const { return _entity.getComponent<paa::Health>().hp <= 0; }
-
-        bool is_local() const { return _is_local; }
+        void update_info(const SerializablePlayer& info);
+        void update_shoot();
+        void update_data();
+        void update_sprite_hurt();
+        void use_frame();
+        void update_position();
+        void update();
+        void on_collision(const paa::CollisionBox& other);
+        void add_shooter(Shooter shooter);
+        bool is_dead() const;
+        bool is_local() const;
     };
 
     using Player = std::shared_ptr<APlayer>;
 
     class PlayerFactory {
     public:
-        static PAA_ENTITY addPlayer(
-            const net::PlayerID pid, paa::Controller& controller)
-        {
-            const paa::Position sposition(
-                0, PAA_SCREEN.getSize().y / RTYPE_PLAYER_COUNT * pid);
-
-            paa::DynamicEntity entity = PAA_NEW_ENTITY();
-            const paa::Id& id = entity.attachId(paa::Id { pid });
-            paa::Position& position = entity.attachPosition(sposition);
-            paa::Health& health
-                = entity.attachHealth(paa::Health { RTYPE_PLAYER_MAX_HEALTH });
-            paa::Sprite& sprite = entity.attachSprite("player");
-
-            sprite->setScale(RTYPE_PLAYER_SPRITE_SCALE);
-
-            paa::Controller cmove = controller;
-            entity.insertComponent(std::move(cmove));
-
-            sprite->setPosition(position.x, position.y);
-
-            Player player = Player(new APlayer(entity.getEntity(), id,
-                sprite, controller, pid == g_game.id));
-
-            // After creating the player, the sprite frame should be updated
-            // So that the player has a the correct collision box
-            Shooter shooter = make_shooter<BasicShooter>(entity.getEntity(), 0);
-            player->add_shooter(shooter);
-            const paa::FloatRect g_bounds(sprite->getGlobalBounds());
-            const paa::IntRect irect(
-                g_bounds.left, g_bounds.top, g_bounds.width, g_bounds.height);
-            entity.attachCollision(
-                CollisionFactory::makePlayerCollision(irect, entity.getId()));
-
-            entity.insertComponent(std::move(player));
-            return entity.getEntity();
-        }
+        static PAA_ENTITY addPlayer(const net::PlayerID pid,
+        paa::Controller& controller);
     };
 
 }

@@ -16,6 +16,8 @@
 #include "paa_commands/paa_getters.hpp"
 #include "paa_commands/paa_utilities.hpp"
 
+#include <filesystem>
+
 namespace paa {
 
 /**
@@ -137,4 +139,31 @@ public:
  */
 void setup_paa_system(const std::string& configuration_file);
 void stop_paa_system();
+
+template<typename F>
+int paa_main(int argc, char **argv,
+    const std::string& configuration_file, const F& app)
+{
+    try {
+        std::filesystem::current_path(std::filesystem::path(argv[0]).parent_path());
+        setup_paa_system(configuration_file);
+        app();
+        PAA_APP.run();
+        stop_paa_system();
+        return 0;
+    } catch (const paa::AABaseError& e) {
+        spdlog::critical("paa::AABaseError: Error: {}", e.what());
+    } catch (const std::exception& e) {
+        spdlog::critical("std::exception: Error: {}", e.what());
+    } catch (...) {
+        spdlog::critical("Unknown error");
+    }
+    return 1;
 }
+
+#define PAA_MAIN(resources, handler) \
+    int main(int argc, char **argv) { \
+        return paa::paa_main(argc, argv, resources, []() handler); \
+    }
+
+} // namespace paa

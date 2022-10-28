@@ -5,7 +5,11 @@
 namespace rtype {
 namespace game {
 
-    enum EnemyType { BASIC_ENEMY };
+    enum EnemyType
+    {
+        BASIC_ENEMY,
+        KEY_ENEMY
+    };
 
     class AEnemy {
     protected:
@@ -31,23 +35,33 @@ namespace game {
     };
 
     class BasicEnemy : public AEnemy {
-    public:
-        BasicEnemy(const PAA_ENTITY& e) : AEnemy(e, EnemyType::BASIC_ENEMY)
-        {
-            auto shooter = make_shooter<BasicShooter>(_e);
-            shooter->aim(-180);
-            _shooterList.push_back(shooter);
-        }
+    private:
+        float _cycle = 0.0f;
+        float _shoot_cycle = 0.0f;
+        float _last_shoot = 0.0f;
+        float _rand_ampl = 0.0f;
 
+    public:
+        BasicEnemy(const PAA_ENTITY& e);
         ~BasicEnemy() = default;
 
-        void on_collision(const paa::CollisionBox& other) override {};
+        void on_collision(const paa::CollisionBox& other) override;
+        void update() override;
+    };
 
-        void update() override
-        {
-            _shooterList[0]->shoot();
-        }
+    class KeyEnemy : public AEnemy {
+    private:
+        float _cycle = 0.0f;
+        float _shoot_cycle = 0.0f;
+        float _last_shoot = 0.0f;
+        float _rand_ampl = 0.0f;
 
+    public:
+        KeyEnemy(const PAA_ENTITY& e);
+        ~KeyEnemy() = default;
+
+        void on_collision(const paa::CollisionBox& other) override;
+        void update() override;
     };
 
     using Enemy = std::shared_ptr<AEnemy>;
@@ -59,27 +73,12 @@ namespace game {
             return std::make_shared<T>(std::forward<Args>(args) ...);
         }
 
-        static PAA_ENTITY make_basic_enemy(double const& x, double const& y)
-        {
-            paa::DynamicEntity e = PAA_NEW_ENTITY();
-            e.attachSprite("basic_enemy")->useAnimation("base_animation");
-            e.attachHealth(paa::Health(5));
-            e.attachPosition(paa::Position(x, y));
-            Enemy be = EnemyFactory::make_enemy<BasicEnemy>(e.getEntity());
-            e.insertComponent(std::move(be));
-            return e.getEntity();
-        }
+        static PAA_ENTITY make_basic_enemy(double const& x, double const& y);
+
+        static PAA_ENTITY make_key_enemy(double const& x, double const& y);
 
         static PAA_ENTITY make_enemy_by_type(const std::string& enemy_type,
-            const float x, const float y)
-        {
-            spdlog::info("Creating enemy of type {} at ({}, {})", enemy_type, x, y);
-            if (enemy_type == "basic_enemy")
-                return make_basic_enemy(x, y);
-            else
-                throw std::runtime_error(std::string("Enemy ") +
-                    enemy_type + " not found");
-        }
+            const float x, const float y);
     };
 }
 }

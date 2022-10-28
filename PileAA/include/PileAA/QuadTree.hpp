@@ -282,9 +282,6 @@ public:
                 if (node_one == node_two)
                     continue;
                 if (node_one->collides(*node_two) == true) {
-                    spdlog::info(
-                        "Collision {} entered in collision with collision {}.",
-                        node_one->get_id(), node_two->get_id());
                     node_one->collision_callback(*node_two);
                 }
             }

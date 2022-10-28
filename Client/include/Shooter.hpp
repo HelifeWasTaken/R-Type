@@ -13,7 +13,8 @@ namespace game {
         paa::DynamicEntity _parentEntity;
 
     public:
-        AShooter(const PAA_ENTITY& e, double reloadTime);
+        AShooter(const PAA_ENTITY& e,
+                double reloadTime);
         virtual ~AShooter() = default;
 
         bool can_shoot() const;
@@ -37,7 +38,7 @@ namespace game {
 
     class BasicShooter : public AShooter {
         public:
-            BasicShooter(const PAA_ENTITY& e, double reloadTime=200)
+            BasicShooter(const PAA_ENTITY& e, double reloadTime=900)
                 : AShooter(e, reloadTime)
             {}
 

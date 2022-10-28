@@ -55,11 +55,8 @@ PAA_START_CPP(client_connect)
     }));
 
     gui.addObject(new paa::Button("Host", [this]() {
-        std::cout << "Hmm" << std::endl;
         if (g_game.service.connected()) {
-            std::cout << "Hmm" << std::endl;
             PAA_SET_SCENE(create_room);
-            std::cout << "Hmm" << std::endl;
         } else {
             text->setText("Cannot host room as server is not connected");
         }

@@ -1,6 +1,7 @@
 #include "Shooter.hpp"
 #include "Bullet.hpp"
 #include "PileAA/Math.hpp"
+#include "Player.hpp"
 
 namespace rtype {
 namespace game {
@@ -43,13 +44,15 @@ namespace game {
 
     void BasicShooter::shoot()
     {
+        bool attached_to_player = _parentEntity.hasComponent<rtype::game::Player>();
+
         if (can_shoot_and_restart()) {
             paa::Position pos = _parentEntity.getComponent<paa::Position>();
             paa::Sprite& sprite = _parentEntity.getComponent<paa::Sprite>();
 
             pos.x += (sprite->getGlobalBounds().width / 2);
             pos.y += (sprite->getGlobalBounds().height / 2);
-            BulletFatory::make_basic_bullet(_aim_angle, pos);
+            BulletFactory::make_basic_bullet(_aim_angle, pos, attached_to_player);
         }
     }
 

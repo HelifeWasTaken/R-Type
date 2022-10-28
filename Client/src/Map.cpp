@@ -35,8 +35,9 @@ namespace game {
             const std::string type = p["name"];
             const std::string value = p["value"];
             const std::string name = value.substr(0, value.find(","));
-            unsigned int scroll_index = std::stoi(value.substr(value.find(",") + 1, value.size()));
-            zones.addEffect(scroll_index, type, name);
+            const std::string scroll_index = value.substr(value.find(",") + 1);
+            zones.addEffect(std::stoi(scroll_index), type, name);
+            spdlog::info("Effect zone: {} {} {}", type, name, scroll_index);
         }
     }
 
@@ -107,6 +108,16 @@ namespace game {
         std::filesystem::current_path(old_path);
     }
 
+    static void activate_wave_event(WaveManager& wave, const std::string& name)
+    {
+        wave.activateWave(name);
+    }
+
+    static void lock_scroll_event()
+    {
+        g_game.lock_scroll = true;
+    }
+
     void Map::update()
     {
         auto& effects = _zones.getEffects();
@@ -116,9 +127,12 @@ namespace game {
             auto& effect = effects[i];
             if (effect->scroll_index <= g_game.scroll) {
                 if (effect->type == "activate_wave") {
-                    _waves.activateWave(effect->name);
+                    activate_wave_event(_waves, effect->name);
+                } else if (effect->type == "lock_scroll") {
+                    lock_scroll_event();
                 }
                 to_delete.push_back(i - to_delete.size());
+                spdlog::critical("effect {} of type {} activated", effect->name, effect->type);
             }
         }
         for (int i = 0; i < to_delete.size(); i++) {

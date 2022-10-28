@@ -46,6 +46,13 @@ PAA_START_CPP(game_scene)
         y += 5;
         x += 50;
     }
+    y = 80;
+    x = 400;
+    for (int i = 0; i < 10; i++) {
+        rtype::game::EnemyFactory::make_key_enemy(x, y);
+        y += 5;
+        x += 50;
+    }
 }
 
 PAA_END_CPP(game_scene)

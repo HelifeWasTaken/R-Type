@@ -54,6 +54,7 @@ PAA_SCENE(ecs) {
 
 int main(int argc, char** argv)
 {
+    spdlog::set_level(spdlog::level::level_enum::off);
     try {
         std::filesystem::current_path(std::filesystem::path(argv[0]).parent_path());
         paa::setup_paa_system("../Resources.conf");

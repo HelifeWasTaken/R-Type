@@ -37,7 +37,7 @@ namespace game {
 
     class BasicShooter : public AShooter {
         public:
-            BasicShooter(const PAA_ENTITY& e, double reloadTime=200)
+            BasicShooter(const PAA_ENTITY& e, double reloadTime=900)
                 : AShooter(e, reloadTime)
             {}
 

@@ -34,15 +34,14 @@ namespace rtype {
         PAA_ENTITY EnemyFactory::make_basic_enemy(double const& x, double const& y)
         {
             paa::DynamicEntity e = PAA_NEW_ENTITY();
-            auto& s = e.attachSprite("basic_enemy");
-            s->setPosition(x, y);
-            s->useAnimation("base_animation");
+            auto& s = e.attachSprite("basic_enemy")->setPosition(x, y)
+                .useAnimation("base_animation");
 
             e.attachHealth(paa::Health(5));
             e.attachPosition(paa::Position(x, y));
             e.attachCollision(
                 CollisionFactory::makeEnemyCollision(
-                    paa::recTo<int>(s->getGlobalBounds()),
+                    paa::recTo<int>(s.getGlobalBounds()),
                     e.getEntity()
                 )
             );

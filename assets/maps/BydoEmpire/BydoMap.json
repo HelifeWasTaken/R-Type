@@ -656,11 +656,22 @@
                  "id":98,
                  "name":"enemy2",
                  "rotation":0,
-                 "type":"key_enemy",
+                 "type":"basic_enemy",
                  "visible":true,
                  "width":9.28793,
                  "x":443.131954097039,
                  "y":48.9719569258234
+                }, 
+                {
+                 "height":11.6099,
+                 "id":184,
+                 "name":"enemy2",
+                 "rotation":0,
+                 "type":"key_enemy",
+                 "visible":true,
+                 "width":9.28793,
+                 "x":449.20921806427,
+                 "y":77.1984005939689
                 }],
          "offsetx":-0.101701838889426,
          "offsety":0.899989987834132,
@@ -671,7 +682,7 @@
          "y":0
         }],
  "nextlayerid":11,
- "nextobjectid":184,
+ "nextobjectid":185,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.4.3",

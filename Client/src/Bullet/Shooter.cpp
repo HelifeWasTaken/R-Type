@@ -35,10 +35,7 @@ namespace game {
 
     AShooter& AShooter::aim(float const& aim_angle, bool isRadian)
     {
-        if (!isRadian)
-            _aim_angle = aim_angle * (M_PI / 180);
-        else
-            _aim_angle = aim_angle;
+        _aim_angle = isRadian ? aim_angle : paa::Math::toRadians(aim_angle);
         return *this;
     }
 

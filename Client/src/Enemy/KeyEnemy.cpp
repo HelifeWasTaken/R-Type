@@ -35,15 +35,14 @@ namespace rtype {
         {
             paa::DynamicEntity e = PAA_NEW_ENTITY();
 
-            auto& s = e.attachSprite("key_enemy");
-            s->setPosition(x, y);
-            s->useAnimation("key_animation");
+            auto& s = e.attachSprite("key_enemy")->setPosition(x, y)
+                .useAnimation("key_animation");
 
             e.attachHealth(paa::Health(3));
             e.attachPosition(paa::Position(x, y));
             e.attachCollision(
                 CollisionFactory::makeEnemyCollision(
-                    paa::recTo<int>(s->getGlobalBounds()),
+                    paa::recTo<int>(s.getGlobalBounds()),
                     e.getEntity()
                 )
             );

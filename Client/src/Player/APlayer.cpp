@@ -165,14 +165,12 @@ namespace game {
     {
         paa::DynamicEntity entity = PAA_NEW_ENTITY();
 
-        const paa::Position sposition(
-            0, PAA_SCREEN.getSize().y / RTYPE_PLAYER_COUNT * pid);
+        const paa::Position sposition(0, PAA_SCREEN.getSize().y / RTYPE_PLAYER_COUNT * pid);
         const auto& id = entity.attachId(paa::Id(pid));
         const auto& position = entity.attachPosition(sposition);
         auto& health = entity.attachHealth(paa::Health(APlayer::MAX_HEALTH));
         auto& sprite = entity.attachSprite("player");
         sprite->setPosition(position.x, position.y);
-        const auto g_bounds(sprite->getGlobalBounds());
 
         entity.emplaceComponent<paa::Controller>(controller);
 
@@ -184,7 +182,8 @@ namespace game {
 
         entity.attachCollision(
             CollisionFactory::makePlayerCollision(
-                paa::recTo<int>(g_bounds), entity.getId())
+                paa::recTo<int>(sprite->getGlobalBounds()),
+                entity.getId())
         );
 
         entity.insertComponent(std::move(player));

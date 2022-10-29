@@ -219,9 +219,6 @@ public:
         return getComponent<SCollisionBox>();
     }
 
-    operator PAA_ENTITY()
-    {
-        return _entity;
-    }
+    operator PAA_ENTITY() { return _entity; }
 };
 }

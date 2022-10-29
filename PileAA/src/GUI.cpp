@@ -25,15 +25,9 @@ void MenuItem::update()
     }
 }
 
-GuiObjectType MenuItem::type() const
-{
-    return GuiObjectType::MENU_ITEM;
-}
+GuiObjectType MenuItem::type() const { return GuiObjectType::MENU_ITEM; }
 
-void MenuBar::addItem(const MenuItem& item)
-{
-    _items.push_back(item);
-}
+void MenuBar::addItem(const MenuItem& item) { _items.push_back(item); }
 
 void MenuBar::update()
 {
@@ -45,10 +39,7 @@ void MenuBar::update()
     }
 }
 
-GuiObjectType MenuBar::type() const
-{
-    return GuiObjectType::MENU_BAR;
-}
+GuiObjectType MenuBar::type() const { return GuiObjectType::MENU_BAR; }
 
 Button::Button(const std::string& name, std::function<void()> callback)
     : _name(name)
@@ -63,30 +54,18 @@ void Button::update()
     }
 }
 
-GuiObjectType Button::type() const
-{
-    return GuiObjectType::BUTTON;
-}
+GuiObjectType Button::type() const { return GuiObjectType::BUTTON; }
 
 GuiText::GuiText(const std::string& text)
     : _text(text)
 {
 }
 
-void GuiText::update()
-{
-    ImGui::Text(_text.c_str());
-}
+void GuiText::update() { ImGui::Text(_text.c_str()); }
 
-void GuiText::setText(const std::string& text)
-{
-    _text = text;
-}
+void GuiText::setText(const std::string& text) { _text = text; }
 
-GuiObjectType GuiText::type() const
-{
-    return GuiObjectType::TEXT;
-}
+GuiObjectType GuiText::type() const { return GuiObjectType::TEXT; }
 
 InputText::InputText(
     const std::string& text, const std::string& label, const size_t maxSize)
@@ -102,15 +81,9 @@ void InputText::update()
     ImGui::InputText(_label.c_str(), _buffer.data(), _buffer.size());
 }
 
-std::string InputText::getText() const
-{
-    return std::string(_buffer.data());
-}
+std::string InputText::getText() const { return std::string(_buffer.data()); }
 
-GuiObjectType InputText::type() const
-{
-    return GuiObjectType::INPUT_TEXT;
-}
+GuiObjectType InputText::type() const { return GuiObjectType::INPUT_TEXT; }
 
 void Gui::addObject(const shared_gui<GuiObject>& object)
 {
@@ -129,9 +102,6 @@ void Gui::update()
     }
 }
 
-void Gui::clear()
-{
-    _objects.clear();
-}
+void Gui::clear() { _objects.clear(); }
 
 }

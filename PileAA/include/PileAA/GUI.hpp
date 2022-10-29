@@ -13,7 +13,7 @@ enum GuiObjectType { MENU_ITEM, MENU_BAR, BUTTON, INPUT_TEXT, TEXT };
 
 /**
  * @brief Interface for any GuiObject of ImGUI
- * 
+ *
  */
 class GuiObject {
 public:
@@ -24,8 +24,8 @@ public:
 
     /**
      * @brief Returns the type of the object
-     * 
-     * @return GuiObjectType 
+     *
+     * @return GuiObjectType
      */
     virtual GuiObjectType type() const = 0;
 
@@ -40,20 +40,19 @@ public:
     virtual ~GuiObject() = default;
 };
 
-template<typename T>
+template <typename T>
 concept isGuiObject = std::is_base_of_v<GuiObject, T>;
 
 /**
  * @brief Abstraction of a gui element
- * 
- * @tparam T 
+ *
+ * @tparam T
  */
-template <isGuiObject T>
-using shared_gui = std::shared_ptr<T>;
+template <isGuiObject T> using shared_gui = std::shared_ptr<T>;
 
 /**
  * @brief Menu item of the menu bar
- * 
+ *
  */
 class MenuItem : public GuiObject {
 private:
@@ -70,7 +69,7 @@ private:
 public:
     /**
      * @brief Construct a new Menu Item object
-     * 
+     *
      * @param sectionName The name of the menu section
      */
     MenuItem(const std::string& sectionName);
@@ -82,7 +81,7 @@ public:
 
     /**
      * @brief Add an item to the menu section
-     * 
+     *
      * @param name The name of the item
      * @param shortcut The shortcut of the item
      * @param callback The callback of the item
@@ -97,8 +96,8 @@ public:
 
     /**
      * @brief Get the type of the object
-     * 
-     * @return GuiObjectType 
+     *
+     * @return GuiObjectType
      */
     GuiObjectType type() const override;
 };
@@ -120,7 +119,7 @@ public:
 
     /**
      * @brief Add an item to the menu bar
-     * 
+     *
      * @param item The item to add
      */
     void addItem(const MenuItem& item);
@@ -132,8 +131,8 @@ public:
 
     /**
      * @brief Get the type of the object
-     * 
-     * @return GuiObjectType 
+     *
+     * @return GuiObjectType
      */
     GuiObjectType type() const override;
 };
@@ -148,7 +147,7 @@ private:
 public:
     /**
      * @brief Construct a new Button object
-     * 
+     *
      * @param name The name of the button
      * @param callback The callback of the button
      */
@@ -166,8 +165,8 @@ public:
 
     /**
      * @brief Get the type of the object
-     * 
-     * @return GuiObjectType 
+     *
+     * @return GuiObjectType
      */
     GuiObjectType type() const override;
 };
@@ -181,7 +180,7 @@ private:
 public:
     /**
      * @brief Construct a new Gui Text object
-     * 
+     *
      * @param text The text to display
      */
     GuiText(const std::string& text);
@@ -203,14 +202,14 @@ public:
 
     /**
      * @brief Get the type of the object
-     * 
-     * @return GuiObjectType 
+     *
+     * @return GuiObjectType
      */
     GuiObjectType type() const override;
 
     /**
      * @brief Set the text
-     * 
+     *
      * @param text The text to set
      */
     void setText(const std::string& text);
@@ -226,7 +225,7 @@ private:
 public:
     /**
      * @brief Construct a new Input Text object
-     * 
+     *
      * @param text The text to display
      * @param label The label of the input text
      * @param maxSize The maximum size of the input text
@@ -246,15 +245,15 @@ public:
 
     /**
      * @brief Get the text
-     * 
-     * @return std::string 
+     *
+     * @return std::string
      */
     std::string getText() const;
 
     /**
      * @brief Get the type of the object
-     * 
-     * @return GuiObjectType 
+     *
+     * @return GuiObjectType
      */
     GuiObjectType type() const override;
 };
@@ -278,8 +277,8 @@ public:
 
     /**
      * @brief Add an object to the gui
-     * 
-     * @tparam T 
+     *
+     * @tparam T
      * @param object The object to add
      */
     void addObject(const shared_gui<GuiObject>& object);
@@ -287,7 +286,8 @@ public:
     /**
      * @brief Update the gui
      */
-    void addObject(GuiObject* object);;
+    void addObject(GuiObject* object);
+    ;
 
     /**
      * @brief Update the gui
@@ -302,10 +302,10 @@ public:
 
 class GuiFactory {
 public:
-    template <isGuiObject T, typename ...Args>
+    template <isGuiObject T, typename... Args>
     static shared_gui<T> new_gui_object(Args&&... args)
     {
-        GuiObject *obj = new T(std::forward<Args>(args)...);
+        GuiObject* obj = new T(std::forward<Args>(args)...);
         return std::shared_ptr<T>(static_cast<T*>(obj));
     }
 
@@ -315,8 +315,7 @@ public:
         return GuiFactory::new_gui_object<MenuBar>(std::forward<Args>(args)...);
     }
 
-    template <typename... Args>
-    static shared_button new_button(Args&&... args)
+    template <typename... Args> static shared_button new_button(Args&&... args)
     {
         return GuiFactory::new_gui_object<Button>(std::forward<Args>(args)...);
     }

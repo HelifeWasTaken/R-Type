@@ -1,5 +1,5 @@
-#include "Enemies.hpp"
 #include "Collisions.hpp"
+#include "Enemies.hpp"
 
 namespace rtype {
 namespace game {
@@ -30,56 +30,49 @@ namespace game {
     {
         paa::DynamicEntity e = PAA_NEW_ENTITY();
 
-        auto& s = e.attachSprite("key_enemy")->setPosition(x, y)
-            .useAnimation("key_animation");
+        auto& s = e.attachSprite("key_enemy")
+                      ->setPosition(x, y)
+                      .useAnimation("key_animation");
 
         e.attachHealth(paa::Health(3));
         e.attachPosition(paa::Position(x, y));
-        e.attachCollision(
-            CollisionFactory::makeEnemyCollision(
-                paa::recTo<int>(s.getGlobalBounds()),
-                e.getEntity()
-            )
-        );
+        e.attachCollision(CollisionFactory::makeEnemyCollision(
+            paa::recTo<int>(s.getGlobalBounds()), e.getEntity()));
         Enemy ke = EnemyFactory::make_enemy<KeyEnemy>(e.getEntity());
         e.insertComponent(std::move(ke));
         return e.getEntity();
-
     }
 
-    PAA_ENTITY EnemyFactory::make_mastodonte_enemy(double const& x, double const& y)
+    PAA_ENTITY EnemyFactory::make_mastodonte_enemy(
+        double const& x, double const& y)
     {
         paa::DynamicEntity e = PAA_NEW_ENTITY();
 
-        auto& s = e.attachSprite("mastodonte_enemy")->setPosition(x, y)
-            .useAnimation("mastodonte_animation").setScale(-1, 1);
+        auto& s = e.attachSprite("mastodonte_enemy")
+                      ->setPosition(x, y)
+                      .useAnimation("mastodonte_animation")
+                      .setScale(-1, 1);
         e.attachHealth(paa::Health(6));
         e.attachPosition(paa::Position(x, y));
-        e.attachCollision(
-            CollisionFactory::makeEnemyCollision(
-                paa::recTo<int>(s.getGlobalBounds()),
-                e.getEntity()
-            )
-        );
+        e.attachCollision(CollisionFactory::makeEnemyCollision(
+            paa::recTo<int>(s.getGlobalBounds()), e.getEntity()));
         Enemy masto = EnemyFactory::make_enemy<MastodonteEnemy>(e.getEntity());
         e.insertComponent(std::move(masto));
         return e.getEntity();
     }
 
-    PAA_ENTITY EnemyFactory::make_dumby_boy_enemy(double const& x, double const& y)
+    PAA_ENTITY EnemyFactory::make_dumby_boy_enemy(
+        double const& x, double const& y)
     {
         paa::DynamicEntity e = PAA_NEW_ENTITY();
 
-        auto& s = e.attachSprite("dumby_boy_enemy")->setPosition(x, y)
-            .useAnimation("dumby_boy_enemy_animation");
+        auto& s = e.attachSprite("dumby_boy_enemy")
+                      ->setPosition(x, y)
+                      .useAnimation("dumby_boy_enemy_animation");
         e.attachHealth(paa::Health(4));
         e.attachPosition(paa::Position(x, y));
-        e.attachCollision(
-            CollisionFactory::makeEnemyCollision(
-                paa::recTo<int>(s.getGlobalBounds()),
-                e.getEntity()
-            )
-        );
+        e.attachCollision(CollisionFactory::makeEnemyCollision(
+            paa::recTo<int>(s.getGlobalBounds()), e.getEntity()));
         Enemy dmb = EnemyFactory::make_enemy<DumbyBoy>(e.getEntity());
         e.insertComponent(std::move(dmb));
         return e.getEntity();

@@ -55,8 +55,10 @@ namespace net {
 
             // Update messages
             { message_code::UPDATE_PLAYER, message_type::UPDATE_MESSAGE },
-            { message_code::UPDATE_ENEMY_DESTROYED, message_type::UPDATE_MESSAGE },
-            { message_code::UPDATE_PLAYER_DESTROYED, message_type::UPDATE_MESSAGE }
+            { message_code::UPDATE_ENEMY_DESTROYED,
+                message_type::UPDATE_MESSAGE },
+            { message_code::UPDATE_PLAYER_DESTROYED,
+                message_type::UPDATE_MESSAGE }
         };
 
     message_type message_code_to_type(const message_code& code)

@@ -1,11 +1,11 @@
 #pragma once
 
 #include "Types.hpp"
+#include "VectorExtension.hpp"
+#include "external/HelifeWasTaken/Silva"
 #include "paa_commands/paa_command_ecs.hpp"
 #include <spdlog/spdlog.h>
 #include <vector>
-#include "external/HelifeWasTaken/Silva"
-#include "VectorExtension.hpp"
 
 namespace paa {
 
@@ -317,8 +317,9 @@ private:
 
 #include <ostream>
 
-static inline std::ostream& operator<<(std::ostream& os, const paa::CollisionBox& other)
+static inline std::ostream& operator<<(
+    std::ostream& os, const paa::CollisionBox& other)
 {
-    return os << "Box(id: " << other.get_id() <<
-                ", rect: " << other.get_rect() << ")";
+    return os << "Box(id: " << other.get_id() << ", rect: " << other.get_rect()
+              << ")";
 }

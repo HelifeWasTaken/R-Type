@@ -1,5 +1,5 @@
-#include "Player.hpp"
 #include "ClientScenes.hpp"
+#include "Player.hpp"
 
 namespace rtype {
 namespace game {
@@ -123,7 +123,8 @@ namespace game {
 
     void APlayer::on_collision(const paa::CollisionBox& other)
     {
-        const CollisionType other_id = static_cast<CollisionType>(other.get_id());
+        const CollisionType other_id
+            = static_cast<CollisionType>(other.get_id());
 
         spdlog::warn("Player {} touched this {}", _id.id, other.get_id());
 
@@ -133,14 +134,14 @@ namespace game {
             return;
         }
 
-        const bool hurtable_object
-            = other_id == CollisionType::ENEMY_BULLET
+        const bool hurtable_object = other_id == CollisionType::ENEMY_BULLET
             || other_id == CollisionType::ENEMY
             || other_id == CollisionType::STATIC_WALL;
 
         if (hurtable_object && !_is_hurt) {
             if (_is_local) {
-                paa::Health& healthRef = PAA_GET_COMPONENT(_entity, paa::Health);
+                paa::Health& healthRef
+                    = PAA_GET_COMPONENT(_entity, paa::Health);
                 healthRef.hp -= 1;
             }
             _hurtTimer.restart();
@@ -165,7 +166,8 @@ namespace game {
     {
         paa::DynamicEntity entity = PAA_NEW_ENTITY();
 
-        const paa::Position sposition(0, PAA_SCREEN.getSize().y / RTYPE_PLAYER_COUNT * pid);
+        const paa::Position sposition(
+            0, PAA_SCREEN.getSize().y / RTYPE_PLAYER_COUNT * pid);
         const auto& id = entity.attachId(paa::Id(pid));
         const auto& position = entity.attachPosition(sposition);
         auto& health = entity.attachHealth(paa::Health(APlayer::MAX_HEALTH));
@@ -175,16 +177,12 @@ namespace game {
         entity.emplaceComponent<paa::Controller>(controller);
 
         auto player = Player(new APlayer(
-            entity.getEntity(), id, sprite,
-            controller, pid == g_game.id));
+            entity.getEntity(), id, sprite, controller, pid == g_game.id));
 
         player->add_shooter(make_shooter<BasicShooter>(entity.getEntity(), 0));
 
-        entity.attachCollision(
-            CollisionFactory::makePlayerCollision(
-                paa::recTo<int>(sprite->getGlobalBounds()),
-                entity.getId())
-        );
+        entity.attachCollision(CollisionFactory::makePlayerCollision(
+            paa::recTo<int>(sprite->getGlobalBounds()), entity.getId()));
 
         entity.insertComponent(std::move(player));
         return entity.getEntity();

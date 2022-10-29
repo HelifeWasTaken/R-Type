@@ -6,11 +6,11 @@
 **/
 
 #include <array>
+#include <functional>
 #include <optional>
 #include <queue>
-#include <vector>
 #include <unordered_map>
-#include <functional>
+#include <vector>
 
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Joystick.hpp>

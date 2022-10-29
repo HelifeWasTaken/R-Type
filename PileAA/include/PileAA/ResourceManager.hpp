@@ -6,8 +6,8 @@
 
 #include <spdlog/spdlog.h>
 
-#include "FrameBuffer.hpp"
 #include "Error.hpp"
+#include "FrameBuffer.hpp"
 #include "Types.hpp"
 
 namespace paa {
@@ -26,8 +26,10 @@ private:
 
     ResourceHolder _resourceMap;
 
-    static inline const char *DEFAULT_TEXTURE = "__paa_resource_manager_default_texture__";
-    static inline const char *DEFAULT_IMAGE   = "__paa_resource_manager_default_image__";
+    static inline const char* DEFAULT_TEXTURE
+        = "__paa_resource_manager_default_texture__";
+    static inline const char* DEFAULT_IMAGE
+        = "__paa_resource_manager_default_image__";
 
 public:
     /**
@@ -70,7 +72,8 @@ public:
         T& ref = std::get<T>(*resource);
 
         if (!ref.loadFromFile(filename, std::forward<LoadArgs>(loadArgs)...))
-            spdlog::error("ResourceHolder::load - Failed to load \"{}\"", filename);
+            spdlog::error(
+                "ResourceHolder::load - Failed to load \"{}\"", filename);
         _resourceMap[name] = std::unique_ptr<LoadableResource>(resource);
     }
 
@@ -80,7 +83,7 @@ public:
      * @param name The name of the resource
      * @param resource The resource to copy
      */
-    template<typename T>
+    template <typename T>
     void copyAs(const std::string& name, const T& resource)
     {
         _resourceMap[name] = std::make_unique<LoadableResource>(resource);
@@ -97,14 +100,19 @@ public:
     {
         auto found = _resourceMap.find(name);
         if (found == _resourceMap.end()) {
-            if constexpr(std::is_same_v<T, Texture>) {
-                spdlog::warn("ResourceHolder::get - Texture not found: \"{}\", using default texture", name);
+            if constexpr (std::is_same_v<T, Texture>) {
+                spdlog::warn("ResourceHolder::get - Texture not found: \"{}\", "
+                             "using default texture",
+                    name);
                 return getDefaultTexture();
-            } else if constexpr(std::is_same_v<T, Image>) {
-                spdlog::warn("ResourceHolder::get - Image not found: \"{}\", using default image", name);
+            } else if constexpr (std::is_same_v<T, Image>) {
+                spdlog::warn("ResourceHolder::get - Image not found: \"{}\", "
+                             "using default image",
+                    name);
                 return getDefaultImage();
             } else {
-                throw ResourceManagerError("ResourceHolder::get - Resource not found: " + name);
+                throw ResourceManagerError(
+                    "ResourceHolder::get - Resource not found: " + name);
             }
         }
         return std::get<T>(*found->second);

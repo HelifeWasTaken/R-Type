@@ -57,7 +57,6 @@ public:
      */
     void update();
 
-
     AnimatedSprite& setColor(const Color& color);
     AnimatedSprite& setPosition(float x, float y);
     AnimatedSprite& setPosition(const paa::Vector2f& position);

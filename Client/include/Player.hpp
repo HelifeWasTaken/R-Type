@@ -157,8 +157,8 @@ namespace game {
 
     class PlayerFactory {
     public:
-        static PAA_ENTITY addPlayer(const net::PlayerID pid,
-        paa::Controller& controller);
+        static PAA_ENTITY addPlayer(
+            const net::PlayerID pid, paa::Controller& controller);
     };
 
 }

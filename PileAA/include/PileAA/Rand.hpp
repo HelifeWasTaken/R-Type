@@ -4,7 +4,7 @@ namespace paa {
 
 /**
  * @brief Class for portable random number generation
- * 
+ *
  */
 class Random {
 private:
@@ -13,14 +13,14 @@ private:
 public:
     /**
      * @brief Sets the seed for the random number generator
-     * 
-     * @param seed 
+     *
+     * @param seed
      */
     static void srand(const int& seed) { _seed = seed; }
 
     /**
      * @brief Returns a random number between INT_MIN and INT_MAX
-     * 
+     *
      * @return int
      */
     static int rand()

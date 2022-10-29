@@ -1,110 +1,114 @@
 #pragma once
 
-#include <string>
 #include <memory>
-#include <vector>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace rtype {
 namespace game {
 
-class EffectZones {
-public:
-    struct EffectZoneData {
-        unsigned int scroll_index;
-        std::string type;
-        std::string name;
+    class EffectZones {
+    public:
+        struct EffectZoneData {
+            unsigned int scroll_index;
+            std::string type;
+            std::string name;
 
-        EffectZoneData(unsigned int scroll_index, const std::string &type,
-                          const std::string &name)
-            : scroll_index(scroll_index)
-            , type(type)
-            , name(name)
-        {}
+            EffectZoneData(unsigned int scroll_index, const std::string& type,
+                const std::string& name)
+                : scroll_index(scroll_index)
+                , type(type)
+                , name(name)
+            {
+            }
+        };
+
+        using EffectZoneList = std::vector<std::unique_ptr<EffectZoneData>>;
+
+    private:
+        EffectZoneList _effects;
+
+    public:
+        void addEffect(const unsigned int scroll_index, const std::string& type,
+            const std::string& name)
+        {
+            _effects.emplace_back(
+                std::make_unique<EffectZoneData>(scroll_index, type, name));
+        }
+
+        EffectZoneList& getEffects() { return (_effects); }
     };
 
-    using EffectZoneList = std::vector<std::unique_ptr<EffectZoneData>>;
+    class Wave {
+    public:
+        struct WaveData {
+            std::string enemy_type;
+            uint64_t enemy_id;
+            float x, y;
 
-private:
-    EffectZoneList _effects;
+            WaveData(const std::string& enemy_type, uint64_t enemy_id, float x,
+                float y)
+                : enemy_type(enemy_type)
+                , enemy_id(enemy_id)
+                , x(x)
+                , y(y)
+            {
+            }
+        };
 
-public:
-    void addEffect(const unsigned int scroll_index, const std::string &type,
-                        const std::string &name)
-    { _effects.emplace_back(std::make_unique<EffectZoneData>(
-            scroll_index, type, name)); }
+    private:
+        std::vector<std::unique_ptr<WaveData>> _waves;
 
-    EffectZoneList& getEffects() { return (_effects); }
-};
+    public:
+        Wave() = default;
 
-class Wave {
-public:
-    struct WaveData {
-        std::string enemy_type;
-        uint64_t enemy_id;
-        float x, y;
-
-        WaveData(const std::string &enemy_type,
-                uint64_t enemy_id, float x, float y)
-            : enemy_type(enemy_type)
-            , enemy_id(enemy_id)
-            , x(x)
-            , y(y)
-        {}
+        void addWaveData(
+            const std::string& enemy_type, uint64_t enemy_id, float x, float y);
+        void activateWave();
     };
 
-private:
-    std::vector<std::unique_ptr<WaveData>> _waves;
+    class WaveManager {
+    private:
+        std::unordered_map<std::string, std::unique_ptr<Wave>> _wave;
 
-public:
-    Wave() = default;
+    public:
+        WaveManager() = default;
 
-    void addWaveData(const std::string& enemy_type,
-                    uint64_t enemy_id, float x, float y);
-    void activateWave();
-};
+        void activateWave(const std::string& name);
 
-class WaveManager {
-private:
-    std::unordered_map<std::string, std::unique_ptr<Wave>> _wave;
+        void addWave(const std::string& name, std::unique_ptr<Wave>&& wave);
+    };
 
-public:
-    WaveManager() = default;
+    // For the collisions use a BoxCollision
 
-    void activateWave(const std::string& name);
+    class Map {
+    private:
+        WaveManager
+            _waves; // Every waves can be detected
+                    // You should load the layer if the EffectZones has it
+        EffectZones _zones;
 
-    void addWave(const std::string& name, std::unique_ptr<Wave>&& wave);
-};
+        /**
+         * @brief  Parse the map info and generates entities to match it
+         * @retval None
+         */
+        void loadMap(const std::string& filepath);
 
-// For the collisions use a BoxCollision
+    public:
+        /**
+         * @brief  Constructor
+         * @param  filepath: Path to the map file
+         * @retval None
+         */
+        Map(const std::string& filepath) { loadMap(filepath); }
 
-class Map {
-private:
-    WaveManager _waves; // Every waves can be detected
-                        // You should load the layer if the EffectZones has it
-    EffectZones _zones;
-
-    /**
-     * @brief  Parse the map info and generates entities to match it
-     * @retval None
-     */
-    void loadMap(const std::string& filepath);
-
-public:
-    /**
-     * @brief  Constructor
-     * @param  filepath: Path to the map file
-     * @retval None
-     */
-    Map(const std::string& filepath)
-    { loadMap(filepath); }
-
-    /**
-     * @brief  Update the map
-     * @retval None
-     */
-    void update();
-};
+        /**
+         * @brief  Update the map
+         * @retval None
+         */
+        void update();
+    };
 
 }
 }

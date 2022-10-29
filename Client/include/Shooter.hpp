@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PileAA/Timer.hpp"
 #include "PileAA/DynamicEntity.hpp"
+#include "PileAA/Timer.hpp"
 
 namespace rtype {
 namespace game {
@@ -13,15 +13,14 @@ namespace game {
         paa::DynamicEntity _parentEntity;
 
     public:
-        AShooter(const PAA_ENTITY& e,
-                double reloadTime);
+        AShooter(const PAA_ENTITY& e, double reloadTime);
         virtual ~AShooter() = default;
 
         bool can_shoot() const;
         bool can_shoot_and_restart();
         double aim_angle() const;
         AShooter& aim(const paa::Vector2f& to_aim);
-        AShooter& aim(float const& aim_angle, bool isRadian=false);
+        AShooter& aim(float const& aim_angle, bool isRadian = false);
         bool is_attached_to_player() const;
         virtual void shoot() = 0;
     };
@@ -37,14 +36,15 @@ namespace game {
     }
 
     class BasicShooter : public AShooter {
-        public:
-            BasicShooter(const PAA_ENTITY& e, double reloadTime=900)
-                : AShooter(e, reloadTime)
-            {}
+    public:
+        BasicShooter(const PAA_ENTITY& e, double reloadTime = 900)
+            : AShooter(e, reloadTime)
+        {
+        }
 
-            ~BasicShooter() = default;
+        ~BasicShooter() = default;
 
-            void shoot() override final;
+        void shoot() override final;
     };
 }
 }

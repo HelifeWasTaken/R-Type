@@ -1,17 +1,19 @@
-#include "Enemies.hpp"
 #include "ClientScenes.hpp"
 #include "Collisions.hpp"
+#include "Enemies.hpp"
 
 namespace rtype {
 namespace game {
 
-    DumbyBoy::DumbyBoy(const PAA_ENTITY& e) :
-                        AEnemy(e, EnemyType::DUMBY_BOY_ENEMY),
-                        _to_focus(g_game.get_random_player())
+    DumbyBoy::DumbyBoy(const PAA_ENTITY& e)
+        : AEnemy(e, EnemyType::DUMBY_BOY_ENEMY)
+        , _to_focus(g_game.get_random_player())
     {
         auto shooter = make_shooter<BasicShooter>(_e);
         _shooterList.push_back(shooter);
-        _shoot_cycle = 1.5f + static_cast<float>(paa::Random::rand()) * static_cast<float>(3 - 1.5f) / RAND_MAX;
+        _shoot_cycle = 1.5f
+            + static_cast<float>(paa::Random::rand())
+                * static_cast<float>(3 - 1.5f) / RAND_MAX;
     }
 
     void DumbyBoy::on_collision(const paa::CollisionBox& other)

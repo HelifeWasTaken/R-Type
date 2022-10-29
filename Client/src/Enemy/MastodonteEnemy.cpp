@@ -2,8 +2,8 @@
 
 namespace rtype {
 namespace game {
-    MastodonteEnemy::MastodonteEnemy(const PAA_ENTITY& e) :
-                    AEnemy(e, EnemyType::MASTODONTE_ENEMY)
+    MastodonteEnemy::MastodonteEnemy(const PAA_ENTITY& e)
+        : AEnemy(e, EnemyType::MASTODONTE_ENEMY)
     {
     }
 
@@ -11,7 +11,6 @@ namespace game {
     {
         paa::Position& posRef = get_position();
         const float deltaTime = PAA_DELTA_TIMER.getDeltaTime();
-
 
         posRef.x -= 50 * deltaTime;
     }

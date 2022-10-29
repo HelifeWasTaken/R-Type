@@ -1,5 +1,5 @@
-#include "Player.hpp"
 #include "ClientScenes.hpp"
+#include "Player.hpp"
 
 namespace rtype {
 namespace game {

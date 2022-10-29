@@ -140,9 +140,9 @@ public:
 void setup_paa_system(const std::string& configuration_file);
 void stop_paa_system();
 
-template<typename F>
-int paa_unsafe_main(int argc, char **argv,
-    const std::string& configuration_file, const F& app)
+template <typename F>
+int paa_unsafe_main(
+    int argc, char** argv, const std::string& configuration_file, const F& app)
 {
     std::filesystem::current_path(std::filesystem::path(argv[0]).parent_path());
     setup_paa_system(configuration_file);
@@ -152,9 +152,9 @@ int paa_unsafe_main(int argc, char **argv,
     return 0;
 }
 
-template<typename F>
-int paa_main(int argc, char **argv,
-    const std::string& configuration_file, const F& app)
+template <typename F>
+int paa_main(
+    int argc, char** argv, const std::string& configuration_file, const F& app)
 {
     try {
         return paa_unsafe_main(argc, argv, "configuration.json", app);
@@ -170,12 +170,14 @@ int paa_main(int argc, char **argv,
 
 } // namespace paa
 
-#define PAA_MAIN(resources, handler) \
-    int main(int argc, char **argv) { \
-        return paa::paa_main(argc, argv, resources, []() handler); \
+#define PAA_MAIN(resources, handler)                                           \
+    int main(int argc, char** argv)                                            \
+    {                                                                          \
+        return paa::paa_main(argc, argv, resources, []() handler);             \
     }
 
-#define PAA_UNSAFE_MAIN(resources, handler) \
-    int main(int argc, char **argv) { \
-        return paa::paa_unsafe_main(argc, argv, resources, []() handler); \
+#define PAA_UNSAFE_MAIN(resources, handler)                                    \
+    int main(int argc, char** argv)                                            \
+    {                                                                          \
+        return paa::paa_unsafe_main(argc, argv, resources, []() handler);      \
     }

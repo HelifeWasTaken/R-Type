@@ -65,10 +65,7 @@ PAA_START_CPP(client_connect)
     gui.addObject(text);
 }
 
-PAA_END_CPP(client_connect)
-{
-    gui.clear();
-}
+PAA_END_CPP(client_connect) { gui.clear(); }
 
 PAA_UPDATE_CPP(client_connect)
 {

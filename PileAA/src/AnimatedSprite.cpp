@@ -1,6 +1,6 @@
 #include "PileAA/AnimatedSprite.hpp"
-#include "PileAA/ResourceManager.hpp"
 #include "PileAA/Math.hpp"
+#include "PileAA/ResourceManager.hpp"
 
 namespace paa {
 
@@ -41,8 +41,9 @@ AnimatedSprite& AnimatedSprite::useAnimation(const std::string& animationName)
         else
             _currentAnimation = &_reg.at(animationName);
     } catch (...) {
-        spdlog::warn("PileAA::AnimatedSprite: Could not find animtion: [{}] using default",
-                    animationName);
+        spdlog::warn("PileAA::AnimatedSprite: Could not find animtion: [{}] "
+                     "using default",
+            animationName);
         useAnimation("DEFAULT");
     }
     _timer.setTarget(_currentAnimation->speed);

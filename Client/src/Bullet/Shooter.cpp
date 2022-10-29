@@ -6,8 +6,7 @@
 namespace rtype {
 namespace game {
 
-    AShooter::AShooter(const PAA_ENTITY& e,
-                       double reloadTime)
+    AShooter::AShooter(const PAA_ENTITY& e, double reloadTime)
         : _parentEntity(e)
     {
         _timer.setTarget(reloadTime);

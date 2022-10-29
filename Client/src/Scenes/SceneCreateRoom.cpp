@@ -43,8 +43,7 @@ PAA_START_CPP(create_room)
     g_game.service.tcp().send(SignalMarker(message_code::CREATE_ROOM));
 }
 
-PAA_END_CPP(create_room)
-{}
+PAA_END_CPP(create_room) { }
 
 PAA_UPDATE_CPP(create_room)
 {

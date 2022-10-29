@@ -69,14 +69,14 @@ static void manage_server_events()
 
 PAA_START_CPP(waiting_room)
 {
-    std::memset(g_game.connected_players.data(), 0, g_game.connected_players.size());
+    std::memset(
+        g_game.connected_players.data(), 0, g_game.connected_players.size());
     g_game.connected_players[g_game.id] = true;
 
     gui.addObject(paa::GuiFactory::new_button("Launch game", [this]() {
         if (g_game.is_host) {
             g_game.service.tcp().send(SignalMarker(message_code::LAUNCH_GAME));
-            server_log->setText(
-                "Requested the server to launch the game...");
+            server_log->setText("Requested the server to launch the game...");
         } else {
             server_log->setText("You are not the host of the room");
         }
@@ -87,10 +87,7 @@ PAA_START_CPP(waiting_room)
         "Disconnect", []() { PAA_SET_SCENE(client_connect); }));
 }
 
-PAA_END_CPP(waiting_room)
-{
-    gui.clear();
-}
+PAA_END_CPP(waiting_room) { gui.clear(); }
 
 PAA_UPDATE_CPP(waiting_room)
 {

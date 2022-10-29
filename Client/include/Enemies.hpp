@@ -5,8 +5,7 @@
 namespace rtype {
 namespace game {
 
-    enum EnemyType
-    {
+    enum EnemyType {
         BASIC_ENEMY,
         KEY_ENEMY,
         MASTODONTE_ENEMY,
@@ -61,8 +60,7 @@ namespace game {
         void update() override;
     };
 
-
-    class MastodonteEnemy : public AEnemy  {
+    class MastodonteEnemy : public AEnemy {
     public:
         MastodonteEnemy(const PAA_ENTITY& e);
         ~MastodonteEnemy() = default;
@@ -91,20 +89,21 @@ namespace game {
         template <typename T, typename... Args>
         static Enemy make_enemy(Args&&... args)
         {
-            return std::make_shared<T>(std::forward<Args>(args) ...);
+            return std::make_shared<T>(std::forward<Args>(args)...);
         }
 
         static PAA_ENTITY make_basic_enemy(double const& x, double const& y);
 
         static PAA_ENTITY make_key_enemy(double const& x, double const& y);
 
-        static PAA_ENTITY make_mastodonte_enemy(double const& x, double const& y);
+        static PAA_ENTITY make_mastodonte_enemy(
+            double const& x, double const& y);
 
-        static PAA_ENTITY make_dumby_boy_enemy(double const& x, double const& y);
+        static PAA_ENTITY make_dumby_boy_enemy(
+            double const& x, double const& y);
 
-        static PAA_ENTITY make_enemy_by_type(const std::string& enemy_type,
-            const float x, const float y);
-
+        static PAA_ENTITY make_enemy_by_type(
+            const std::string& enemy_type, const float x, const float y);
     };
 }
 }

@@ -27,7 +27,7 @@
 /**
  * @brief Default declarations for a scene
  */
-#define PAA_SCENE_DEFAULT(name)                                              \
+#define PAA_SCENE_DEFAULT(name)                                                \
     PAA_FUN_NAMESPACE(name)() = default;                                       \
     ~PAA_FUN_NAMESPACE(name)() = default
 
@@ -64,23 +64,20 @@
 /**
  * @brief Register a scene
  */
-#define PAA_REGISTER_SCENE(type) \
+#define PAA_REGISTER_SCENE(type)                                               \
     PAA_SCENE_MANAGER.registerState(#type, new PAA_SCENE_DECL(type)())
 
 /**
  * @brief Set a scene
  */
-#define PAA_SET_SCENE(type) \
-    PAA_SCENE_MANAGER.changeState(#type)
+#define PAA_SET_SCENE(type) PAA_SCENE_MANAGER.changeState(#type)
 
 /**
  * @brief Push a scene
  */
-#define PAA_PUSH_SCENE(type) \
-    PAA_SCENE_MANAGER.pushState(#type)
+#define PAA_PUSH_SCENE(type) PAA_SCENE_MANAGER.pushState(#type)
 
 /**
  * @brief Pop a scene
  */
-#define PAA_POP_SCENE \
-    PAA_SCENE_MANAGER.popState
+#define PAA_POP_SCENE PAA_SCENE_MANAGER.popState

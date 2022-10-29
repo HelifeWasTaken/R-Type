@@ -1,10 +1,10 @@
 #pragma once
 
+#include "Bullet.hpp"
 #include "ClientScenes.hpp"
+#include "Collisions.hpp"
 #include "PileAA/DynamicEntity.hpp"
 #include "PileAA/Math.hpp"
-#include "Bullet.hpp"
-#include "Collisions.hpp"
 #include <PileAA/Types.hpp>
 #include <cmath>
 
@@ -36,10 +36,9 @@ namespace game {
         const PAA_ENTITY _e;
 
     public:
-        ABullet(const PAA_ENTITY& e,
-                const BulletType type, const double life_time,
-                const double aim_angle, const double damage,
-                const bool from_player);
+        ABullet(const PAA_ENTITY& e, const BulletType type,
+            const double life_time, const double aim_angle, const double damage,
+            const bool from_player);
         virtual ~ABullet() = default;
 
         bool is_alive() const;
@@ -55,25 +54,25 @@ namespace game {
     using Bullet = std::shared_ptr<ABullet>;
 
     class BasicBullet : public ABullet {
-        private:
-            paa::Vector2f _dir;
+    private:
+        paa::Vector2f _dir;
 
-        public:
-            BasicBullet(const PAA_ENTITY& e, const double &aim_angle, bool from_player);
-            void update() override;
+    public:
+        BasicBullet(
+            const PAA_ENTITY& e, const double& aim_angle, bool from_player);
+        void update() override;
     };
 
     class BulletFactory {
-        public:
-            template <typename B, typename... Args>
-            static inline Bullet make_bullet(Args&&... args)
-            {
-                return std::make_shared<B>(std::forward<Args>(args)...);
-            }
+    public:
+        template <typename B, typename... Args>
+        static inline Bullet make_bullet(Args&&... args)
+        {
+            return std::make_shared<B>(std::forward<Args>(args)...);
+        }
 
-            static void make_basic_bullet(float aim_angle,
-                                    paa::Position const& posRef,
-                                    const bool& from_player);
+        static void make_basic_bullet(float aim_angle,
+            paa::Position const& posRef, const bool& from_player);
     };
 }
 }

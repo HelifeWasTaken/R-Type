@@ -12,6 +12,8 @@ namespace rtype {
                 return make_basic_enemy(x, y);
             else if (enemy_type == "key_enemy")
                 return make_key_enemy(x, y);
+            else if (enemy_type == "mastodonte_enemy")
+                return make_mastodonte_enemy(x, y);
             else
                 throw std::runtime_error(std::string("Enemy ") +
                     enemy_type + " not found");

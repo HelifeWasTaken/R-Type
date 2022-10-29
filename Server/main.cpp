@@ -113,13 +113,29 @@ private:
                   }),
 
               RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(
-                  rtype::net::message_code::UPDATE_PLAYER) };
+                  rtype::net::message_code::UPDATE_PLAYER),
+
+              RTYPE_SERVER_MAIN_HANDLE_THIS_MESSAGE(
+                  rtype::net::message_code::UPDATE_ENEMY_DESTROYED,
+                  {
+                      Room* room = this->_roomManager.getRoom(client);
+                      if (room) {
+                          room->main_broadcast(message, client);
+                      }
+                  }),
+
+              RTYPE_SERVER_MAIN_HANDLE_THIS_MESSAGE(
+                  rtype::net::message_code::UPDATE_PLAYER_DESTROYED, {
+                      Room* room = this->_roomManager.getRoom(client);
+                      if (room) {
+                          room->main_broadcast(message, client);
+                      }
+                  }) };
 
     std::unordered_map<rtype::net::message_code,
         std::function<void(rtype::net::ClientID, rtype::net::IMessage&)>>
-        _feed_message_handler = {
-            RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(
-                rtype::net::message_code::DUMMY),
+        _feed_message_handler = { RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(
+                                      rtype::net::message_code::DUMMY),
 
             RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(
                 rtype::net::message_code::CONN_INIT),
@@ -167,7 +183,10 @@ private:
                         room->feed_broadcast(message, client);
                     }
                 }),
-        };
+            RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(
+                rtype::net::message_code::UPDATE_ENEMY_DESTROYED),
+            RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(
+                rtype::net::message_code::UPDATE_PLAYER_DESTROYED) };
 
     std::unordered_map<rtype::net::server::event_type,
         std::function<void(rtype::net::server::event&)>>

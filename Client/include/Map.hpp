@@ -71,11 +71,9 @@ private:
 public:
     WaveManager() = default;
 
-    void activateWave(const std::string& name)
-    { _wave[name]->activateWave(); _wave.erase(name); }
+    void activateWave(const std::string& name);
 
-    void addWave(const std::string& name, std::unique_ptr<Wave>&& wave)
-    { _wave[name] = std::move(wave); }
+    void addWave(const std::string& name, std::unique_ptr<Wave>&& wave);
 };
 
 // For the collisions use a BoxCollision

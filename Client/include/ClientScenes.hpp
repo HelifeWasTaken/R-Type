@@ -34,6 +34,40 @@ extern Game g_game;
         }                                                                      \
     }
 
+template<typename T>
+class DestroyableElementSerializer : public rtype::net::Serializable {
+private:
+    T _element;
+
+public:
+    DestroyableElementSerializer() = default;
+    DestroyableElementSerializer(const T &element) : _element(element) {}
+    std::vector<rtype::net::Byte> serialize() const override {
+        rtype::net::Serializer serializer;
+        serializer << _element;
+        return serializer.data;
+    }
+    void from(const rtype::net::Byte *data, const rtype::net::BufferSizeType size) override {
+        rtype::net::Serializer serializer(data, size);
+        serializer >> _element;
+    }
+    T &getElement() { return (_element); }
+};
+
+class SerializedEnemyDeath : public DestroyableElementSerializer<paa::u16> {
+public:
+    SerializedEnemyDeath() = default;
+    SerializedEnemyDeath(const paa::u16 &element)
+        : DestroyableElementSerializer(element) {}
+};
+
+class SerializedPlayerDeath : public DestroyableElementSerializer<rtype::net::ClientID> {
+public:
+    SerializedPlayerDeath() = default;
+    SerializedPlayerDeath(const rtype::net::ClientID &element)
+        : DestroyableElementSerializer(element) {}
+};
+
 #include "Scenes/SceneClientConnect.hpp"
 #include "Scenes/SceneConnectRoom.hpp"
 #include "Scenes/SceneCreateRoom.hpp"

@@ -32,12 +32,12 @@ namespace game {
                                     EffectZones& zones)
     {
         for (const auto& p : layer["properties"]) {
-            const std::string type = p["name"];
+            const std::string name = p["name"];
             const std::string value = p["value"];
-            const std::string name = value.substr(0, value.find(","));
+            const std::string type = value.substr(0, value.find(","));
             const std::string scroll_index = value.substr(value.find(",") + 1);
             zones.addEffect(std::stoi(scroll_index), type, name);
-            spdlog::info("Effect zone: {} {} {}", type, name, scroll_index);
+            spdlog::info("Effect zone: ({}) ({}) ({})", type, name, scroll_index);
         }
     }
 
@@ -138,6 +138,21 @@ namespace game {
         for (int i = 0; i < to_delete.size(); i++) {
             effects.erase(effects.begin() + to_delete[i]);
         }
+    }
+
+    void WaveManager::activateWave(const std::string& name)
+    {
+        spdlog::info("Activating wave {}", name);
+        for (auto& names : _wave) {
+            spdlog::info("Wave: {}", names.first);
+        }
+        _wave[name]->activateWave();
+        _wave.erase(name);
+    }
+
+    void WaveManager::addWave(const std::string& name, std::unique_ptr<Wave>&& wave)
+    {
+        _wave[name] = std::move(wave);
     }
 
 }

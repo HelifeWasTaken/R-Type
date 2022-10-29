@@ -72,25 +72,65 @@ PAA_END_CPP(game_scene)
     g_game.scroll = 0;
 }
 
+static void update_player_position(shared_message_t& msg)
+{
+    const auto sp = parse_message<UpdateMessage>(msg);
+    const rtype::game::SerializablePlayer p(sp->data());
+    paa::DynamicEntity e = g_game.players_entities[p.get_player()];
+    e.getComponent<rtype::game::Player>()->update_info(p);
+}
+
+static void update_enemy_death(shared_message_t& msg)
+{
+    const auto sp = parse_message<UpdateMessage>(msg);
+    SerializedEnemyDeath e;
+    e.from(sp->data().data(), sp->data().size());
+
+    auto it = g_game.enemies_to_entities.find(e.getElement());
+    if (it != g_game.enemies_to_entities.end()) {
+        PAA_ECS.kill_entity(it->second);
+        g_game.enemies_to_entities.erase(it);
+    }
+}
+
+static void update_player_death(shared_message_t& msg)
+{
+    const auto sp = parse_message<UpdateMessage>(msg);
+    SerializedPlayerDeath e;
+    e.from(sp->data().data(), sp->data().size());
+
+    PAA_ECS.kill_entity(g_game.players_entities[e.getElement()]);
+}
+
+static void update_server_event()
+{
+    auto& tcp = g_game.service.tcp();
+    auto& udp = g_game.service.udp();
+
+    shared_message_t msg;
+    while (tcp.poll(msg) || udp.poll(msg)) {
+        switch (msg->code()) {
+        case message_code::UPDATE_ENEMY_DESTROYED:
+            update_enemy_death(msg);
+            break;
+        case message_code::UPDATE_PLAYER_DESTROYED:
+            update_player_death(msg);
+            break;
+        case message_code::UPDATE_PLAYER:
+            update_player_position(msg);
+            break;
+        default:
+            break;
+        }
+    }
+}
 
 PAA_UPDATE_CPP(game_scene)
 {
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
 
     scroll_map(*map);
-
-    auto& tcp = g_game.service.tcp();
-    auto& udp = g_game.service.udp();
-
-    shared_message_t msg;
-    while (tcp.poll(msg) || udp.poll(msg)) {
-        if (msg->code() == message_code::UPDATE_PLAYER) {
-            const auto sp = parse_message<UpdateMessage>(msg);
-            const rtype::game::SerializablePlayer p(sp->data());
-            paa::DynamicEntity e = g_game.players_entities[p.get_player()];
-            e.getComponent<rtype::game::Player>()->update_info(p);
-        }
-    }
+    update_server_event();
 }
 
 PAA_EVENTS_CPP(game_scene) { }

@@ -7,7 +7,67 @@
 #include "Player.hpp"
 #include "Map.hpp"
 
+#include "RServer/Messages/Messages.hpp"
+
 Game g_game;
+
+static void register_bullet_system()
+{
+    PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
+        for (const auto&& [e, b] : r.view<rtype::game::Bullet>()) {
+            b->update();
+            if (!b->is_alive()) {
+                r.kill_entity(e);
+            }
+        }
+    });
+}
+
+static void register_enemy_system()
+{
+    PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
+        const auto view = PAA_SCREEN.getView();
+        const double left_border = view.getCenter().x - view.getSize().x / 2 - 100;
+
+        unsigned int count = 0;
+        for (const auto&& [entity, enemy, id] : r.view<rtype::game::Enemy, paa::Id>()) {
+            enemy->update();
+            const auto& hp = PAA_GET_COMPONENT(entity, paa::Health);
+            const auto& pos = PAA_GET_COMPONENT(entity, paa::Position);
+            if (hp.hp <= 0 || pos.x < left_border) {
+                r.kill_entity(entity);
+                g_game.enemies_to_entities.erase(id.id);
+                g_game.service.tcp()
+                    .send(rtype::net::UpdateMessage(
+                            g_game.id,
+                            SerializedEnemyDeath(id.id),
+                            rtype::net::message_code::UPDATE_ENEMY_DESTROYED));
+            }
+            count++;
+        }
+
+        if (count == 0 && g_game.lock_scroll) {
+            g_game.lock_scroll = false;
+        }
+    });
+}
+
+static void register_player_system()
+{
+    PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
+        for (auto&& [e, player, id] : r.view<rtype::game::Player, paa::Id>()) {
+            player->update();
+            if (player->is_dead()) {
+                r.kill_entity(e);
+                g_game.service.tcp()
+                    .send(rtype::net::UpdateMessage(
+                        g_game.id,
+                        SerializedPlayerDeath(id.id),
+                        rtype::net::message_code::UPDATE_PLAYER_DESTROYED));
+            }
+        }
+    });
+}
 
 PAA_SCENE(ecs) {
 
@@ -17,43 +77,9 @@ PAA_SCENE(ecs) {
         PAA_REGISTER_COMPONENTS(rtype::game::Enemy, rtype::game::Bullet,
                                 rtype::game::Player, rtype::game::EffectZones::EffectZoneData);
 
-        PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
-            for (const auto&& [e, b] : r.view<rtype::game::Bullet>()) {
-                b->update();
-                if (!b->is_alive())
-                    r.kill_entity(e);
-            }
-        });
-
-        PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
-            const auto view = PAA_SCREEN.getView();
-            const double left_border = view.getCenter().x - view.getSize().x / 2 - 100;
-
-            unsigned int count = 0;
-            for (const auto&& [entity, enemy] : r.view<rtype::game::Enemy>()) {
-                enemy->update();
-                const auto& hp = PAA_GET_COMPONENT(entity, paa::Health);
-                const auto& pos = PAA_GET_COMPONENT(entity, paa::Position);
-                if (hp.hp <= 0 || pos.x < left_border) {
-                    r.kill_entity(entity);
-                }
-                count++;
-            }
-
-            if (count == 0 && g_game.lock_scroll) {
-                g_game.lock_scroll = false;
-            }
-        });
-
-        PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
-            for (auto&& [e, player, id] : r.view<rtype::game::Player, paa::Id>()) {
-                player->update();
-                if (player->is_dead()) {
-                    r.kill_entity(e);
-                    // TODO: Send message to kill player By id
-                }
-            }
-        });
+        register_bullet_system();
+        register_enemy_system();
+        register_player_system();
     }
 
     PAA_END {}

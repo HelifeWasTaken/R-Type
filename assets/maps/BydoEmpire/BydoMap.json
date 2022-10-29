@@ -632,14 +632,14 @@
          "opacity":1,
          "properties":[
                 {
-                 "name":"activate_wave",
+                 "name":"wave1",
                  "type":"string",
-                 "value":"first_wave,100"
+                 "value":"activate_wave,100"
                 }, 
                 {
-                 "name":"lock_scroll",
+                 "name":"wave1_lock",
                  "type":"string",
-                 "value":"any,300"
+                 "value":"lock_scroll,250"
                 }],
          "type":"objectgroup",
          "visible":true,
@@ -649,7 +649,7 @@
         {
          "draworder":"topdown",
          "id":10,
-         "name":"first_wave",
+         "name":"wave1",
          "objects":[
                 {
                  "height":11.6099,
@@ -672,6 +672,17 @@
                  "width":9.28793,
                  "x":449.20921806427,
                  "y":77.1984005939689
+                }, 
+                {
+                 "height":7.49365921143648,
+                 "id":185,
+                 "name":"another enemy",
+                 "rotation":0,
+                 "type":"basic_enemy",
+                 "visible":true,
+                 "width":11.5287064791331,
+                 "x":469.896490863561,
+                 "y":53.2849304640912
                 }],
          "offsetx":-0.101701838889426,
          "offsety":0.899989987834132,
@@ -682,7 +693,7 @@
          "y":0
         }],
  "nextlayerid":11,
- "nextobjectid":185,
+ "nextobjectid":190,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.4.3",

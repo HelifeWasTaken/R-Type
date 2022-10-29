@@ -28,7 +28,7 @@ struct Game {
             return PAA_ENTITY();
         int index = paa::Random::rand() % RTYPE_PLAYER_COUNT;
 
-        for (; !connected_players[index] ; index = paa::Random::rand() % RTYPE_PLAYER_COUNT);
+        for (; is_player_alive_by_id(index); index = paa::Random::rand() % RTYPE_PLAYER_COUNT);
         return players_entities[index];
     }
 

@@ -11,8 +11,8 @@ namespace rtype {
             shooter->aim(-180);
             _shooterList.push_back(shooter);
             _cycle = std::rand() % 10;
-            _shoot_cycle = 0.1f + static_cast<float>(std::rand()) * static_cast<float>(2 - 0.1f) / RAND_MAX;
-            _rand_ampl = .6f + static_cast<float>(std::rand()) * static_cast<float>(2 - .6f) / RAND_MAX;
+            _shoot_cycle = 0.1f + static_cast<float>(paa::Random::rand()) * static_cast<float>(2 - 0.1f) / RAND_MAX;
+            _rand_ampl = .6f + static_cast<float>(paa::Random::rand()) * static_cast<float>(2 - .6f) / RAND_MAX;
         }
 
         void KeyEnemy::update()

@@ -102,6 +102,7 @@ static void update_player_death(shared_message_t& msg)
     e.from(sp->data().data(), sp->data().size());
 
     PAA_ECS.kill_entity(g_game.players_entities[e.getElement()]);
+    g_game.players_alive[e.getElement()] = false;
 }
 
 static void update_server_event()

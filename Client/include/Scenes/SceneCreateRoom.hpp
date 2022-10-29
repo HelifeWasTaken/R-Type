@@ -4,9 +4,10 @@
 
 PAA_SCENE(create_room)
 {
+    PAA_SCENE_DEFAULT(create_room);
 
-    PAA_START(create_room);
-    PAA_END(create_room) = default;
+    PAA_START;
+    PAA_END;
 
     PAA_UPDATE;
 };

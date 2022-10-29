@@ -1,10 +1,13 @@
 #include "Shooter.hpp"
+#include "Bullet.hpp"
+#include "PileAA/Math.hpp"
+#include "Player.hpp"
 
 namespace rtype {
 namespace game {
 
-    AShooter::AShooter(double reloadTime, const paa::Position& posRef)
-        : _positionRef(posRef)
+    AShooter::AShooter(const PAA_ENTITY& e, double reloadTime)
+        : _parentEntity(e)
     {
         _timer.setTarget(reloadTime);
     }
@@ -22,11 +25,22 @@ namespace game {
 
     double AShooter::aim_angle() const { return _aim_angle; }
 
-    void AShooter::aim(const paa::Vector2f& to_aim)
+    AShooter& AShooter::aim(const paa::Vector2f& to_aim)
     {
-        const paa::Position fpos = paa::Position(
-            _positionRef.x - to_aim.x, _positionRef.y - to_aim.y);
-        _aim_angle = std::atan2(fpos.y, fpos.x) * 180 / M_PI;
+        _aim_angle = paa::Math::direction_to_angle(
+            _parentEntity.getComponent<paa::Position>(), to_aim);
+        return *this;
+    }
+
+    AShooter& AShooter::aim(float const& aim_angle, bool isRadian)
+    {
+        _aim_angle = isRadian ? aim_angle : paa::Math::toRadians(aim_angle);
+        return *this;
+    }
+
+    bool AShooter::is_attached_to_player() const
+    {
+        return _parentEntity.hasComponent<rtype::game::Player>();
     }
 
 }

@@ -12,10 +12,11 @@
 #include "Timer.hpp"
 
 #include "paa_commands/paa_command_ecs.hpp"
-#include "paa_commands/paa_command_main.hpp"
 #include "paa_commands/paa_command_state.hpp"
 #include "paa_commands/paa_getters.hpp"
 #include "paa_commands/paa_utilities.hpp"
+
+#include <filesystem>
 
 namespace paa {
 
@@ -119,32 +120,17 @@ public:
      * @brief Default handleEvent function
      */
     void handleEvent() override { }
+
+    /**
+     * @brief Default start function
+     */
+    void start() override { }
+
+    /**
+     * @brief Default stop function
+     */
+    void end() override { }
 };
-
-/**
- * @brief Changes the current state of the app
- *
- * @tparam T The next scene
- */
-template <typename T> static inline void scene_change_meta()
-{
-    paa::SceneManager::get().changeState<T>();
-}
-
-/**
- * @brief Push a new scene on the current state of the app
- *
- * @tparam T The next scene
- */
-template <typename T> static inline void scene_push_meta()
-{
-    paa::SceneManager::get().pushState<T>();
-}
-
-/**
- * @brief Pop the current state of the app
- */
-static inline void scene_pop_meta() { paa::SceneManager::get().popState(); }
 
 /**
  * @brief Load a configuration file and setup the system
@@ -153,4 +139,45 @@ static inline void scene_pop_meta() { paa::SceneManager::get().popState(); }
  */
 void setup_paa_system(const std::string& configuration_file);
 void stop_paa_system();
+
+template <typename F>
+int paa_unsafe_main(
+    int argc, char** argv, const std::string& configuration_file, const F& app)
+{
+    std::filesystem::current_path(std::filesystem::path(argv[0]).parent_path());
+    setup_paa_system(configuration_file);
+    app();
+    PAA_APP.run();
+    stop_paa_system();
+    return 0;
 }
+
+template <typename F>
+int paa_main(
+    int argc, char** argv, const std::string& configuration_file, const F& app)
+{
+    try {
+        return paa_unsafe_main(argc, argv, "configuration.json", app);
+    } catch (const paa::AABaseError& e) {
+        spdlog::critical("paa::AABaseError: Error: {}", e.what());
+    } catch (const std::exception& e) {
+        spdlog::critical("std::exception: Error: {}", e.what());
+    } catch (...) {
+        spdlog::critical("Unknown error");
+    }
+    return 1;
+}
+
+} // namespace paa
+
+#define PAA_MAIN(resources, handler)                                           \
+    int main(int argc, char** argv)                                            \
+    {                                                                          \
+        return paa::paa_main(argc, argv, resources, []() handler);             \
+    }
+
+#define PAA_UNSAFE_MAIN(resources, handler)                                    \
+    int main(int argc, char** argv)                                            \
+    {                                                                          \
+        return paa::paa_unsafe_main(argc, argv, resources, []() handler);      \
+    }

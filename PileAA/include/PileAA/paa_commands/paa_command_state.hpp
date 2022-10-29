@@ -17,19 +17,19 @@
 /**
  * @brief Entry point of the scene
  */
-#define PAA_START(name) PAA_FUN_NAMESPACE(name)()
+#define PAA_START void start() override
 
 /**
  * @brief End point of the scene
  */
-#define PAA_END(name) ~PAA_FUN_NAMESPACE(name)()
+#define PAA_END void end() override
 
 /**
  * @brief Default declarations for a scene
  */
 #define PAA_SCENE_DEFAULT(name)                                                \
-    PAA_START(name);                                                           \
-    PAA_END(name) = default;
+    PAA_FUN_NAMESPACE(name)() = default;                                       \
+    ~PAA_FUN_NAMESPACE(name)() = default
 
 /**
  * @brief Update section of the scene
@@ -44,12 +44,12 @@
 /**
  * @brief Entry point of the scene for cpp
  */
-#define PAA_START_CPP(name) PAA_FUN_NAMESPACE(name)::PAA_FUN_NAMESPACE(name)()
+#define PAA_START_CPP(name) void PAA_FUN_NAMESPACE(name)::start()
 
 /**
  * @brief End point of the scene for cpp
  */
-#define PAA_END_CPP(name) PAA_FUN_NAMESPACE(name)::~PAA_FUN_NAMESPACE(name)()
+#define PAA_END_CPP(name) void PAA_FUN_NAMESPACE(name)::end()
 
 /**
  * @brief Update section of the scene for cpp
@@ -62,34 +62,22 @@
 #define PAA_EVENTS_CPP(name) void PAA_FUN_NAMESPACE(name)::handleEvent()
 
 /**
- * @brief User defined method
+ * @brief Register a scene
  */
-#define PAA_METHOD(name, ret, ...) ret name(__VA_ARGS__)
+#define PAA_REGISTER_SCENE(type)                                               \
+    PAA_SCENE_MANAGER.registerState(#type, new PAA_SCENE_DECL(type)())
 
 /**
- * @brief User defined method for cpp
+ * @brief Set a scene
  */
-#define PAA_METHOD_CPP(scene_name, fun_name, ret, ...)                         \
-    ret PAA_FUN_NAMESPACE(scene_name)::fun_name(__VA_ARGS__)
+#define PAA_SET_SCENE(type) PAA_SCENE_MANAGER.changeState(#type)
 
 /**
- * @brief Defined call method
+ * @brief Push a scene
  */
-#define PAA_CALL_METHOD(name, ...) PAA_FUN_NAMESPACE(name)(__VA_ARGS__)
+#define PAA_PUSH_SCENE(type) PAA_SCENE_MANAGER.pushState(#type)
 
 /**
- * @brief Set the current scene
+ * @brief Pop a scene
  */
-#define PAA_SET_SCENE(scene_name)                                              \
-    paa::scene_change_meta<PAA_FUN_NAMESPACE(scene_name)>()
-
-/**
- * @brief Push a new scene
- */
-#define PAA_PUSH_SCENE(scene_name)                                             \
-    paa::scene_push_meta<PAA_FUN_NAMESPACE(scene_name)>()
-
-/**
- * @brief Pop the current scene
- */
-#define PAA_POP_SCENE() paa::scene_pop_meta()
+#define PAA_POP_SCENE PAA_SCENE_MANAGER.popState

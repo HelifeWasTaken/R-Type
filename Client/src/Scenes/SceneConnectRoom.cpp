@@ -56,6 +56,8 @@ PAA_START_CPP(connect_room)
     gui.addObject(text);
 }
 
+PAA_END_CPP(connect_room) { gui.clear(); }
+
 PAA_UPDATE_CPP(connect_room)
 {
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);

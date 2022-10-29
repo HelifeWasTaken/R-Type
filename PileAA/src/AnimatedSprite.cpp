@@ -1,4 +1,5 @@
 #include "PileAA/AnimatedSprite.hpp"
+#include "PileAA/Math.hpp"
 #include "PileAA/ResourceManager.hpp"
 
 namespace paa {
@@ -12,12 +13,15 @@ void AnimatedSprite::_setRect(const unsigned int& index)
 
 AnimatedSprite::AnimatedSprite(const std::string& textureName)
 {
-    this->setTexture(
-        ResourceManagerInstance::get().get<sf::Texture>(textureName));
+    auto& tx = ResourceManagerInstance::get().get<sf::Texture>(textureName);
+    const auto& def = ResourceManagerInstance::get().getDefaultTexture();
+
+    this->setTexture(tx);
 
     const IntRect rect(
         0, 0, getTexture()->getSize().x, getTexture()->getSize().y);
 
+    _uses_default = &tx == &def;
     registerAnimation("DEFAULT", paa::Animation { { rect }, 1000000.f });
     useAnimation("DEFAULT");
     setPosition(0, 0);
@@ -29,16 +33,22 @@ void AnimatedSprite::registerAnimation(
     _reg[animationName] = animation;
 }
 
-void AnimatedSprite::useAnimation(const std::string& animationName)
+AnimatedSprite& AnimatedSprite::useAnimation(const std::string& animationName)
 {
     try {
-        _currentAnimation = &_reg.at(animationName);
+        if (_uses_default)
+            _currentAnimation = &_reg.at("DEFAULT");
+        else
+            _currentAnimation = &_reg.at(animationName);
     } catch (...) {
-        throw Error(std::string("AnimatedSprite: Could not find animtion: [")
-            + animationName + "]");
+        spdlog::warn("PileAA::AnimatedSprite: Could not find animtion: [{}] "
+                     "using default",
+            animationName);
+        useAnimation("DEFAULT");
     }
     _timer.setTarget(_currentAnimation->speed);
     _setRect(0);
+    return *this;
 }
 
 void AnimatedSprite::update()
@@ -46,6 +56,68 @@ void AnimatedSprite::update()
     if (_timer.isFinished()) {
         _setRect(_animationIndex + 1);
     }
+}
+
+AnimatedSprite& AnimatedSprite::setColor(const Color& color)
+{
+    BaseSprite::setColor(color);
+    return *this;
+}
+
+AnimatedSprite& AnimatedSprite::setPosition(float x, float y)
+{
+    BaseSprite::setPosition(x, y);
+    return *this;
+}
+
+AnimatedSprite& AnimatedSprite::setPosition(const Vector2f& position)
+{
+    BaseSprite::setPosition(position);
+    return *this;
+}
+
+AnimatedSprite& AnimatedSprite::setScale(float x, float y)
+{
+    BaseSprite::setScale(x, y);
+    return *this;
+}
+
+AnimatedSprite& AnimatedSprite::setScale(const Vector2f& scale)
+{
+    BaseSprite::setScale(scale);
+    return *this;
+}
+
+AnimatedSprite& AnimatedSprite::setOrigin(float x, float y)
+{
+    BaseSprite::setOrigin(x, y);
+    return *this;
+}
+
+AnimatedSprite& AnimatedSprite::setOrigin(const Vector2f& origin)
+{
+    BaseSprite::setOrigin(origin);
+    return *this;
+}
+
+AnimatedSprite& AnimatedSprite::setRotation(float angle, bool is_radians)
+{
+    if (is_radians)
+        angle = paa::Math::toDegrees(angle);
+    BaseSprite::setRotation(angle);
+    return *this;
+}
+
+AnimatedSprite& AnimatedSprite::move(float x, float y)
+{
+    BaseSprite::move(x, y);
+    return *this;
+}
+
+AnimatedSprite& AnimatedSprite::move(const Vector2f& offset)
+{
+    BaseSprite::move(offset);
+    return *this;
 }
 
 std::vector<IntRect> AnimatedSprite::determineRects(const Vector2u& frameSize,

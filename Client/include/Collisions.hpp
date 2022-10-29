@@ -12,6 +12,7 @@ namespace game {
         ENEMY_BULLET,
         STATIC_WALL,
         POWER_UP,
+        EFFECT_ZONE,
         NONE
     };
 

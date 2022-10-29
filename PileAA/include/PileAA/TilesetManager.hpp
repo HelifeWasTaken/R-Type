@@ -22,9 +22,9 @@ private:
     std::vector<std::unique_ptr<std::pair<Texture&, VertexArray>>> _layers;
 
 public:
-    static inline const uint64_t FLIP_H_FLAG = 0x80000000;
-    static inline const uint64_t FLIP_V_FLAG = 0x40000000;
-    static inline const uint64_t FLIP_D_FLAG = 0x20000000;
+    static constexpr uint64_t FLIP_H_FLAG = 0x80000000;
+    static constexpr uint64_t FLIP_V_FLAG = 0x40000000;
+    static constexpr uint64_t FLIP_D_FLAG = 0x20000000;
 
 public:
     /**

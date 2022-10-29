@@ -17,6 +17,28 @@
 
 #include <memory>
 #include <stack>
+#include <unordered_map>
+
+#ifndef SILVA_STATE_PRETTY_FUNCTION
+    #if defined(_MSC_VER)
+        #define SILVA_STATE_PRETTY_FUNCTION __FUNCSIG__
+    #elif defined(__GNUC__) || defined(__GNUG__) || defined(__clang__)
+        #define SILVA_STATE_PRETTY_FUNCTION __PRETTY_FUNCTION__
+    #else
+        #define SILVA_STATE_PRETTY_FUNCTION __func__ " (pretty function not supported)"
+    #endif
+#endif
+
+#ifdef SILVA_STATE_LOG_SPDLOG
+    #include <spdlog/spdlog.h>
+    #include <iostream>
+    #define SILVA_STATE_LOG(msg, ...) spdlog::info(msg, __VA_ARGS__);
+#elif SILVA_STATE_LOG_FMT
+    #include <format>
+    #define SILVA_STATE_LOG(msg, ...) std::cout << std::format(msg, __VA_ARGS__) << std::endl
+#else
+    #define SILVA_STATE_LOG(msg, ...)
+#endif
 
 namespace hl {
 namespace silva {
@@ -41,12 +63,15 @@ namespace silva {
              */
             virtual void update() = 0;
 
-#ifdef SILVA_STATE_DRAW
             /**
-             * @brief Draw the state
+             * @brief Starts the scene
              */
-            virtual void draw() = 0;
-#endif
+            virtual void start() = 0;
+
+            /**
+             * @brief Ends the scene
+             */
+            virtual void end() = 0;
 
 #ifdef SILVA_STATE_HANDLE_EVENT
             /**
@@ -67,13 +92,6 @@ namespace silva {
          */
         inline State() = default;
 
-#ifdef SILVA_STATE_DRAW
-        /**
-         * @brief Draw the State object
-         */
-        inline void draw() override { }
-#endif
-
 #ifdef SILVA_STATE_HANDLE_EVENT
         /**
          * @brief Handle the events
@@ -81,7 +99,7 @@ namespace silva {
         inline void handleEvent() override { }
 #endif
 
-        inline ~State() override { }
+        inline ~State() override = default;
     };
 
     /**
@@ -92,52 +110,98 @@ namespace silva {
         /**
          * @brief The current pending state
          */
-        std::unique_ptr<State> _pendingState = nullptr;
+        State *_pendingState = nullptr;
 
         /**
          * @brief All the stacked states
          */
-        std::stack<std::unique_ptr<State>> _currentState;
+        std::stack<State *> _currentState;
 
         /**
          * @brief Number of states to pop in the next update
-         *
          */
         std::size_t _toPopCount = 0;
 
+        /**
+         * @brief The registered states
+         */
+        std::unordered_map<std::string, std::unique_ptr<State>> _registeredStates;
+
+        /**
+         * @brief Return a pointer to the asked scene
+         */
+        State *getState(const std::string &stateName)
+        {
+            auto it = std::find_if(_registeredStates.begin(), _registeredStates.end(),
+                                      [&stateName](const auto &pair) {
+                                        return pair.first == stateName;
+                                      });
+            if (it == _registeredStates.end())
+                return nullptr;
+            return it->second.get();
+        }
+
+        /**
+         * @brief Really pop the state based on the count
+         */
         void _actualPopState()
         {
-            for (; _toPopCount && !_currentState.empty(); --_toPopCount)
-                ;
+            if (_toPopCount != 0) {
+                SILVA_STATE_LOG("silva::StateManager: Popping {} state {}", _toPopCount, SILVA_STATE_PRETTY_FUNCTION);
+            }
+            for (std::size_t i = 0; i < _toPopCount; ++i) {
+                _currentState.top()->end();
+                _currentState.pop();
+            }
             _toPopCount = 0;
         }
 
     public:
         /**
-         * @brief Construct a new StateManager object
+         * @brief Register a state
+         * @param state The state to push
+         * @param name The name of the state
          */
-        inline StateManager() = default;
+        void registerState(const std::string& stateName, std::unique_ptr<State>&& state)
+        {
+            SILVA_STATE_LOG("silva::StateManager: Registering state {} {}", stateName, SILVA_STATE_PRETTY_FUNCTION);
+            if (getState(stateName) != nullptr)
+                throw std::runtime_error(std::string("State ") + stateName + " is already registered");
+            _registeredStates[stateName] = std::move(state);
+        }
 
         /**
-         * @brief Destroy the StateManager object
+         * @brief Register a state
+         * @param state The state to push
+         * @param name The name of the state
          */
-        inline ~StateManager() = default;
-
-        /**
-         * @brief Pop the state from the stack
-         */
-        inline void popState() { ++_toPopCount; }
+        void registerState(const std::string& stateName, State *state)
+        {
+            SILVA_STATE_LOG("silva::StateManager: Registering state {} {}", stateName, SILVA_STATE_PRETTY_FUNCTION);
+            if (getState(stateName) != nullptr)
+                throw std::runtime_error(std::string("State ") + stateName + " is already registered");
+            _registeredStates[stateName] = std::unique_ptr<State>(state);
+        }
 
         /**
          * @brief Push a new state on the stack
          * @tparam T The type of the state
          * @tparam Args The types of the arguments
          */
-        template <typename T, typename... Args>
-        inline void pushState(Args&&... args)
+        template <typename... Args>
+        inline void pushState(const std::string& state, Args&&... args)
         {
-            _currentState.push(
-                std::make_unique<T>(std::forward<Args>(args)...));
+            SILVA_STATE_LOG("silva::StateManager: Pushing state {} {}", state, SILVA_STATE_PRETTY_FUNCTION);
+            _currentState.push(getState(state));
+            _currentState.top()->start(std::forward<Args>(args)...);
+        }
+
+        /**
+         * @brief Pop the current state
+         */
+        inline void popState()
+        {
+            ++_toPopCount;
         }
 
         /**
@@ -149,16 +213,21 @@ namespace silva {
          * @tparam T The type of the state
          * @tparam Args The types of the arguments
          */
-        template <typename T, typename... Args>
-        inline void changeState(Args&&... args)
+        template <typename... Args>
+        inline void changeState(const std::string& state, Args&&... args)
         {
-            _pendingState = std::make_unique<T>(std::forward<Args>(args)...);
+            SILVA_STATE_LOG("silva::StateManager: Changing state {} - {}", state, SILVA_STATE_PRETTY_FUNCTION);
+            _pendingState = getState(state);
+            if (_pendingState == nullptr)
+                throw std::runtime_error(std::string("State ") + state + " is not registered");
+            SILVA_STATE_LOG("silva::StateManager: Pending state is now {} . {} - {}", state, (void *) _pendingState,
+                            SILVA_STATE_PRETTY_FUNCTION);
         }
 
         /**
          * @brief Tells wheter the state will be changed
          */
-        inline bool isInTransition() const { return _pendingState.get(); }
+        inline bool isInTransition() const { return _pendingState != nullptr; }
 
         /**
          * @brief Tells wheter the state machine is empty
@@ -181,29 +250,21 @@ namespace silva {
          */
         inline bool update()
         {
+            // SILVA_STATE_LOG("silva::StateManager: Updating state {}", SILVA_STATE_PRETTY_FUNCTION);
             _actualPopState();
             if (isInTransition()) {
+                SILVA_STATE_LOG("silva::StateManager: Transitioning state {}", SILVA_STATE_PRETTY_FUNCTION);
                 _toPopCount = _currentState.size();
                 _actualPopState();
-                _currentState.push(std::move(_pendingState));
+                _pendingState->start();
+                _currentState.push(_pendingState);
+                _pendingState = nullptr;
             } else if (_currentState.empty()) {
                 return false;
             }
             _currentState.top()->update();
             return true;
         }
-
-#ifdef SILVA_STATE_DRAW
-        /**
-         * @brief Draw the state
-         */
-        inline void draw()
-        {
-            if (_currentState.empty())
-                return;
-            _currentState.top()->draw();
-        }
-#endif
 
 #ifdef SILVA_STATE_HANDLE_EVENT
         /**
@@ -222,8 +283,12 @@ namespace silva {
          */
         inline void stop()
         {
+            SILVA_STATE_LOG("silva::StateManager: Stopping state {}", SILVA_STATE_PRETTY_FUNCTION);
             _toPopCount = _currentState.size();
-            _pendingState = nullptr;
+            if (_pendingState) {
+                _pendingState->end();
+                _pendingState = nullptr;
+            }
         }
     };
 }

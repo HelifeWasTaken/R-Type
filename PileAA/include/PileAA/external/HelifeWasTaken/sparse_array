@@ -24,7 +24,7 @@ namespace silva {
          * @param  size: The size of the array
          * @retval None
          */
-        sparse_array() { _data.assign(20, std::nullopt); }
+        sparse_array() { _data.assign(500, std::nullopt); }
 
         ~sparse_array() = default;
 

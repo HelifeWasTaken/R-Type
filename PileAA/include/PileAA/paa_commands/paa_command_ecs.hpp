@@ -15,7 +15,7 @@
 /**
  * @brief Returns a new entity
  */
-#define PAA_NEW_ENTITY() PAA_ECS.spawn_entity()
+#define PAA_NEW_ENTITY PAA_ECS.spawn_entity
 
 /**
  * @brief Destroy an entity

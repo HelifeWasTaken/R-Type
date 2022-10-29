@@ -5,9 +5,8 @@
 PAA_SCENE(waiting_room)
 {
 
-    PAA_START(waiting_room);
-    PAA_END(waiting_room) = default;
-
+    PAA_START;
+    PAA_END;
     PAA_UPDATE;
 
     paa::Gui gui;

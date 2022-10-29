@@ -628,36 +628,24 @@
          "draworder":"topdown",
          "id":8,
          "name":"EffectZones",
-         "objects":[
+         "objects":[],
+         "opacity":1,
+         "properties":[
                 {
-                 "height":205.086667746639,
-                 "id":83,
-                 "name":"End",
-                 "rotation":0,
-                 "type":"end_zone",
-                 "visible":true,
-                 "width":29.4832334359307,
-                 "x":4437.71261947189,
-                 "y":1.29596630487607
+                 "name":"wave1",
+                 "type":"string",
+                 "value":"activate_wave,100"
                 }, 
                 {
-                 "height":205.831903945112,
-                 "id":85,
-                 "name":"ActivateWaves1",
-                 "properties":[
-                        {
-                         "name":"wave",
-                         "type":"string",
-                         "value":"first_wave"
-                        }],
-                 "rotation":0,
-                 "type":"activate_wave",
-                 "visible":true,
-                 "width":47.4220563010796,
-                 "x":70.6285944909696,
-                 "y":1.00897992129957
+                 "name":"wave1_lock",
+                 "type":"string",
+                 "value":"lock_scroll,250"
+                }, 
+                {
+                 "name":"wave2",
+                 "type":"string",
+                 "value":"activate_wave,2000"
                 }],
-         "opacity":1,
          "type":"objectgroup",
          "visible":true,
          "x":0,
@@ -666,18 +654,174 @@
         {
          "draworder":"topdown",
          "id":10,
-         "name":"first_wave",
+         "name":"wave1",
          "objects":[
                 {
-                 "height":51.2701002097413,
-                 "id":86,
-                 "name":"enemy",
+                 "height":11.6099,
+                 "id":184,
+                 "name":"enemy2",
                  "rotation":0,
-                 "type":"basic_shooter",
+                 "type":"key_enemy",
                  "visible":true,
-                 "width":60.5919366115125,
-                 "x":39.6178047075274,
-                 "y":48.9396411092985
+                 "width":9.28793,
+                 "x":449.20921806427,
+                 "y":77.1984005939689
+                }, 
+                {
+                 "height":7.49365921143648,
+                 "id":185,
+                 "name":"another enemy",
+                 "rotation":0,
+                 "type":"basic_enemy",
+                 "visible":true,
+                 "width":11.5287064791331,
+                 "x":469.896490863561,
+                 "y":53.2849304640912
+                }, 
+                {
+                 "height":11.6099,
+                 "id":211,
+                 "name":"enemy2",
+                 "rotation":0,
+                 "type":"key_enemy",
+                 "visible":true,
+                 "width":9.28793,
+                 "x":468.216819782476,
+                 "y":68.3593469842606
+                }, 
+                {
+                 "height":7.49366,
+                 "id":212,
+                 "name":"another enemy",
+                 "rotation":0,
+                 "type":"basic_enemy",
+                 "visible":true,
+                 "width":11.5287,
+                 "x":492.034200123687,
+                 "y":43.9986497926589
+                }, 
+                {
+                 "height":11.6099,
+                 "id":213,
+                 "name":"enemy2",
+                 "rotation":0,
+                 "type":"key_enemy",
+                 "visible":true,
+                 "width":9.28793,
+                 "x":443.397375648585,
+                 "y":44.8814944251746
+                }, 
+                {
+                 "height":7.49366,
+                 "id":214,
+                 "name":"another enemy",
+                 "rotation":0,
+                 "type":"basic_enemy",
+                 "visible":true,
+                 "width":11.5287,
+                 "x":505.002918680134,
+                 "y":78.6564321417858
+                }, 
+                {
+                 "height":11.6099,
+                 "id":215,
+                 "name":"enemy2",
+                 "rotation":0,
+                 "type":"key_enemy",
+                 "visible":true,
+                 "width":9.28793,
+                 "x":447.198551777199,
+                 "y":102.569932141786
+                }, 
+                {
+                 "height":7.49366,
+                 "id":216,
+                 "name":"another enemy",
+                 "rotation":0,
+                 "type":"basic_enemy",
+                 "visible":true,
+                 "width":11.5287,
+                 "x":499.627126981643,
+                 "y":21.8623888083779
+                }, 
+                {
+                 "height":11.6099,
+                 "id":217,
+                 "name":"enemy2",
+                 "rotation":0,
+                 "type":"key_enemy",
+                 "visible":true,
+                 "width":9.28793,
+                 "x":470.260760682423,
+                 "y":101.899136354383
+                }, 
+                {
+                 "height":7.49366,
+                 "id":218,
+                 "name":"another enemy",
+                 "rotation":0,
+                 "type":"basic_enemy",
+                 "visible":true,
+                 "width":11.5287,
+                 "x":468.67730250654,
+                 "y":35.0547059606262
+                }, 
+                {
+                 "height":11.6099,
+                 "id":219,
+                 "name":"enemy2",
+                 "rotation":0,
+                 "type":"key_enemy",
+                 "visible":true,
+                 "width":9.28793,
+                 "x":485.210313063338,
+                 "y":79.7628753701023
+                }, 
+                {
+                 "height":7.49366,
+                 "id":220,
+                 "name":"another enemy",
+                 "rotation":0,
+                 "type":"basic_enemy",
+                 "visible":true,
+                 "width":11.5287,
+                 "x":512.828869533163,
+                 "y":50.2594104750819
+                }],
+         "offsetx":-0.101701838889426,
+         "offsety":0.899989987834132,
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":11,
+         "name":"wave2",
+         "objects":[
+                {
+                 "height":11.9797,
+                 "id":196,
+                 "name":"dumby",
+                 "rotation":0,
+                 "type":"dumby_boy_enemy",
+                 "visible":true,
+                 "width":14.4371,
+                 "x":2505.28235586274,
+                 "y":78.0742126132328
+                }, 
+                {
+                 "height":11.6099,
+                 "id":197,
+                 "name":"basic2",
+                 "rotation":0,
+                 "type":"basic_enemy",
+                 "visible":true,
+                 "width":9.28793,
+                 "x":2505.68287027792,
+                 "y":55.7937165700413
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -685,8 +829,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":11,
- "nextobjectid":89,
+ "nextlayerid":12,
+ "nextobjectid":221,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.4.3",

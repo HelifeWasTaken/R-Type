@@ -41,9 +41,11 @@ static inline void sys_collision_box_sync(hl::silva::registry& r)
 
 static inline void sys_collision_check(hl::silva::registry& r)
 {
-    auto& screen = PAA_SCREEN;
-    auto view = screen.getViewport(screen.getView());
-    Quadtree q(view.left, view.top, view.width, view.height);
+    const auto& screen = PAA_SCREEN;
+    const auto view = screen.getView();
+    const auto center = view.getCenter();
+    const auto size = view.getSize();
+    Quadtree q(center.x - size.x / 2, center.y - size.y / 2, size.x, size.y);
 
     for (auto&& [_, c] : r.view<SCollisionBox>()) {
         q.insert_collision(c.get());
@@ -53,8 +55,8 @@ static inline void sys_collision_check(hl::silva::registry& r)
 
 void setup_ecs(hl::silva::registry& r)
 {
-    r.register_component<Position, Velocity, Sprite, Depth, Health, SCollisionBox,
-         InputManagement, Controller, Id>()
+    r.register_component<Position, Velocity, Sprite, Depth, Health,
+         SCollisionBox, InputManagement, Controller, Id>()
         .add_system(sys_animated_sprite_system)
         .add_system(sys_controller_input_manager_system)
         .add_system(sys_sprite_position_updater)

@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Types.hpp"
+#include "VectorExtension.hpp"
+#include "external/HelifeWasTaken/Silva"
 #include "paa_commands/paa_command_ecs.hpp"
 #include <spdlog/spdlog.h>
 #include <vector>
-#include "external/HelifeWasTaken/Silva"
 
 namespace paa {
 
@@ -23,6 +24,14 @@ private:
     paa::IntRect _r;
 
 public:
+    /**
+     * @brief Construct a new Collision Box object
+     *
+     * @param r The rectangle of the collision box
+     * @param callback The callback to call when a collision occurs
+     * @param id The id (type) of the collision box
+     * @param e The entity the collision box is attached to
+     */
     CollisionBox(const paa::IntRect& r, const callback_t& callback,
         int64_t id = INVALID_ID, const PAA_ENTITY& e = PAA_ENTITY())
         : _e(e)
@@ -32,15 +41,51 @@ public:
     {
     }
 
+    /**
+     * @brief Get the id object
+     * @return const int64_t&
+     */
     const int64_t& get_id() const { return _id; }
+
+    /**
+     * @brief Get the entity object
+     * @return const PAA_ENTITY&
+     */
     const PAA_ENTITY& get_entity() const { return _e; }
+
+    /**
+     * @brief Get the rect object
+     * @return const paa::IntRect&
+     */
     const paa::IntRect& get_rect() const { return _r; }
 
+    /**
+     * @brief Get the x object
+     * @return int
+     */
     int get_x() const { return _r.left; }
+
+    /**
+     * @brief Get the y object
+     * @return int
+     */
     int get_y() const { return _r.top; }
+
+    /**
+     * @brief Get the w object
+     * @return int
+     */
     int get_w() const { return _r.width; }
+
+    /**
+     * @brief Get the h object
+     * @return int
+     */
     int get_h() const { return _r.height; }
 
+    /**
+     * @brief Performs AABB collision detection
+     */
     bool collides(const CollisionBox& box) const
     {
         return this->get_x() < box.get_x() + box.get_w()
@@ -49,17 +94,33 @@ public:
             && this->get_h() + this->get_y() > box.get_y();
     }
 
+    /**
+     * @brief Set the position object
+     *
+     * @param pos
+     */
     void set_position(const paa::Vector2i& pos)
     {
         _r.left = pos.x;
         _r.top = pos.y;
     }
+
+    /**
+     * @brief Set the size object
+     *
+     * @param size
+     */
     void set_size(const paa::Vector2i& size)
     {
         _r.width = size.x;
         _r.height = size.y;
     }
 
+    /**
+     * @brief Call the callback function
+     *
+     * @param other The other collision box (the one that collided with *this)
+     */
     void collision_callback(const CollisionBox& other)
     {
         _callback(*this, other);
@@ -221,9 +282,6 @@ public:
                 if (node_one == node_two)
                     continue;
                 if (node_one->collides(*node_two) == true) {
-                    spdlog::info(
-                        "Collision {} entered in collision with collision {}.",
-                        node_one->get_id(), node_two->get_id());
                     node_one->collision_callback(*node_two);
                 }
             }
@@ -255,4 +313,13 @@ private:
     paa::IntRect _rect;
 };
 
+}
+
+#include <ostream>
+
+static inline std::ostream& operator<<(
+    std::ostream& os, const paa::CollisionBox& other)
+{
+    return os << "Box(id: " << other.get_id() << ", rect: " << other.get_rect()
+              << ")";
 }

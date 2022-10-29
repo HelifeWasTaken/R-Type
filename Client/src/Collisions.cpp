@@ -13,6 +13,8 @@ namespace game {
         return CollisionFactory::make(
             rect,
             [](const paa::CollisionBox& self, const paa::CollisionBox& other) {
+                spdlog::info(
+                    "self: {}, other: {}", self.get_id(), other.get_id());
                 PAA_GET_COMPONENT(self.get_entity(), T)->on_collision(other);
             },
             id, entity);
@@ -55,7 +57,11 @@ namespace game {
         const paa::IntRect& rect, const PAA_ENTITY& e)
     {
         return make(
-            rect, [](const paa::CollisionBox&, const paa::CollisionBox&) {},
+            rect,
+            [](const paa::CollisionBox& self, const paa::CollisionBox& other) {
+                spdlog::warn(
+                    "CollisionBox: {}, {}", self.get_id(), other.get_id());
+            },
             CollisionType::STATIC_WALL, e);
     }
 
@@ -71,6 +77,5 @@ namespace game {
             },
             CollisionType::POWER_UP, e);
     }
-
 }
 }

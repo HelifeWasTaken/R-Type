@@ -43,10 +43,10 @@ PAA_START_CPP(create_room)
     g_game.service.tcp().send(SignalMarker(message_code::CREATE_ROOM));
 }
 
+PAA_END_CPP(create_room) { }
+
 PAA_UPDATE_CPP(create_room)
 {
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
     manage_server_events();
-
-    // Display awaiting for response from server
 }

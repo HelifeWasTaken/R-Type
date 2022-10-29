@@ -4,7 +4,10 @@
 #include <unordered_map>
 #include <variant>
 
+#include <spdlog/spdlog.h>
+
 #include "Error.hpp"
+#include "FrameBuffer.hpp"
 #include "Types.hpp"
 
 namespace paa {
@@ -23,7 +26,36 @@ private:
 
     ResourceHolder _resourceMap;
 
+    static inline const char* DEFAULT_TEXTURE
+        = "__paa_resource_manager_default_texture__";
+    static inline const char* DEFAULT_IMAGE
+        = "__paa_resource_manager_default_image__";
+
 public:
+    /**
+     * @brief Construct a new Resource Manager object
+     */
+    ResourceManager()
+    {
+        copyAs(DEFAULT_TEXTURE, FrameBuffer::generateDefaultTexture());
+        copyAs(DEFAULT_IMAGE, FrameBuffer::generateDefaultImage());
+    }
+
+    /**
+     * @brief Destroy the Resource Manager object
+     */
+    ~ResourceManager() = default;
+
+    /**
+     * @brief Returns the default texture
+     */
+    Texture& getDefaultTexture() { return get<Texture>(DEFAULT_TEXTURE); }
+
+    /**
+     * @brief Returns the default image
+     */
+    Image& getDefaultImage() { return get<Image>(DEFAULT_IMAGE); }
+
     /**
      * @brief Load a resource
      *
@@ -40,9 +72,21 @@ public:
         T& ref = std::get<T>(*resource);
 
         if (!ref.loadFromFile(filename, std::forward<LoadArgs>(loadArgs)...))
-            throw ResourceManagerError(
-                "ResourceHolder::load - Failed to load " + filename);
+            spdlog::error(
+                "ResourceHolder::load - Failed to load \"{}\"", filename);
         _resourceMap[name] = std::unique_ptr<LoadableResource>(resource);
+    }
+
+    /**
+     * @brief Copy as
+     * @tparam T Type of the resource
+     * @param name The name of the resource
+     * @param resource The resource to copy
+     */
+    template <typename T>
+    void copyAs(const std::string& name, const T& resource)
+    {
+        _resourceMap[name] = std::make_unique<LoadableResource>(resource);
     }
 
     /**
@@ -55,9 +99,22 @@ public:
     template <typename T> T& get(const std::string& name)
     {
         auto found = _resourceMap.find(name);
-        if (found == _resourceMap.end())
-            throw ResourceManagerError(
-                "ResourceHolder::get - Resource not found: " + name);
+        if (found == _resourceMap.end()) {
+            if constexpr (std::is_same_v<T, Texture>) {
+                spdlog::warn("ResourceHolder::get - Texture not found: \"{}\", "
+                             "using default texture",
+                    name);
+                return getDefaultTexture();
+            } else if constexpr (std::is_same_v<T, Image>) {
+                spdlog::warn("ResourceHolder::get - Image not found: \"{}\", "
+                             "using default image",
+                    name);
+                return getDefaultImage();
+            } else {
+                throw ResourceManagerError(
+                    "ResourceHolder::get - Resource not found: " + name);
+            }
+        }
         return std::get<T>(*found->second);
     }
 

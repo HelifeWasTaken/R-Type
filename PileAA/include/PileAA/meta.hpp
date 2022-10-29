@@ -4,6 +4,10 @@
 #include <string>
 #include <utility>
 
+/**
+ * @brief Generate a base factory class
+ *
+ */
 #define HL_FACTORY_IMPL(T, name)                                               \
     template <typename T> struct name {                                        \
         template <typename U, typename... Args>                                \
@@ -13,6 +17,10 @@
         }                                                                      \
     };
 
+/**
+ * @brief Generates a Singleton class from a type
+ *
+ */
 #define HL_SINGLETON_IMPL(T, name)                                             \
     class name {                                                               \
     protected:                                                                 \
@@ -54,6 +62,10 @@
         const char* what() const noexcept override { return _msg.c_str(); }    \
     };
 
+/**
+ * @brief Generates an error class from a name
+ *
+ */
 #define HL_BASE_ERROR_IMPL(name)                                               \
     class name {                                                               \
     private:                                                                   \
@@ -67,6 +79,11 @@
         virtual const char* what() const { return _msg.c_str(); }              \
     };
 
+/**
+ * @brief Generate a subclass of an error class
+ * (That is compliant with HL_BASE_ERROR_IMPL)
+ *
+ */
 #define HL_SUB_ERROR_IMPL(name, base)                                          \
     struct name : public base {                                                \
         name(const std::string& msg)                                           \
@@ -75,6 +92,10 @@
         }                                                                      \
     };
 
+/**
+ * @brief Automatically complete the canonical form of a class
+ *
+ */
 #define HL_AUTO_COMPLETE_CANONICAL_FORM(tname)                                 \
     tname() = default;                                                         \
     tname(const tname&) = default;                                             \

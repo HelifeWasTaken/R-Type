@@ -26,6 +26,7 @@ private:
     Animation* _currentAnimation = nullptr;
     Timer _timer;
     unsigned int _animationIndex = 0;
+    bool _uses_default;
 
     void _setRect(const unsigned int& index);
 
@@ -47,13 +48,25 @@ public:
     /**
      * @brief Set the current animation
      * @param animationName Animation name
+     * @return *this
      */
-    void useAnimation(const std::string& animationName);
+    AnimatedSprite& useAnimation(const std::string& animationName);
 
     /**
      * @brief Update the animation
      */
     void update();
+
+    AnimatedSprite& setColor(const Color& color);
+    AnimatedSprite& setPosition(float x, float y);
+    AnimatedSprite& setPosition(const paa::Vector2f& position);
+    AnimatedSprite& setScale(float x, float y);
+    AnimatedSprite& setScale(const paa::Vector2f& scale);
+    AnimatedSprite& setOrigin(float x, float y);
+    AnimatedSprite& setOrigin(const paa::Vector2f& origin);
+    AnimatedSprite& setRotation(float angle, bool is_radians = false);
+    AnimatedSprite& move(float x, float y);
+    AnimatedSprite& move(const paa::Vector2f& offset);
 
     /**
      * @brief Determines logically the frames on a well formed sprite sheet

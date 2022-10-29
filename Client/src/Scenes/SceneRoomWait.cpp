@@ -2,8 +2,6 @@
 
 using namespace rtype::net;
 
-static PAA_SCENE_DECL(waiting_room) * self = nullptr;
-
 static void manage_room_client_connect(shared_message_t msg)
 {
     auto rep = parse_message<UserConnectRoom>(msg.get());
@@ -71,19 +69,16 @@ static void manage_server_events()
 
 PAA_START_CPP(waiting_room)
 {
-    self = this;
-
     std::memset(
         g_game.connected_players.data(), 0, g_game.connected_players.size());
     g_game.connected_players[g_game.id] = true;
 
-    gui.addObject(paa::GuiFactory::new_button("Launch game", []() {
+    gui.addObject(paa::GuiFactory::new_button("Launch game", [this]() {
         if (g_game.is_host) {
             g_game.service.tcp().send(SignalMarker(message_code::LAUNCH_GAME));
-            self->server_log->setText(
-                "Requested the server to launch the game...");
+            server_log->setText("Requested the server to launch the game...");
         } else {
-            self->server_log->setText("You are not the host of the room");
+            server_log->setText("You are not the host of the room");
         }
     }));
     gui.addObject(server_log);
@@ -91,6 +86,8 @@ PAA_START_CPP(waiting_room)
     gui.addObject(paa::GuiFactory::new_button(
         "Disconnect", []() { PAA_SET_SCENE(client_connect); }));
 }
+
+PAA_END_CPP(waiting_room) { gui.clear(); }
 
 PAA_UPDATE_CPP(waiting_room)
 {

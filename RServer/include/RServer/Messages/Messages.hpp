@@ -114,7 +114,9 @@ namespace net {
         SYNC_SRAND,
 
         // Update messages
-        UPDATE_PLAYER
+        UPDATE_PLAYER,
+        UPDATE_ENEMY_DESTROYED,
+        UPDATE_PLAYER_DESTROYED
     };
 
     // All classes that inherit from IMessage
@@ -156,7 +158,10 @@ namespace net {
 
         // Update messages
         UPDATE_MESSAGE,
-        UPDATE_PLAYER = UPDATE_MESSAGE
+        UPDATE_PLAYER = UPDATE_MESSAGE,
+        UPDATE_PLAYER_DESTROYED = UPDATE_MESSAGE,
+        UPDATE_ENEMY_DESTROYED = UPDATE_MESSAGE
+
     };
 
     class IMessage {

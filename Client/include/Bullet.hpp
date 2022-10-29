@@ -1,12 +1,18 @@
 #pragma once
 
+#include "Bullet.hpp"
 #include "ClientScenes.hpp"
+#include "Collisions.hpp"
+#include "PileAA/DynamicEntity.hpp"
+#include "PileAA/Math.hpp"
 #include <PileAA/Types.hpp>
 #include <cmath>
 
 namespace paa {
 class CollisionBox;
 }
+
+#define BASIC_BULLET_SPEED 800
 
 namespace rtype {
 namespace game {
@@ -15,39 +21,24 @@ namespace game {
 
     enum BulletType : bullet_type_t { BASIC_BULLET };
 
-    struct BulletQuery : public net::Serializable {
-        bullet_type_t type;
-        net::PlayerID id;
-
-        BulletQuery() = default;
-        ~BulletQuery() override = default;
-
-        BulletQuery(bullet_type_t type, net::PlayerID id);
-        BulletQuery(const std::vector<net::Byte>& bytes);
-
-        std::vector<net::Byte> serialize() const override;
-        void from(
-            const net::Byte* data, const net::BufferSizeType size) override;
-    };
-
     // Base impl
 
     class ABullet {
     private:
         paa::Timer _timer;
         BulletType _type;
-        bool _from_player;
 
     protected:
         double _aim_angle;
         double _damage;
-        bool _destroyed_on_collision;
-        paa::Position& _posRef;
+        bool _from_player;
+
+        const PAA_ENTITY _e;
 
     public:
-        ABullet(const BulletType type, const double life_time,
-            const double aim_angle, const double damage, const bool from_player,
-            paa::Position& posRef);
+        ABullet(const PAA_ENTITY& e, const BulletType type,
+            const double life_time, const double aim_angle, const double damage,
+            const bool from_player);
         virtual ~ABullet() = default;
 
         bool is_alive() const;
@@ -55,20 +46,34 @@ namespace game {
         paa::Position& get_position() const;
         double get_aim_angle() const;
         double get_damage() const;
-        bool is_from_player() const;
 
         virtual void update() = 0;
-        virtual void on_collision(const paa::CollisionBox& other) = 0;
+        virtual void on_collision(const paa::CollisionBox& other);
     };
 
     using Bullet = std::shared_ptr<ABullet>;
 
-    template <typename B, typename... Args>
-    static inline Bullet make_bullet(Args&&... args)
-    {
-        return std::make_shared<B>(std::forward<Args>(args)...);
-    }
+    class BasicBullet : public ABullet {
+    private:
+        paa::Vector2f _dir;
 
+    public:
+        BasicBullet(
+            const PAA_ENTITY& e, const double& aim_angle, bool from_player);
+        void update() override;
+    };
+
+    class BulletFactory {
+    public:
+        template <typename B, typename... Args>
+        static inline Bullet make_bullet(Args&&... args)
+        {
+            return std::make_shared<B>(std::forward<Args>(args)...);
+        }
+
+        static void make_basic_bullet(float aim_angle,
+            paa::Position const& posRef, const bool& from_player);
+    };
 }
 }
 

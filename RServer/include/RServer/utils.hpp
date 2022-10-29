@@ -65,6 +65,7 @@ namespace net {
 #endif
 
     using PlayerID = uint8_t;
+    using EnnemyID = uint8_t;
 
     using TokenType = uint8_t;
     using BufferSizeType = size_t;

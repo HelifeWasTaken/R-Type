@@ -20,7 +20,7 @@ namespace paa {
         template<typename V>
         static float direction_to_angle(V const& pos)
         {
-            return toDegrees(std::atan2(pos.y, pos.x));
+            return std::atan2(pos.y, pos.x) + 3.14159f;
         }
 
         template<typename V1, typename V2>

@@ -640,6 +640,11 @@
                  "name":"wave1_lock",
                  "type":"string",
                  "value":"lock_scroll,250"
+                }, 
+                {
+                 "name":"wave2",
+                 "type":"string",
+                 "value":"activate_wave,2000"
                 }],
          "type":"objectgroup",
          "visible":true,
@@ -651,17 +656,6 @@
          "id":10,
          "name":"wave1",
          "objects":[
-                {
-                 "height":11.6099,
-                 "id":98,
-                 "name":"enemy2",
-                 "rotation":0,
-                 "type":"basic_enemy",
-                 "visible":true,
-                 "width":9.28793,
-                 "x":443.131954097039,
-                 "y":48.9719569258234
-                }, 
                 {
                  "height":11.6099,
                  "id":184,
@@ -683,6 +677,28 @@
                  "width":11.5287064791331,
                  "x":469.896490863561,
                  "y":53.2849304640912
+                }, 
+                {
+                 "height":7.04663212435233,
+                 "id":190,
+                 "name":"masto",
+                 "rotation":0,
+                 "type":"mastodonte_enemy",
+                 "visible":true,
+                 "width":7.66839378238342,
+                 "x":476.992893548734,
+                 "y":109.359077369679
+                }, 
+                {
+                 "height":11.9797,
+                 "id":198,
+                 "name":"dumby",
+                 "rotation":0,
+                 "type":"dumby_boy_enemy",
+                 "visible":true,
+                 "width":14.4371,
+                 "x":600.08,
+                 "y":83.8717341727662
                 }],
          "offsetx":-0.101701838889426,
          "offsety":0.899989987834132,
@@ -691,9 +707,42 @@
          "visible":true,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":11,
+         "name":"wave2",
+         "objects":[
+                {
+                 "height":11.9797,
+                 "id":196,
+                 "name":"dumby",
+                 "rotation":0,
+                 "type":"dumby_boy_enemy",
+                 "visible":true,
+                 "width":14.4371,
+                 "x":2505.28235586274,
+                 "y":78.0742126132328
+                }, 
+                {
+                 "height":11.6099,
+                 "id":197,
+                 "name":"basic2",
+                 "rotation":0,
+                 "type":"basic_enemy",
+                 "visible":true,
+                 "width":9.28793,
+                 "x":2505.68287027792,
+                 "y":55.7937165700413
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":11,
- "nextobjectid":190,
+ "nextlayerid":12,
+ "nextobjectid":199,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.4.3",

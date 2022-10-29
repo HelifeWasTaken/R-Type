@@ -30,26 +30,5 @@ namespace rtype {
                 _last_shoot = 0.0f;
             }
         }
-
-        PAA_ENTITY EnemyFactory::make_key_enemy(double const& x, double const& y)
-        {
-            paa::DynamicEntity e = PAA_NEW_ENTITY();
-
-            auto& s = e.attachSprite("key_enemy")->setPosition(x, y)
-                .useAnimation("key_animation");
-
-            e.attachHealth(paa::Health(3));
-            e.attachPosition(paa::Position(x, y));
-            e.attachCollision(
-                CollisionFactory::makeEnemyCollision(
-                    paa::recTo<int>(s.getGlobalBounds()),
-                    e.getEntity()
-                )
-            );
-            Enemy ke = EnemyFactory::make_enemy<KeyEnemy>(e.getEntity());
-            e.insertComponent(std::move(ke));
-            return e.getEntity();
-
-        }
     }
 }

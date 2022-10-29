@@ -52,6 +52,7 @@ PAA_START_CPP(game_scene)
         if (g_game.connected_players[i]) {
             paa::Controller c = i == g_game.id ? new_keyboard() : new_simulated_controller();
             g_game.players_entities[i] = rtype::game::PlayerFactory::addPlayer(i, c);
+            g_game.players_alive[i] = true;
             spdlog::error("Client: Player {} added", i);
         }
     }
@@ -65,6 +66,7 @@ PAA_END_CPP(game_scene)
         if (g_game.players_entities[i]) {
             g_game.players_entities[i] = PAA_ENTITY();
             g_game.connected_players[i] = false;
+            g_game.players_alive[i] = false;
         }
     }
     PAA_ECS.clear();

@@ -64,6 +64,7 @@ static void register_player_system()
                         g_game.id,
                         SerializedPlayerDeath(id.id),
                         rtype::net::message_code::UPDATE_PLAYER_DESTROYED));
+                g_game.players_alive[id.id] = false;
             }
         }
     });
@@ -87,7 +88,7 @@ PAA_SCENE(ecs) {
     PAA_UPDATE { PAA_SET_SCENE(client_connect); }
 };
 
-PAA_MAIN("../Resources.conf", {
+PAA_UNSAFE_MAIN("../Resources.conf", {
     PAA_REGISTER_SCENE(ecs);
     PAA_REGISTER_SCENE(create_room);
     PAA_REGISTER_SCENE(client_connect);

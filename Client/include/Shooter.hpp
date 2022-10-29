@@ -22,6 +22,7 @@ namespace game {
         double aim_angle() const;
         AShooter& aim(const paa::Vector2f& to_aim);
         AShooter& aim(float const& aim_angle, bool isRadian=false);
+        bool is_attached_to_player() const;
         virtual void shoot() = 0;
     };
 
@@ -34,7 +35,6 @@ namespace game {
     {
         return std::make_shared<T>(std::forward<Args>(args)...);
     }
-
 
     class BasicShooter : public AShooter {
         public:

@@ -65,5 +65,24 @@ namespace game {
         e.insertComponent(std::move(masto));
         return e.getEntity();
     }
+
+    PAA_ENTITY EnemyFactory::make_dumby_boy_enemy(double const& x, double const& y)
+    {
+        paa::DynamicEntity e = PAA_NEW_ENTITY();
+
+        auto& s = e.attachSprite("dumby_boy_enemy")->setPosition(x, y)
+            .useAnimation("dumby_boy_enemy_animation");
+        e.attachHealth(paa::Health(4));
+        e.attachPosition(paa::Position(x, y));
+        e.attachCollision(
+            CollisionFactory::makeEnemyCollision(
+                paa::recTo<int>(s.getGlobalBounds()),
+                e.getEntity()
+            )
+        );
+        Enemy dmb = EnemyFactory::make_enemy<DumbyBoy>(e.getEntity());
+        e.insertComponent(std::move(dmb));
+        return e.getEntity();
+    }
 }
 }

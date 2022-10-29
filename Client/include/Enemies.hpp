@@ -9,7 +9,8 @@ namespace game {
     {
         BASIC_ENEMY,
         KEY_ENEMY,
-        MASTODONTE_ENEMY
+        MASTODONTE_ENEMY,
+        DUMBY_BOY_ENEMY
     };
 
     class AEnemy {
@@ -69,6 +70,21 @@ namespace game {
         void update() override;
     };
 
+    class DumbyBoy : public AEnemy {
+    private:
+        paa::DynamicEntity _to_focus;
+        float _y_velocity = -50.0f;
+        float _shoot_cycle = 0.0f;
+        float _last_shoot = 0.0f;
+
+    public:
+        DumbyBoy(const PAA_ENTITY& e);
+        ~DumbyBoy() = default;
+
+        void on_collision(const paa::CollisionBox& other) override;
+        void update() override;
+    };
+
     using Enemy = std::shared_ptr<AEnemy>;
     class EnemyFactory {
     public:
@@ -84,8 +100,11 @@ namespace game {
 
         static PAA_ENTITY make_mastodonte_enemy(double const& x, double const& y);
 
+        static PAA_ENTITY make_dumby_boy_enemy(double const& x, double const& y);
+
         static PAA_ENTITY make_enemy_by_type(const std::string& enemy_type,
             const float x, const float y);
+
     };
 }
 }

@@ -39,18 +39,9 @@ namespace game {
         return *this;
     }
 
-    void BasicShooter::shoot()
+    bool AShooter::is_attached_to_player() const
     {
-        bool attached_to_player = _parentEntity.hasComponent<rtype::game::Player>();
-
-        if (can_shoot_and_restart()) {
-            paa::Position pos = _parentEntity.getComponent<paa::Position>();
-            paa::Sprite& sprite = _parentEntity.getComponent<paa::Sprite>();
-
-            pos.x += (sprite->getGlobalBounds().width / 2);
-            pos.y += (sprite->getGlobalBounds().height / 2);
-            BulletFactory::make_basic_bullet(_aim_angle, pos, attached_to_player);
-        }
+        return _parentEntity.hasComponent<rtype::game::Player>();
     }
 
 }

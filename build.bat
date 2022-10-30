@@ -13,7 +13,7 @@ cmake --build . -j 8
 
 del .\build\target\Client\binary\*.pdb
 del .\build\target\Server\binary\*.pdb
-powershell Compress-Archive -Path ".\build\target\Client", ".\build\target\Server" -DestinationPath .\r-type_win32.zip
+powershell Compress-Archive -Force -Path ".\build\target\Client", ".\build\target\Server" -DestinationPath .\r-type_win32.zip
 
 @echo Generating installer...
 .\setup\createsetup.bat /nopause

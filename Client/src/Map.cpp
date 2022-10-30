@@ -79,9 +79,9 @@ namespace game {
 
     void Map::loadMap(const std::string& filepath)
     {
-        const std::string old_path = std::filesystem::current_path();
-        const std::string path = std::filesystem::path(filepath).parent_path();
-        const std::string file = std::filesystem::path(filepath).filename();
+        const std::string old_path = std::filesystem::current_path().string();
+        const std::string path = std::filesystem::path(filepath).parent_path().string();
+        const std::string file = std::filesystem::path(filepath).filename().string();
 
         std::filesystem::current_path(path);
 

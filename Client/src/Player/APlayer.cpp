@@ -97,10 +97,18 @@ namespace game {
         const auto axis = _controllerRef->getAxisXY();
         auto& positionRef = _entity.getComponent<paa::Position>();
 
-        positionRef.x -= axis.x() > 0 ? xspeed : 0;
-        positionRef.x += axis.x() < 0 ? xspeed : 0;
-        positionRef.y -= axis.y() > 0 ? yspeed : 0;
-        positionRef.y += axis.y() < 0 ? yspeed : 0;
+        if (_is_colliding_with_wall) {
+            _moveVector.x(-_lastMoveVector.x());
+            _moveVector.y(-_lastMoveVector.y());
+        } else {
+            _lastMoveVector = _moveVector;
+            _moveVector = axis;
+        }
+
+        positionRef.x -= _moveVector.x() > 0 ? xspeed : 0;
+        positionRef.x += _moveVector.x() < 0 ? xspeed : 0;
+        positionRef.y -= _moveVector.y() > 0 ? yspeed : 0;
+        positionRef.y += _moveVector.y() < 0 ? yspeed : 0;
 
         if (!g_game.lock_scroll)
             positionRef.x = positionRef.x - g_game.old_scroll + g_game.scroll;
@@ -119,6 +127,7 @@ namespace game {
         update_shoot();
         update_data();
         update_sprite_hurt();
+        _is_colliding_with_wall = false;
     }
 
     void APlayer::on_collision(const paa::CollisionBox& other)
@@ -132,6 +141,10 @@ namespace game {
             // TODO: Add power up
             // This might be a good place to use a visitor pattern
             return;
+        }
+
+        if (other_id == CollisionType::STATIC_WALL) {
+            _is_colliding_with_wall = true;
         }
 
         const bool hurtable_object = other_id == CollisionType::ENEMY_BULLET

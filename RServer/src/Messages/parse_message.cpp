@@ -33,32 +33,25 @@ namespace net {
             { message_code::LAUNCH_GAME_REP, message_type::YES_NO_MESSAGES },
 
             // Special messages
-            { message_code::CONN_INIT_REP,
-                message_type::CONNECTION_INIT_REPLY },
+            { message_code::CONN_INIT_REP, message_type::CONNECTION_INIT_REPLY },
             { message_code::FEED_INIT, message_type::FEED_INIT_REQUEST },
             { message_code::FEED_INIT_REP, message_type::FEED_INIT_REPLY },
 
             { message_code::TEXT_MESSAGE, message_type::TEXT_MESSAGE },
-            { message_code::REQUEST_CONNECT_ROOM,
-                message_type::REQUEST_CONNECT_ROOM },
-            { message_code::CONNECT_ROOM_REQ_REP,
-                message_type::CONNECT_ROOM_REQ_REP },
-            { message_code::CREATE_ROOM_REPLY,
-                message_type::CREATE_ROOM_REPLY },
-            { message_code::ROOM_CLIENT_DISCONNECT,
-                message_type::ROOM_CLIENT_DISCONNECT },
-            { message_code::ROOM_CLIENT_CONNECT,
-                message_type::ROOM_CLIENT_CONNECT },
+            { message_code::REQUEST_CONNECT_ROOM, message_type::REQUEST_CONNECT_ROOM },
+            { message_code::CONNECT_ROOM_REQ_REP, message_type::CONNECT_ROOM_REQ_REP },
+            { message_code::CREATE_ROOM_REPLY, message_type::CREATE_ROOM_REPLY },
+            { message_code::ROOM_CLIENT_DISCONNECT, message_type::ROOM_CLIENT_DISCONNECT },
+            { message_code::ROOM_CLIENT_CONNECT, message_type::ROOM_CLIENT_CONNECT },
 
             // Sync messages
             { message_code::SYNC_PLAYER, message_type::SYNC_MESSAGE },
 
             // Update messages
             { message_code::UPDATE_PLAYER, message_type::UPDATE_MESSAGE },
-            { message_code::UPDATE_ENEMY_DESTROYED,
-                message_type::UPDATE_MESSAGE },
-            { message_code::UPDATE_PLAYER_DESTROYED,
-                message_type::UPDATE_MESSAGE }
+            { message_code::UPDATE_ENEMY_DESTROYED, message_type::UPDATE_MESSAGE },
+            { message_code::UPDATE_PLAYER_DESTROYED, message_type::UPDATE_MESSAGE },
+            { message_code::UPDATE_SCROLL, message_type::UPDATE_MESSAGE }
         };
 
     message_type message_code_to_type(const message_code& code)

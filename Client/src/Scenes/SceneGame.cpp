@@ -110,6 +110,15 @@ static void update_player_death(shared_message_t& msg)
     g_game.players_alive[e.getElement()] = false;
 }
 
+static void update_sync_scroll(shared_message_t& msg)
+{
+    const auto sync = parse_message<UpdateMessage>(msg);
+    SerializedScroll s;
+    s.from(sync->data().data(), sync->data().size());
+
+    g_game.scroll = s.getElement();
+}
+
 static void update_server_event()
 {
     auto& tcp = g_game.service.tcp();
@@ -126,6 +135,9 @@ static void update_server_event()
             break;
         case message_code::UPDATE_PLAYER:
             update_player_position(msg);
+            break;
+        case message_code::UPDATE_SCROLL:
+            update_sync_scroll(msg);
             break;
         default:
             break;

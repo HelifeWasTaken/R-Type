@@ -116,7 +116,8 @@ namespace net {
         // Update messages
         UPDATE_PLAYER,
         UPDATE_ENEMY_DESTROYED,
-        UPDATE_PLAYER_DESTROYED
+        UPDATE_PLAYER_DESTROYED,
+        UPDATE_SCROLL
     };
 
     // All classes that inherit from IMessage
@@ -160,7 +161,8 @@ namespace net {
         UPDATE_MESSAGE,
         UPDATE_PLAYER = UPDATE_MESSAGE,
         UPDATE_PLAYER_DESTROYED = UPDATE_MESSAGE,
-        UPDATE_ENEMY_DESTROYED = UPDATE_MESSAGE
+        UPDATE_ENEMY_DESTROYED = UPDATE_MESSAGE,
+        UPDATE_SCROLL = UPDATE_MESSAGE
 
     };
 

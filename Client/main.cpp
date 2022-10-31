@@ -88,10 +88,15 @@ PAA_SCENE(ecs)
     PAA_UPDATE { PAA_SET_SCENE(client_connect); }
 };
 
-PAA_UNSAFE_MAIN("../Resources.conf", {
+void init_logging()
+{
     #if CMAKE_BUILD_TYPE Release
         spdlog::set_level(spdlog::level::level_enum::critical);
     #endif
+}
+
+PAA_UNSAFE_MAIN("../Resources.conf", {
+    init_logging();
     PAA_REGISTER_SCENE(ecs);
     PAA_REGISTER_SCENE(create_room);
     PAA_REGISTER_SCENE(client_connect);

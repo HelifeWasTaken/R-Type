@@ -36,4 +36,5 @@ Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\Client\binary\{#MyAppExeNam
 
 [Run]
 Filename: "{app}\Client\binary\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\Server\binary\{#MyAppServerExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')} Server}"; Flags: nowait postinstall skipifsilent
 

@@ -118,7 +118,13 @@ namespace game {
         paa::Timer _frameTimer;
         paa::Timer _yFrameUpdate;
 
+        paa::Vec2 _lastCorrectPos;
+        obscur::Vector2<float> _lastMoveVector;
+        obscur::Vector2<float> _moveVector;
+
         bool _is_hurt = false;
+
+        bool _is_colliding_with_wall = false;
 
         bool _is_local; // is this player local or remote
 

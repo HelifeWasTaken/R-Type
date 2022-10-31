@@ -18,8 +18,6 @@ powershell Compress-Archive -Force -Path ".\build\target\Client", ".\build\targe
 @echo Generating installer...
 .\setup\createsetup.bat /nopause
 
-copy .\setup\Output\r-type_setup.exe .
-
 @if "%1"=="/nopause" goto end
 pause
 :end

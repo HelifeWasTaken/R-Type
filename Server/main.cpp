@@ -260,7 +260,7 @@ public:
 
 int main()
 {
-    #if CMAKE_BUILD_TYPE Release
+    #if CMAKE_BUILD_TYPE == Release
         spdlog::set_level(spdlog::level::level_enum::critical);
     #endif
     std::ifstream ifs("../Server.conf");

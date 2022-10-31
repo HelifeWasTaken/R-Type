@@ -90,7 +90,7 @@ PAA_SCENE(ecs)
 
 void init_logging()
 {
-    #if CMAKE_BUILD_TYPE Release
+    #if CMAKE_BUILD_TYPE == Release
         spdlog::set_level(spdlog::level::level_enum::critical);
     #endif
 }

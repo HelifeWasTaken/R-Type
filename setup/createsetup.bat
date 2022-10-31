@@ -30,7 +30,7 @@ if exist "C:\Program Files (x86)\Inno Setup 6" (
     "%LocalAppData%\Programs\Inno Setup 6\iscc.exe" "%~dp0\config.iss"
 )
 
-copy /Y .\Output\r-type_setup.exe ..\
+copy /Y "%~dp0\Output\r-type_setup.exe" .\
 
 @if "%1"=="/nopause" goto end
 pause

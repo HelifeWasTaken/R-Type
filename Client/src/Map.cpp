@@ -119,7 +119,10 @@ namespace game {
         wave.activateWave(name);
     }
 
-    static void lock_scroll_event() { g_game.lock_scroll = true; }
+    static void lock_scroll_event()
+    {
+        g_game.lock_scroll = true;
+    }
 
     void Map::update()
     {
@@ -139,9 +142,19 @@ namespace game {
                     effect->type);
             }
         }
+
+        // Sync everyone when effects zones are activated
+        if (to_delete.size() && g_game.is_host) {
+            std::cout << "To delete" << std::endl;
+            g_game.service.tcp().send(
+                net::UpdateMessage(g_game.id, SerializedScroll(g_game.scroll),
+                net::message_code::UPDATE_SCROLL)
+            );
+        }
         for (int i = 0; i < to_delete.size(); i++) {
             effects.erase(effects.begin() + to_delete[i]);
         }
+
     }
 
     void WaveManager::activateWave(const std::string& name)

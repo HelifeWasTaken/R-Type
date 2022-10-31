@@ -125,6 +125,15 @@ public:
     }
 };
 
+class SerializedScroll : public DestroyableElementSerializer<paa::i32> {
+public:
+    SerializedScroll() = default;
+    SerializedScroll(const paa::i32& element)
+        : DestroyableElementSerializer(element)
+    {
+    }
+};
+
 #include "Scenes/SceneClientConnect.hpp"
 #include "Scenes/SceneConnectRoom.hpp"
 #include "Scenes/SceneCreateRoom.hpp"

@@ -250,14 +250,15 @@ void setup_paa_system(const std::string& configuration_filename)
 
     DeltaTimerInstance::get();
     spdlog::info("PileAA: DeltaTimer created");
-
     App::get();
     spdlog::info("PileAA: App created");
 
     load_configuration_file(configuration_filename);
 
     spdlog::info("PileAA: ImGui setup");
-    assert(ImGui::SFML::Init(Screen::get()));
+    if (!ImGui::SFML::Init(Screen::get())) {
+        throw paa::AABaseError("Initialization failed.");
+    }
     spdlog::info("PileAA: ImGui created");
 
     spdlog::info("PileAA: system setup complete");

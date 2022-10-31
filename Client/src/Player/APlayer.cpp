@@ -98,20 +98,24 @@ namespace game {
         auto& positionRef = _entity.getComponent<paa::Position>();
 
         if (_is_colliding_with_wall) {
-            _moveVector.x(-_lastMoveVector.x());
-            _moveVector.y(-_lastMoveVector.y());
+            positionRef.x = _lastCorrectPos.x + g_game.scroll;
+            positionRef.y = _lastCorrectPos.y;
         } else {
-            _lastMoveVector = _moveVector;
-            _moveVector = axis;
+            _lastCorrectPos.x = positionRef.x - g_game.scroll;
+            _lastCorrectPos.y = positionRef.y;
         }
+        _lastMoveVector = _moveVector;
+        _moveVector = axis;
 
         positionRef.x -= _moveVector.x() > 0 ? xspeed : 0;
         positionRef.x += _moveVector.x() < 0 ? xspeed : 0;
         positionRef.y -= _moveVector.y() > 0 ? yspeed : 0;
         positionRef.y += _moveVector.y() < 0 ? yspeed : 0;
 
-        if (!g_game.lock_scroll)
+        if (!g_game.lock_scroll) {
             positionRef.x = positionRef.x - g_game.old_scroll + g_game.scroll;
+            _lastCorrectPos.x = _lastCorrectPos.x - g_game.scroll + g_game.old_scroll; // inverted
+        }
 
         if (_frameTimer.isFinished()) {
             _frameTimer.restart();
@@ -148,8 +152,7 @@ namespace game {
         }
 
         const bool hurtable_object = other_id == CollisionType::ENEMY_BULLET
-            || other_id == CollisionType::ENEMY
-            || other_id == CollisionType::STATIC_WALL;
+            || other_id == CollisionType::ENEMY;
 
         if (hurtable_object && !_is_hurt) {
             if (_is_local) {

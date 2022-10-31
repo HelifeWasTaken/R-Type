@@ -11,7 +11,11 @@ cd $projectdir/build
 
 cmake ..
 
-cmake --build . -j 8
+if [[ $1 == "--release" ]]; then
+    cmake --build . -j 8 --config Release
+else
+    cmake --build . -j 8
+fi
 
 cd $targetdir
 

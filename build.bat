@@ -7,7 +7,11 @@
 cmake ..
 
 @echo Building...
-cmake --build . -j 8
+@if "%1"=="/release" (
+    cmake --build . -j 8 --config Release
+) else (
+    cmake --build . -j 8
+)
 
 @cd ..
 

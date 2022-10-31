@@ -260,6 +260,9 @@ public:
 
 int main()
 {
+    #if CMAKE_BUILD_TYPE Release
+        spdlog::set_level(spdlog::level::level_enum::critical);
+    #endif
     std::ifstream ifs("../Server.conf");
     if (!ifs.is_open()) {
         spdlog::error("Could not open file ../Server.conf");

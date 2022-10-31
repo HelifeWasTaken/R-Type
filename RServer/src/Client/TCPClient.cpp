@@ -21,7 +21,8 @@ namespace net {
         }
 
         if (error) {
-            throw boost::system::system_error(error);
+            spdlog::warn("Error thrown by TCP client: {}", error.message());
+            return;
         }
 
         _stopped = false;

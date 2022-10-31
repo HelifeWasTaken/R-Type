@@ -197,25 +197,21 @@ public:
      */
     int get_size() const { return _collisions.size(); }
     /**
+     * @brief  Get the level of the node
+     * @retval Level of the node
+     */
+    bool contains(CollisionBox* box) const
+    {
+        return _rect.intersects(box->get_rect());
+    }
+    /**
      * @brief  Insert a new collision into the quadtree
      * @param  collision: collision to be inserted
      * @retval True if collision is inserted, false otherwise
      */
     bool insert_collision(CollisionBox* collision)
     {
-        const bool inter_left = collision->get_x()
-            >= get_rect().left - collision->get_rect().width / 2;
-        const bool inter_right = collision->get_x() <= get_rect().left
-                + get_rect().width + collision->get_rect().width / 2;
-        const bool inter_horizontal = inter_left && inter_right;
-        const bool inter_top = collision->get_y()
-            >= get_rect().top - collision->get_rect().width / 2;
-        const bool inter_bottom = collision->get_y() <= get_rect().top
-                + get_rect().height + collision->get_rect().width / 2;
-        const bool inter_vertical = inter_top && inter_bottom;
-        const bool inter = inter_horizontal && inter_vertical;
-
-        if (!inter)
+        if (!contains(collision))
             return false;
         if (get_size() < kQuadtreeNodeCapacity) {
             _collisions.push_back(collision);
@@ -223,14 +219,10 @@ public:
         }
         if (_northWest == nullptr)
             subdivide(this);
-        const bool NW_toinsert = _northWest->insert_collision(collision);
-        const bool NE_toinsert = _northEast->insert_collision(collision);
-        const bool SW_toinsert = _southWest->insert_collision(collision);
-        const bool SE_toinsert = _southEast->insert_collision(collision);
-        if (NW_toinsert || NE_toinsert || SW_toinsert || SE_toinsert)
-            return true;
-        spdlog::critical("In Insert element(), this should never happen.");
-        return false;
+        return (_northWest->insert_collision(collision)
+            || _northEast->insert_collision(collision)
+            || _southWest->insert_collision(collision)
+            || _southEast->insert_collision(collision));
     }
     /**
      * @brief  Divide the quadtree into 4 subnodes
@@ -250,10 +242,10 @@ public:
         _southEast = new Quadtree(get_rect().left + new_width,
             get_rect().top + new_height, new_width, new_height);
         for (auto& node : root->_collisions) {
-            _northWest->insert_collision(node);
-            _northEast->insert_collision(node);
-            _southWest->insert_collision(node);
-            _southEast->insert_collision(node);
+            _northWest->insert_collision(node)
+                || _northEast->insert_collision(node)
+                || _southWest->insert_collision(node)
+                || _southEast->insert_collision(node);
         }
     }
     /**

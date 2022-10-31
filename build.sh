@@ -14,7 +14,7 @@ cmake ..
 if [[ $1 == "--release" ]]; then
     cmake --build . -j 8 --config Release
 else
-    cmake --build . -j 8
+    cmake --build . -j 8 --config Debug
 fi
 
 cd $targetdir

@@ -10,7 +10,7 @@ cmake ..
 @if "%1"=="/release" (
     cmake --build . -j 8 --config Release
 ) else (
-    cmake --build . -j 8
+    cmake --build . -j 8 --config Debug
 )
 
 @cd ..

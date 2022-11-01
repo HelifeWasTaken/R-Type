@@ -81,6 +81,9 @@ PAA_SCENE(ecs)
         register_bullet_system();
         register_enemy_system();
         register_player_system();
+
+        g_game.hud_view = PAA_SCREEN.getView();
+        g_game.reset_game_view();
     }
 
     PAA_END { }

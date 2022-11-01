@@ -6,7 +6,8 @@
 #include "PileAA/GUI.hpp"
 #include "PileAA/Rand.hpp"
 #include "RServer/Client/Client.hpp"
-#include <iostream>
+#include "BlackScreenTransition.hpp"
+#include "utils.hpp"
 #include <spdlog/spdlog.h>
 #include <unordered_map>
 
@@ -22,6 +23,26 @@ struct Game {
 
     std::string room_token = "";
     std::unordered_map<int, PAA_ENTITY> enemies_to_entities;
+
+    sf::View game_view;
+    sf::View hud_view;
+
+    void reset_game_view()
+    {
+        game_view = hud_view;
+        game_view.setSize(ARCADE_SCREEN_SIZE_X, ARCADE_SCREEN_SIZE_Y);
+        game_view.setCenter(ARCADE_SCREEN_VIEW_X, ARCADE_SCREEN_VIEW_Y);
+    }
+
+    void use_game_view()
+    {
+        PAA_SCREEN.setView(game_view);
+    }
+
+    void use_hud_view()
+    {
+        PAA_SCREEN.setView(hud_view);
+    }
 
     const PAA_ENTITY get_random_player() const
     {
@@ -63,6 +84,55 @@ struct Game {
         }
         return true;
     }
+
+    std::string generate_hud_text_for_players_life() const
+    {
+        std::string s = "";
+
+        for (int i = 0; i < RTYPE_PLAYER_COUNT; i++) {
+            s += "P" + std::to_string(i + 1) + " - ";
+            if (is_player_connected(i)) {
+                if (is_player_alive_by_entity(players_entities[i])) {
+                    try {
+                        const auto hp = PAA_GET_COMPONENT(players_entities[i], paa::Health).hp;
+                        s += std::to_string(hp) + " hp";
+                    } catch (...) {
+                        s += "dead";
+                    }
+                } else {
+                    s += "dead";
+                }
+            } else {
+                s += "disconnected";
+            }
+            s += "\n\n";
+        }
+        return s;
+    }
+
+    std::string generate_hud_text_for_score() const
+    {
+        return std::string("Score - ") + std::to_string(score) + " pts";
+    }
+
+    BlackScreenTransition transition;
+
+    bool in_transition() const
+    {
+        return transition.finished() == false;
+    }
+
+    void launch_transition()
+    {
+        transition.start();
+    }
+
+    bool transition_is_halfway() const
+    {
+        return transition.phase_two();
+    }
+
+    unsigned int score = 0;
 
     int old_scroll = 0;
     int scroll = 0;

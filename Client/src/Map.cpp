@@ -136,6 +136,9 @@ namespace game {
                     activate_wave_event(_waves, effect->name);
                 } else if (effect->type == "lock_scroll") {
                     lock_scroll_event();
+                } else if (effect->type == "end") {
+                    g_game.launch_transition();
+                    _changes = true;
                 }
                 to_delete.push_back(i - to_delete.size());
                 spdlog::critical("effect {} of type {} activated", effect->name,
@@ -145,7 +148,6 @@ namespace game {
 
         // Sync everyone when effects zones are activated
         if (to_delete.size() && g_game.is_host) {
-            std::cout << "To delete" << std::endl;
             g_game.service.tcp().send(
                 net::UpdateMessage(g_game.id, SerializedScroll(g_game.scroll),
                 net::message_code::UPDATE_SCROLL)
@@ -154,7 +156,11 @@ namespace game {
         for (int i = 0; i < to_delete.size(); i++) {
             effects.erase(effects.begin() + to_delete[i]);
         }
+    }
 
+    bool Map::changes()
+    {
+        return _changes;
     }
 
     void WaveManager::activateWave(const std::string& name)

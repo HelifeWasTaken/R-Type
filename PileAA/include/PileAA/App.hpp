@@ -157,7 +157,7 @@ int paa_main(
     int argc, char** argv, const std::string& configuration_file, const F& app)
 {
     try {
-        return paa_unsafe_main(argc, argv, "configuration.json", app);
+        return paa_unsafe_main(argc, argv, configuration_file, app);
     } catch (const paa::AABaseError& e) {
         spdlog::critical("paa::AABaseError: Error: {}", e.what());
     } catch (const std::exception& e) {

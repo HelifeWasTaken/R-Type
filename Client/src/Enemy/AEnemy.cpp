@@ -19,9 +19,7 @@ namespace game {
 
     void AEnemy::on_collision(const paa::CollisionBox& other)
     {
-        spdlog::warn("Enemy collision");
         if (other.get_id() == rtype::game::CollisionType::PLAYER_BULLET) {
-            spdlog::warn("Enemy collision with bullet");
             PAA_GET_COMPONENT(_e, paa::Health).hp -= 1;
         }
     }

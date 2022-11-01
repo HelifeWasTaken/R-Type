@@ -84,10 +84,9 @@ namespace game {
 
     class Map {
     private:
-        WaveManager
-            _waves; // Every waves can be detected
-                    // You should load the layer if the EffectZones has it
+        WaveManager _waves;
         EffectZones _zones;
+        bool _changes = false;
 
         /**
          * @brief  Parse the map info and generates entities to match it
@@ -108,6 +107,8 @@ namespace game {
          * @retval None
          */
         void update();
+
+        bool changes();
     };
 
 }

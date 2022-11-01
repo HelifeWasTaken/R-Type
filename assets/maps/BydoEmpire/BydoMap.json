@@ -632,6 +632,11 @@
          "opacity":1,
          "properties":[
                 {
+                 "name":"end_map",
+                 "type":"string",
+                 "value":"end,4500"
+                }, 
+                {
                  "name":"wave1",
                  "type":"string",
                  "value":"activate_wave,100"

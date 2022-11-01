@@ -69,9 +69,9 @@ bool App::run()
 
         window.clear();
         ecs.update();
+        batch.render(window);
         scene.update();
         ImGui::SFML::Render(window);
-        batch.render(window);
         window.display();
     }
     return false;

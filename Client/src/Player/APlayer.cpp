@@ -188,7 +188,7 @@ namespace game {
         paa::DynamicEntity entity = PAA_NEW_ENTITY();
 
         const paa::Position sposition(
-            0, PAA_SCREEN.getSize().y / RTYPE_PLAYER_COUNT * pid);
+                50, ((PAA_SCREEN.getSize().y - 50) / RTYPE_PLAYER_COUNT * pid) + 50);
         const auto& id = entity.attachId(paa::Id(pid));
         const auto& position = entity.attachPosition(sposition);
         auto& health = entity.attachHealth(paa::Health(APlayer::MAX_HEALTH));

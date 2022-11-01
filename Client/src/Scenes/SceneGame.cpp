@@ -6,7 +6,7 @@
 
 using namespace rtype::net;
 
-static const int SCROLL_SPEED = 50;
+static const int SCROLL_SPEED = 2;
 
 static paa::Controller new_keyboard()
 {
@@ -153,7 +153,7 @@ static void update_sync_scroll(shared_message_t& msg)
 
 static void update_player_room_client_disconnect(shared_message_t& msg)
 {
-    const auto sp = parse_message<UserDisconnectFromRoom>();
+    const auto sp = parse_message<UserDisconnectFromRoom>(msg);
 
     spdlog::warn("User {} disconnected from the room, new host is {}",
                 sp->get_disconnected_user_id(), sp->get_new_host_id());
@@ -198,11 +198,11 @@ static void update_server_event()
     }
 }
 
-static void handle_transition(std::unique_ptr<rtype::game::Map>& map)
+static void handle_transition(unsigned int& map_index, std::unique_ptr<rtype::game::Map>& map)
 {
     if (g_game.in_transition()) {
         g_game.transition.update();
-        if (g_game.transition_is_halfway())
+        if (g_game.transition_is_halfway()) {
             if ((map == nullptr || map->changes())) {
                 reinitialize_game();
                 map = load_next_map(map_index);
@@ -218,7 +218,7 @@ PAA_UPDATE_CPP(game_scene)
 {
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
 
-    handle_transition(map);
+    handle_transition(map_index, map);
 
     if (map != nullptr)
         scroll_map(*map);

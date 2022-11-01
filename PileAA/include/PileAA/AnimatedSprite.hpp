@@ -84,4 +84,5 @@ public:
 };
 
 using Sprite = std::shared_ptr<AnimatedSprite>;
+
 }

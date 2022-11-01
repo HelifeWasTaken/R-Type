@@ -2,7 +2,7 @@ project(pileaa)
 
 set(CMAKE_BUILD_TYPE Debug)
 
-link_libraries(sfml-graphics sfml-window sfml-system sfml-audio)
+link_libraries(sfml-graphics sfml-window sfml-system sfml-audio lua)
 
 file(GLOB_RECURSE SRC *.cpp *.hpp)
 

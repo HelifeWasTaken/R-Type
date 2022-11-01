@@ -17,8 +17,10 @@ set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/modules")
 find_package(Rtype_Boost)
 find_package(Rtype_SFML)
 find_package(Rtype_SPDLOG)
+find_package(Lua)
 
 include_directories(
+    ${lua_SOURCE_DIR}/include
 	${sfml_SOURCE_DIR}/include
     ${boost_fusion_SOURCE_DIR}/include
     ${boost_unordered_SOURCE_DIR}/include
@@ -70,11 +72,11 @@ include_directories(
     ${boost_system_SOURCE_DIR}/include
     ${boost_thread_SOURCE_DIR}/include
     ${boost_asio_SOURCE_DIR}/include
-    ${spdlog_SOURCE_DIR}/include
     ${boost_lockfree_SOURCE_DIR}/include
     ${boost_parameter_SOURCE_DIR}/include
     ${boost_variant_SOURCE_DIR}/include
     ${boost_endian_SOURCE_DIR}/include
+    ${spdlog_SOURCE_DIR}/include
 	${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/PileAA/include
     ${CMAKE_SOURCE_DIR}/Client/include

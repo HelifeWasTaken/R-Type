@@ -98,6 +98,26 @@ void init_logging()
     #endif
 }
 
+#include "PileAA/LuaApi.hpp"
+
+/*
+PAA_SCENE(test)
+{
+    sol::state lua;
+
+    PAA_START
+    {
+        paa::LuaApi::load_api(lua);
+        lua.script_file("init.lua");
+    }
+
+    PAA_UPDATE
+    {
+        lua.script_file("update.lua");
+    }
+};
+*/
+
 PAA_UNSAFE_MAIN("../Resources.conf", {
     init_logging();
     PAA_REGISTER_SCENE(ecs);

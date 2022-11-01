@@ -12,27 +12,14 @@ add_compile_definitions(_WIN32_WINNT=0x0601)
 set(CMAKE_CXX_STANDARD 20)
 set(BUILD_SHARED_LIBS OFF)
 
-include(FetchContent)
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH};${PROJECT_SOURCE_DIR}/modules")
 
-message("Declaring SFML...")
-FetchContent_Declare(SFML GIT_REPOSITORY https://github.com/SFML/SFML.git GIT_TAG 2.6.x)
-message("Fetching SFML...")
-FetchContent_MakeAvailable(SFML)
-
-message("Declaring Boost...")
-FetchContent_Declare(Boost GIT_REPOSITORY https://github.com/boostorg/boost.git GIT_TAG boost-1.80.0)
-message("Fetching Boost...")
-set(Boost_USE_STATIC_LIBS ON)
-FetchContent_MakeAvailable(Boost)
-
-message("Declaring spdlog")
-FetchContent_Declare(spdlog GIT_REPOSITORY https://github.com/gabime/spdlog.git GIT_TAG v1.10.0)
-message("Fetching spdlog")
-FetchContent_MakeAvailable(spdlog)
+find_package(Rtype_Boost)
+find_package(Rtype_SFML)
+find_package(Rtype_SPDLOG)
 
 include_directories(
-	${silva_SOURCE_DIR}
-	${SFML_SOURCE_DIR}/include
+	${sfml_SOURCE_DIR}/include
     ${boost_fusion_SOURCE_DIR}/include
     ${boost_unordered_SOURCE_DIR}/include
     ${boost_regex_SOURCE_DIR}/include

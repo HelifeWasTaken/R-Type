@@ -2,6 +2,7 @@
 #include "ClientScenes.hpp"
 #include "Enemies.hpp"
 #include "Player.hpp"
+#include "utils.hpp"
 
 using namespace rtype::net;
 
@@ -42,8 +43,9 @@ PAA_START_CPP(game_scene)
 {
     g_game.scroll = 0;
     sf::View v = PAA_SCREEN.getView();
-    v.setSize(384, 256);
-    v.setCenter(v.getSize().x / 2, v.getSize().y / 2);
+    v.setSize(ARCADE_SCREEN_SIZE_X, ARCADE_SCREEN_SIZE_Y);
+    v.setCenter(ARCADE_SCREEN_VIEW_X, ARCADE_SCREEN_VIEW_Y);
+
     PAA_SCREEN.setView(v);
 
     spdlog::error("Client: Starting game scene");

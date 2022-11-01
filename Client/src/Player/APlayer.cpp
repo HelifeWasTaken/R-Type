@@ -1,5 +1,6 @@
 #include "ClientScenes.hpp"
 #include "Player.hpp"
+#include "utils.hpp"
 
 namespace rtype {
 namespace game {
@@ -104,7 +105,7 @@ namespace game {
             _lastCorrectPos.x = positionRef.x - g_game.scroll;
             _lastCorrectPos.y = positionRef.y;
         }
-        _lastMoveVector = _moveVector;
+
         _moveVector = axis;
 
         positionRef.x -= _moveVector.x() > 0 ? xspeed : 0;
@@ -116,6 +117,10 @@ namespace game {
             positionRef.x = positionRef.x - g_game.old_scroll + g_game.scroll;
             _lastCorrectPos.x = _lastCorrectPos.x - g_game.scroll + g_game.old_scroll; // inverted
         }
+
+        // Make sure he stays in bounds of the screen
+        positionRef.x = RTYPE_CLAMP(double, positionRef.x, g_game.scroll, g_game.scroll + RTYPE_PLAYFIELD_WIDTH - _spriteRef->getGlobalBounds().width);
+        positionRef.y = RTYPE_CLAMP(double, positionRef.y, 0, RTYPE_PLAYFIELD_HEIGHT - _spriteRef->getGlobalBounds().height);
 
         if (_frameTimer.isFinished()) {
             _frameTimer.restart();

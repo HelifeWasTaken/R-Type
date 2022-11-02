@@ -38,10 +38,53 @@ namespace game {
         return *this;
     }
 
+    bool AShooter::angle_is_set(void)
+    {
+        return _aim_angle != 0;
+    }
+
     bool AShooter::is_attached_to_player() const
     {
         return _parentEntity.hasComponent<rtype::game::Player>();
     }
 
+    void BasicShooter::shoot()
+    {
+        if (can_shoot_and_restart()) {
+            paa::Position pos = _parentEntity.getComponent<paa::Position>();
+            paa::Sprite& sprite = _parentEntity.getComponent<paa::Sprite>();
+
+            pos.x += (sprite->getGlobalBounds().width / 2);
+            pos.y += (sprite->getGlobalBounds().height / 2);
+            BulletFactory::make_basic_bullet(
+                _aim_angle, pos, is_attached_to_player());
+        }
+    }
+
+    ConeShooter::ConeShooter(const PAA_ENTITY& e, double reloadTime) :
+                                            AShooter(e, reloadTime)
+    {
+        static const float angles[3] = {2.26893f, 3.14159f, 4.01426f};
+
+        _aim_angle = 1;
+        for (std::size_t i = 0; i < 3; i++) {
+            auto shooter = make_shooter<BasicShooter>(e);
+            shooter->aim(angles[i], true);
+            _shooterList.push_back(shooter);
+        }
+    }
+
+    void ConeShooter::shoot()
+    {
+        if (can_shoot_and_restart()) {
+            paa::Position pos = _parentEntity.getComponent<paa::Position>();
+            paa::Sprite& sprite = _parentEntity.getComponent<paa::Sprite>();
+
+            pos.x += (sprite->getGlobalBounds().width / 2);
+            pos.y += (sprite->getGlobalBounds().height / 2);
+            for (auto &shooter : _shooterList)
+                shooter->shoot();
+        }
+    }
 }
 }

@@ -21,6 +21,7 @@ namespace game {
         double aim_angle() const;
         AShooter& aim(const paa::Vector2f& to_aim);
         AShooter& aim(float const& aim_angle, bool isRadian = false);
+        bool angle_is_set(void);
         bool is_attached_to_player() const;
         virtual void shoot() = 0;
     };
@@ -45,6 +46,19 @@ namespace game {
         ~BasicShooter() = default;
 
         void shoot() override final;
+    };
+
+    class ConeShooter : public AShooter {
+    public:
+        ConeShooter(const PAA_ENTITY& e, double reloadTime=0);
+
+        ~ConeShooter() = default;
+
+        void shoot() override final;
+
+    private:
+        std::vector<Shooter> _shooterList;
+        float const _travelingTime = 1.5f;
     };
 }
 }

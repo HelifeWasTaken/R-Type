@@ -51,6 +51,9 @@ public:
     {
         auto index = _client_to_index[client];
 
+        _connected_players[_client_to_index[client]] = false;
+        _client_to_index.erase(client);
+
         if (index == _hostID) {
             _hostID = RTYPE_INVALID_PLAYER_ID;
             for (rtype::net::PlayerID i = 0; i < RTYPE_PLAYER_COUNT; i++) {
@@ -60,8 +63,6 @@ public:
                 }
             }
         }
-        _connected_players[_client_to_index[client]] = false;
-        _client_to_index.erase(client);
     }
 
     bool clientIsInRoom(rtype::net::ClientID client) const

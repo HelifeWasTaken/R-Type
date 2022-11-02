@@ -140,6 +140,10 @@ namespace game {
         update_data();
         update_sprite_hurt();
         _is_colliding_with_wall = false;
+
+        if (_is_local && PAA_INPUT.isKeyReleased(paa::Keyboard::Key::Escape)) {
+            g_game.service.stop();
+        }
     }
 
     void APlayer::on_collision(const paa::CollisionBox& other)
@@ -147,7 +151,7 @@ namespace game {
         const CollisionType other_id
             = static_cast<CollisionType>(other.get_id());
 
-        spdlog::warn("Player {} touched this {}", _id.id, other.get_id());
+        // spdlog::warn("Player {} touched this {}", _id.id, other.get_id());
 
         if (other_id == CollisionType::POWER_UP) {
             // TODO: Add power up

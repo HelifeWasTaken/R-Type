@@ -43,13 +43,17 @@ PAA_START_CPP(client_connect)
 {
     self = this;
 
+    // Make sure the ECS clear
     PAA_ECS.clear();
 
-    if (g_game.service.is_service_on() == false)
-        g_game.service.run("../Client.conf");
+    // Always restart on this
+    g_game.service.run("../Client.conf");
 
     // 1 second for each try to connect to feed or server
     timer.setTarget(1000);
+
+    // use HUD View in case the player was in game
+    g_game.use_hud_view();
 
     gui.addObject(new paa::Button("Connect", [this]() {
         if (g_game.service.connected()) {

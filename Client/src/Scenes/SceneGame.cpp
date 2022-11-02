@@ -59,6 +59,7 @@ static void reinitialize_game()
 
     g_game.scroll = 0;
     g_game.old_scroll = 0;
+    g_game.enemies_to_entities.clear();
 
     g_game.reset_game_view();
     g_game.use_game_view();
@@ -80,6 +81,8 @@ static void reinitialize_game()
 
 PAA_START_CPP(game_scene)
 {
+    map_index = 0;
+
     reinitialize_game();
 
     g_game.launch_transition();
@@ -109,8 +112,6 @@ PAA_END_CPP(game_scene)
         }
     }
     PAA_ECS.clear();
-
-    g_game.scroll = 0;
 }
 
 static void update_player_position(shared_message_t& msg)

@@ -1,6 +1,7 @@
 @echo Starting CMake...
 @echo Note: Fetching dependencies the first time can take a while.
 
+if not exist "build" mkdir build
 @cd build
 
 @if "%1"=="/fast" goto :fast

@@ -23,6 +23,38 @@ Documentation about the game engine can be found in the [documentation](./RTYPE_
 
 > **Note:** The binaries are built in the `${BUILD_FOLDER}/target` directory.
 
+## Easy build (Unix)
+
+### Debug
+
+```bash
+./build.sh
+```
+
+You can add `--fast` to skip the cmake refresh.
+
+### Release
+
+```bash
+./build.sh --release
+```
+
+## Easy build (Windows)
+
+### Debug
+
+```batch
+.\build.bat
+```
+
+You can add `/fast` to skip the cmake refresh.
+
+### Release
+
+```batch
+.\build.bat /release
+```
+
 ## Build the project (Unix):
 ```bash
 mkdir build

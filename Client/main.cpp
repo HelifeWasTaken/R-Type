@@ -108,6 +108,10 @@ PAA_SCENE(test)
     PAA_START
     {
         paa::LuaApi::load_api(lua);
+        //
+        // Lua example:
+        // addSprite(newEntity(), "textureName").useAnimation("animationName")
+        //
         lua.script_file("init.lua");
     }
 

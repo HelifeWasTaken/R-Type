@@ -72,7 +72,11 @@ namespace game {
         std::unique_ptr<Wave> wave(new Wave);
 
         for (const auto& j : layer["objects"]) {
-            wave->addWaveData(j["type"], j["id"], j["x"], j["y"]);
+            try {
+                wave->addWaveData(j.at("type"), j["id"], j["x"], j["y"]);
+            } catch (...) {
+                wave->addWaveData(j.at("class"), j["id"], j["x"], j["y"]);
+            }
         }
         waveManager.addWave(layer["name"], std::move(wave));
     }

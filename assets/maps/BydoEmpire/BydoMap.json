@@ -639,7 +639,7 @@
                 {
                  "name":"wave1",
                  "type":"string",
-                 "value":"activate_wave,100"
+                 "value":"activate_wave,50"
                 }, 
                 {
                  "name":"wave1_lock",

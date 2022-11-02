@@ -49,7 +49,7 @@ namespace game {
             .set_move_right(xy.x > 20.f)
             .set_move_up(xy.y < -20.f)
             .set_move_down(xy.y > 20.f)
-            .set_shoot(controller->isButtonPressed(0))
+            .set_shoot(controller->isButtonPressedOrHeld(RTYPE_SHOOT_BUTTON))
             .set_player(id.id);
     }
 

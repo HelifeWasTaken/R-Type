@@ -29,7 +29,7 @@ namespace game {
 
         healthRef.hp = info.get_hp();
 
-        const auto minoffset = 10;
+        const auto minoffset = 8;
         const auto offsetx = info.get_pos().x - positionRef.x;
         const auto offsety = info.get_pos().y - positionRef.y;
 
@@ -44,13 +44,13 @@ namespace game {
                                       : 0);
 
         info.get_shoot()
-            ? _controllerRef->simulateButtonPress(RTYPE_SHOOT_BUTTON)
+            ? _controllerRef->simulateButtonHeld(RTYPE_SHOOT_BUTTON)
             : _controllerRef->simulateButtonIdle(RTYPE_SHOOT_BUTTON);
     }
 
     void APlayer::update_shoot()
     {
-        if (_controllerRef->isButtonPressed(0)) {
+        if (_controllerRef->isButtonPressedOrHeld(RTYPE_SHOOT_BUTTON)) {
             for (auto& shooter : _shooterList)
                 shooter->shoot();
         }

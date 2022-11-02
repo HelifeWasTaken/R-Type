@@ -64,6 +64,6 @@ hpp2plantuml \
     -i ${CLIENT_SCENE_PATH}/SceneRoomWait.hpp \
     \
     -i ${SERVER_PATH}/Room.hpp \
-    -i ${SERVER_PATH}/RoomManager.hpp\
+    -i ${SERVER_PATH}/RoomManager.hpp \
     \
     -o UML

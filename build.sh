@@ -9,7 +9,9 @@ echo "Note: Fetching dependencies the first time can take a while."
 mkdir -p $projectdir/build
 cd $projectdir/build
 
-cmake ..
+if [[ $1 != "--fast" ]] && [[ $2 != "--fast" ]]; then
+    cmake ..
+fi
 
 if [[ $1 == "--release" ]]; then
     cmake --build . -j 8 --config Release

@@ -3,9 +3,13 @@
 
 @cd build
 
+@if "%1"=="/fast" goto :fast
+@if "%2"=="/fast" goto :fast
+
 @echo Fetching dependencies...
 cmake ..
 
+:fast
 @echo Building...
 @if "%1"=="/release" (
     cmake --build . -j 8 --config Release

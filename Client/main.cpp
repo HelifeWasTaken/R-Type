@@ -115,7 +115,7 @@ PAA_SCENE(test)
 };
 */
 
-PAA_UNSAFE_MAIN("../Resources.conf", {
+PAA_MAIN("../Resources.conf", {
     PAA_REGISTER_SCENE(ecs);
     PAA_REGISTER_SCENE(create_room);
     PAA_REGISTER_SCENE(client_connect);

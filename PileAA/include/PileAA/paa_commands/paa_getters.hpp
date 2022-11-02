@@ -44,3 +44,8 @@
  * @brief Gets the delta timer
  */
 #define PAA_DELTA_TIMER paa::DeltaTimerInstance::get()
+
+/**
+ * @brief Gets the global music player
+ */
+#define PAA_MUSIC_PLAYER paa::GMusicPlayer::get()

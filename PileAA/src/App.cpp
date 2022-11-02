@@ -4,6 +4,8 @@
 
 #include "PileAA/GUI.hpp"
 
+#include "PileAA/MusicPlayer.hpp"
+
 #include <fstream>
 
 #include <spdlog/spdlog.h>
@@ -250,16 +252,19 @@ void setup_paa_system(const std::string& configuration_filename)
 
     DeltaTimerInstance::get();
     spdlog::info("PileAA: DeltaTimer created");
+
     App::get();
     spdlog::info("PileAA: App created");
 
     load_configuration_file(configuration_filename);
 
-    spdlog::info("PileAA: ImGui setup");
     if (!ImGui::SFML::Init(Screen::get())) {
-        throw paa::AABaseError("Initialization failed.");
+        throw paa::AABaseError("ImGUI: Initialization failed.");
     }
     spdlog::info("PileAA: ImGui created");
+
+    GMusicPlayer::get();
+    spdlog::info("PileAA: GMusicPlayer created");
 
     spdlog::info("PileAA: system setup complete");
 }
@@ -299,6 +304,9 @@ void stop_paa_system()
 
     ImGui::SFML::Shutdown();
     spdlog::info("PileAA: ImGui released");
+
+    GMusicPlayer::release();
+    spdlog::info("PileAA: GMusicPlayer released");
 }
 
 }

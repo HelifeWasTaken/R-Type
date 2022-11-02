@@ -9,12 +9,12 @@ namespace rtype {
 namespace net {
 
     struct vector2i : public Serializable {
-        uint32_t x = 0;
-        uint32_t y = 0;
+        uint16_t x = 0;
+        uint16_t y = 0;
 
         vector2i() = default;
 
-        vector2i(int x, int y)
+        vector2i(uint16_t x, uint16_t y)
             : x(x)
             , y(y)
         {

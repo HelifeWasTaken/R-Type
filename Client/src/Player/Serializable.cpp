@@ -113,8 +113,8 @@ namespace game {
 
     SerializablePlayer& SerializablePlayer::set_pos(const paa::Position& pos)
     {
-        this->pos = { static_cast<int>(pos.x) - g_game.scroll,
-            static_cast<int>(pos.y) };
+        this->pos.x = static_cast<uint16_t>((int)pos.x - g_game.scroll);
+        this->pos.y = static_cast<uint16_t>((int)pos.y);
         return *this;
     }
 

@@ -51,7 +51,7 @@ namespace game {
         static constexpr mask_t UNUSED_SHIFT = 0x9;
 
         data_t data = 0x0;
-        net::vector2i pos = { 0, 0 };
+        net::vector2i pos;
 
         SerializablePlayer() = default;
         SerializablePlayer(const SerializablePlayer& other) = default;

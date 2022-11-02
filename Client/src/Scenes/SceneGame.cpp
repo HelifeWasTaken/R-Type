@@ -112,6 +112,7 @@ PAA_END_CPP(game_scene)
         }
     }
     PAA_ECS.clear();
+    map = nullptr;
 }
 
 static void update_player_position(shared_message_t& msg)
@@ -119,7 +120,11 @@ static void update_player_position(shared_message_t& msg)
     const auto sp = parse_message<UpdateMessage>(msg);
     const rtype::game::SerializablePlayer p(sp->data());
     paa::DynamicEntity e = g_game.players_entities[p.get_player()];
-    e.getComponent<rtype::game::Player>()->update_info(p);
+    try {
+        e.getComponent<rtype::game::Player>()->update_info(p);
+    } catch (...) {
+        spdlog::warn("You tried to update a dead or disconnected player");
+    }
 }
 
 static void update_enemy_death(shared_message_t& msg)

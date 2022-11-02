@@ -29,7 +29,7 @@ namespace game {
 
         healthRef.hp = info.get_hp();
 
-        const auto minoffset = 8;
+        const auto minoffset = 10;
         const auto offsetx = info.get_pos().x - positionRef.x;
         const auto offsety = info.get_pos().y - positionRef.y;
 

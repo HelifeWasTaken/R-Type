@@ -69,13 +69,14 @@ public:
         if (it != _client_to_room_id.end()) {
             spdlog::info("Client going to be removed from: {}", it->second);
             auto& room = _rooms[it->second];
+            auto pid = room->get_client_player_id(client);
             room->removePlayer(client);
             if (room->isEmpty()) {
                 spdlog::info("Room {} is empty, removing it", it->second);
                 _rooms.erase(it->second);
             } else {
                 room->main_broadcast(rtype::net::UserDisconnectFromRoom(
-                    client, room->getHostID()));
+                    pid, room->getHostID()));
             }
             _client_to_room_id.erase(client);
         }

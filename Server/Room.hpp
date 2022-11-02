@@ -125,9 +125,18 @@ public:
         }
     }
 
-    std::unordered_map<rtype::net::ClientID, rtype::net::PlayerID>
+    const std::unordered_map<rtype::net::ClientID, rtype::net::PlayerID>&
     get_clients() const
     {
         return _client_to_index;
+    }
+
+    rtype::net::PlayerID get_client_player_id(const rtype::net::ClientID& id) const
+    {
+        auto it = get_clients().find(id);
+
+        if (it == get_clients().end())
+            return RTYPE_INVALID_PLAYER_ID;
+        return it->second;
     }
 };

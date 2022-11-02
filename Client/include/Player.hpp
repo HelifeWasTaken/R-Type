@@ -132,7 +132,7 @@ namespace game {
 
     public:
         static constexpr int MAX_HEALTH = 3;
-        static constexpr int SYNC_RATE = 20;
+        static constexpr int SYNC_RATE = 1000;
         static constexpr int Y_FRAMES = 4;
         static constexpr int SPEED_X = 150;
         static constexpr int SPEED_Y = 100;

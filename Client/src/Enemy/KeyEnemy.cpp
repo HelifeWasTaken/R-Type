@@ -9,7 +9,8 @@ namespace game {
         : AEnemy(e, EnemyType::KEY_ENEMY)
     {
         auto shooter = make_shooter<BasicShooter>(_e);
-        shooter->aim(-180);
+        if (!shooter->angle_is_set())
+            shooter->aim(-180);
         _shooterList.push_back(shooter);
         _cycle = std::rand() % 10;
         _shoot_cycle = 0.1f
@@ -24,6 +25,7 @@ namespace game {
     {
         paa::Position& posRef = get_position();
         const float deltaTime = PAA_DELTA_TIMER.getDeltaTime();
+
         _last_shoot += deltaTime;
         _cycle += _rand_ampl * deltaTime;
         float value = sin(_cycle);

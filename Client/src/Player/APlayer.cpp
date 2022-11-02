@@ -58,17 +58,20 @@ namespace game {
 
     void APlayer::update_data()
     {
+        //
         // Sync player position and input with server
         // We only sync if the player is local
         // and if the timer is ready
-        if (_is_local && _syncTimer.isFinished()) {
+        //
+
+        if (_is_local) {
             SerializablePlayer info(_entity.getEntity());
-            if (!info.data_is_same(_info)) {
+            if (_syncTimer.isFinished() || !info.data_is_same(_info)) {
                 g_game.service.udp().send(net::UpdateMessage(
                     _id.id, info, net::message_code::UPDATE_PLAYER));
                 _info = info;
+                _syncTimer.restart();
             }
-            _syncTimer.restart();
         }
     }
 
@@ -187,8 +190,7 @@ namespace game {
     {
         paa::DynamicEntity entity = PAA_NEW_ENTITY();
 
-        const paa::Position sposition(
-                50, ((PAA_SCREEN.getSize().y - 50) / RTYPE_PLAYER_COUNT * pid) + 50);
+        const paa::Position sposition(50, RTYPE_PLAYFIELD_HEIGHT / 2);
         const auto& id = entity.attachId(paa::Id(pid));
         const auto& position = entity.attachPosition(sposition);
         auto& health = entity.attachHealth(paa::Health(APlayer::MAX_HEALTH));

@@ -77,6 +77,7 @@ include_directories(
     ${boost_variant_SOURCE_DIR}/include
     ${boost_endian_SOURCE_DIR}/include
     ${spdlog_SOURCE_DIR}/include
+    ${lua_SOURCE_DIR}/src
 	${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/PileAA/include
     ${CMAKE_SOURCE_DIR}/Client/include

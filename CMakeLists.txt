@@ -10,7 +10,7 @@ add_compile_definitions(USE_RTYPE_MAGIC_NUMBER_32_BITS)
 add_compile_definitions(_WIN32_WINNT=0x0601)
 
 if (MSVC)
-    add_compile_options(/MP)
+    add_compile_options(/MP8)
 endif()
 
 set(CMAKE_CXX_STANDARD 20)

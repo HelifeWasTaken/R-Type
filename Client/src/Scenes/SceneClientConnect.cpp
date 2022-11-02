@@ -8,8 +8,9 @@ static PAA_SCENE_DECL(client_connect) * self = nullptr;
 
 static bool connect_server_if_not_connected()
 {
-    if (g_game.service.restart_if_necessary() == false)
+    if (g_game.service.is_service_on() == false)
         return false;
+
 
     auto& tcp = g_game.service.tcp();
     auto& udp = g_game.service.udp();
@@ -23,8 +24,12 @@ static bool connect_server_if_not_connected()
             udp.feed_request(tcp.token(), tcp.id());
             self->timer.restart();
             return false;
+        } else if (udp.is_connected()) {
+            self->text->setText("Connected to server!");
+            return true;
+        } else {
+            return false;
         }
-        return true;
     } else if (self->timer.isFinished()) {
         self->timer.restart();
         g_game.service.run(); // Restart the service so the tcp send another
@@ -62,6 +67,17 @@ PAA_START_CPP(client_connect)
         }
     }));
 
+    gui.addObject(new paa::Button("Refresh connection", [this]() {
+        g_game.service.run(inputIP->getText(),
+                            g_game.service.tcp_port,
+                            g_game.service.udp_port);
+
+        text->setText("Trying to connect to server...");
+    }));
+
+    inputIP = paa::GuiFactory::new_input_text(g_game.service.host, "Server IP");
+
+    gui.addObject(inputIP);
     gui.addObject(text);
 }
 

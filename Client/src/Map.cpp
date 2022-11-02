@@ -145,7 +145,7 @@ namespace game {
                     _changes = true;
                 }
                 to_delete.push_back(i - to_delete.size());
-                spdlog::critical("effect {} of type {} activated", effect->name,
+                spdlog::info("effect {} of type {} activated", effect->name,
                     effect->type);
             }
         }

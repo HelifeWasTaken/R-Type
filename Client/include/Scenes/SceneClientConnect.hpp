@@ -10,6 +10,8 @@ PAA_SCENE(client_connect)
     paa::shared_gui_text text
         = paa::GuiFactory::new_gui_text("No log from server yet");
 
+    paa::shared_gui<paa::InputText> inputIP;
+
     PAA_SCENE_DEFAULT(client_connect);
 
     PAA_START;

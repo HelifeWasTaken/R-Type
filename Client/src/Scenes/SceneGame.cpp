@@ -28,7 +28,7 @@ static paa::Controller new_simulated_controller()
 
 static const char *const MAPS[] = {
     "../assets/maps/BydoEmpire/BydoMap.json",
-    "../assets/maps/BydoEmpire/BydoMap.json",
+    "../assets/maps/MiningField/MiningField.json",
     nullptr
 };
 

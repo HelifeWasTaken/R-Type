@@ -12,6 +12,7 @@ FetchContent_GetProperties(lua)
 if (NOT lua_POPULATED)
     message("Populating lua...")
     FetchContent_Populate(lua)
+    add_subdirectory(${lua_SOURCE_DIR} ${lua_BINARY_DIR})
 endif()
 
 message("Fetching lua")

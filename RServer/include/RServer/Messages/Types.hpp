@@ -10,7 +10,7 @@ namespace net {
 
     struct vector2i : public Serializable {
         uint16_t x = 0;
-        uint16_t y = 0;
+        uint8_t y = 0;
 
         vector2i() = default;
 

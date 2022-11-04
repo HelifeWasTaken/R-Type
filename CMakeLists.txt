@@ -2,7 +2,7 @@ project(rtype)
 cmake_minimum_required(VERSION 3.15)
 
 add_compile_definitions(SILVA_STATE_HANDLE_EVENT)
-add_compile_definitions(USE_RTYPE_MAGIC_NUMBER_32_BITS)
+add_compile_definitions(USE_RTYPE_MAGIC_NUMBER_16_BITS)
 
 #add_compile_definitions(SILVA_ECS_LOG_SPDLOG)
 #add_compile_definitions(SILVA_STATE_LOG_SPDLOG)

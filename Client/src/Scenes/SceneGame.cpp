@@ -119,7 +119,7 @@ static void update_player_position(shared_message_t& msg)
 {
     const auto sp = parse_message<UpdateMessage>(msg);
     const rtype::game::SerializablePlayer p(sp->data());
-    paa::DynamicEntity e = g_game.players_entities[p.get_player()];
+    paa::DynamicEntity e = g_game.players_entities[sp->sid()];
     try {
         e.getComponent<rtype::game::Player>()->update_info(p);
     } catch (...) {

@@ -49,8 +49,7 @@ namespace game {
             .set_move_right(xy.x > 20.f)
             .set_move_up(xy.y < -20.f)
             .set_move_down(xy.y > 20.f)
-            .set_shoot(controller->isButtonPressedOrHeld(RTYPE_SHOOT_BUTTON))
-            .set_player(id.id);
+            .set_shoot(controller->isButtonPressedOrHeld(RTYPE_SHOOT_BUTTON));
     }
 
     void SerializablePlayer::set_from_entity(const PAA_ENTITY& e)
@@ -102,15 +101,6 @@ namespace game {
         return *this;
     }
 
-    SerializablePlayer& SerializablePlayer::set_player(net::PlayerID player)
-    {
-        const data_t value = static_cast<data_t>(player);
-
-        data &= ~PLAYER_MASK;
-        data |= (value << PLAYER_SHIFT) & PLAYER_MASK;
-        return *this;
-    }
-
     SerializablePlayer& SerializablePlayer::set_pos(const paa::Position& pos)
     {
         this->pos.x = static_cast<uint16_t>((int)pos.x - g_game.scroll);
@@ -147,11 +137,6 @@ namespace game {
     SerializablePlayer::data_t SerializablePlayer::get_shoot() const
     {
         return get_data(SHOOT_MASK, SHOOT_SHIFT);
-    }
-
-    SerializablePlayer::data_t SerializablePlayer::get_player() const
-    {
-        return get_data(PLAYER_MASK, PLAYER_SHIFT);
     }
 
     SerializablePlayer::data_t SerializablePlayer::get_hp() const

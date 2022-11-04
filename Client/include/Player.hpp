@@ -17,8 +17,8 @@ namespace game {
 
     class SerializablePlayer : public net::Serializable {
     public:
-        using mask_t = uint16_t;
-        using data_t = uint16_t;
+        using mask_t = uint8_t;
+        using data_t = uint8_t;
 
         static constexpr mask_t MOVE_LEFT_MASK = 0b0000000000000001;
         static constexpr mask_t MOVE_LEFT_SHIFT = 0x0;
@@ -32,23 +32,11 @@ namespace game {
         static constexpr mask_t MOVE_DOWN_MASK = 0b0000000000001000;
         static constexpr mask_t MOVE_DOWN_SHIFT = 0x3;
 
-        static constexpr mask_t MOVE_MASK_X_AXIS
-            = MOVE_LEFT_MASK | MOVE_RIGHT_MASK;
-        static constexpr mask_t MOVE_MASK_Y_AXIS
-            = MOVE_UP_MASK | MOVE_DOWN_MASK;
-        static constexpr mask_t MOVE_MASK = MOVE_MASK_X_AXIS | MOVE_MASK_Y_AXIS;
-
         static constexpr mask_t SHOOT_MASK = 0b0000000000010000;
         static constexpr mask_t SHOOT_SHIFT = 0x4;
 
-        static constexpr mask_t PLAYER_MASK = 0b0000000001100000;
-        static constexpr mask_t PLAYER_SHIFT = 0x5;
-
-        static constexpr mask_t HEALTH_MASK = 0b0000000110000000;
-        static constexpr mask_t HEALTH_SHIFT = 0x7;
-
-        static constexpr mask_t UNUSED_MASK = 0b1111111000000000;
-        static constexpr mask_t UNUSED_SHIFT = 0x9;
+        static constexpr mask_t HEALTH_MASK = 0b0000000001100000;
+        static constexpr mask_t HEALTH_SHIFT = 0x5;
 
         data_t data = 0x0;
         net::vector2i pos;
@@ -83,7 +71,6 @@ namespace game {
         SerializablePlayer& set_move_down(bool value);
         SerializablePlayer& set_shoot(bool value);
         SerializablePlayer& set_hp(const paa::u8& hp);
-        SerializablePlayer& set_player(net::PlayerID player);
         SerializablePlayer& set_pos(const paa::Position& pos);
         data_t get_data(const mask_t& mask, const mask_t& shift) const;
         data_t get_move_left() const;
@@ -91,7 +78,6 @@ namespace game {
         data_t get_move_up() const;
         data_t get_move_down() const;
         data_t get_shoot() const;
-        data_t get_player() const;
         data_t get_hp() const;
         const net::vector2i get_pos() const;
 

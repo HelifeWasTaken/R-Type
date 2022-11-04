@@ -156,7 +156,14 @@ static void update_sync_scroll(shared_message_t& msg)
     SerializedScroll s;
     s.from(sync->data().data(), sync->data().size());
 
+    auto current_scroll = g_game.scroll;
+
     g_game.scroll = s.getElement();
+    g_game.old_scroll = g_game.old_scroll >= SCROLL_SPEED ?
+                        (g_game.scroll - SCROLL_SPEED) : 0;
+
+    g_game.reset_game_view();
+    g_game.game_view.move(g_game.scroll, 0);
 }
 
 static void update_player_room_client_disconnect(shared_message_t& msg)

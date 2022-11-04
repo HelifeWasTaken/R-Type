@@ -27,6 +27,7 @@ private:
     Timer _timer;
     unsigned int _animationIndex = 0;
     bool _uses_default;
+    bool _loop = false;
 
     void _setRect(const unsigned int& index);
 
@@ -50,7 +51,7 @@ public:
      * @param animationName Animation name
      * @return *this
      */
-    AnimatedSprite& useAnimation(const std::string& animationName);
+    AnimatedSprite& useAnimation(const std::string& animationName, bool loop=true);
 
     /**
      * @brief Update the animation

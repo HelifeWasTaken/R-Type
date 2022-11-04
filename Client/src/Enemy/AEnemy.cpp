@@ -86,17 +86,19 @@ namespace game {
         auto& s = e.attachSprite("skeleton_boss")
                       ->setPosition(x, y)
                       .useAnimation("skeleton_boss_animation");
-        auto& head_s = head.attachSprite("skeleton_boss_head")
-                        ->setPosition(head_position.x, head_position.y)
+        auto& head_s = head.attachSprite("skeleton_boss_head");
+        auto& head_s_animated = head_s->setPosition(
+                        head_position.x, head_position.y)
                         .useAnimation("skeleton_boss_head_animation");
         e.attachHealth(paa::Health(10000));
         e.attachPosition(paa::Position(x, y));
         head.attachHealth(paa::Health(15));
         head.attachPosition(head_position);
         head.attachCollision(CollisionFactory::makeEnemyCollision(
-            paa::recTo<int>(head_s.getGlobalBounds()), head.getEntity()));
+            paa::recTo<int>(head_s_animated.getGlobalBounds()), head.getEntity()));
         Enemy skeleton = EnemyFactory::make_enemy<SkeletonBoss>(e.getEntity());
-        Enemy skeletonHead = EnemyFactory::make_enemy<SkeletonBossHead>(head.getEntity(), e.getEntity());
+        Enemy skeletonHead = EnemyFactory::make_enemy<SkeletonBossHead>(
+            head.getEntity(), e.getEntity(), head_s);
         e.insertComponent(std::move(skeleton));
         head.insertComponent(std::move(skeletonHead));
         return head.getEntity();

@@ -95,9 +95,13 @@ namespace game {
     class SkeletonBossHead : public AEnemy {
     private:
         const PAA_ENTITY _boss_body;
+        const paa::Sprite& _head_sprite;
+        float _timer = 0.0f;
+        bool _start = false;
 
     public:
-        SkeletonBossHead(const PAA_ENTITY& e, const PAA_ENTITY& body);
+        SkeletonBossHead(const PAA_ENTITY& e, const PAA_ENTITY& body,
+                        const paa::Sprite& head_s);
         ~SkeletonBossHead() = default;
 
         void on_collision(const paa::CollisionBox& other) override;

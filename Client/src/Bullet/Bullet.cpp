@@ -17,6 +17,7 @@ namespace game {
 
     bool ABullet::is_alive() const { return !_timer.isFinished(); }
     BulletType ABullet::get_type() const { return _type; }
+    void ABullet::force_kill() const { PAA_ECS.kill_entity(_e); };
     paa::Position& ABullet::get_position() const
     {
         return PAA_GET_COMPONENT(_e, paa::Position);

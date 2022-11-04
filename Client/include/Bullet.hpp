@@ -42,6 +42,7 @@ namespace game {
         virtual ~ABullet() = default;
 
         bool is_alive() const;
+        void force_kill() const;
         BulletType get_type() const;
         paa::Position& get_position() const;
         double get_aim_angle() const;

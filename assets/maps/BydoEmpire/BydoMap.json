@@ -650,6 +650,16 @@
                  "name":"wave2",
                  "type":"string",
                  "value":"activate_wave,2000"
+                }, 
+                {
+                 "name":"wave3",
+                 "type":"string",
+                 "value":"activate_wave, 3500"
+                }, 
+                {
+                 "name":"wave3_lock",
+                 "type":"string",
+                 "value":"lock_scroll, 3600"
                 }],
          "type":"objectgroup",
          "visible":true,
@@ -833,9 +843,31 @@
          "visible":true,
          "x":0,
          "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":13,
+         "name":"wave3",
+         "objects":[
+                {
+                 "height":61.364554013002,
+                 "id":224,
+                 "name":"skeleton",
+                 "rotation":0,
+                 "type":"skeleton_boss",
+                 "visible":true,
+                 "width":127.59,
+                 "x":3831.94593201288,
+                 "y":4.25301675375172
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
         }],
- "nextlayerid":12,
- "nextobjectid":221,
+ "nextlayerid":14,
+ "nextobjectid":225,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.4.3",

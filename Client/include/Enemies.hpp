@@ -9,7 +9,8 @@ namespace game {
         BASIC_ENEMY,
         KEY_ENEMY,
         MASTODONTE_ENEMY,
-        DUMBY_BOY_ENEMY
+        DUMBY_BOY_ENEMY,
+        SKELETON_BOSS
     };
 
     class AEnemy {
@@ -83,6 +84,26 @@ namespace game {
         void update() override;
     };
 
+    class SkeletonBoss : public AEnemy {
+    public:
+        SkeletonBoss(const PAA_ENTITY& e);
+        ~SkeletonBoss() = default;
+
+        void update() override;
+    };
+
+    class SkeletonBossHead : public AEnemy {
+    private:
+        const PAA_ENTITY _boss_body;
+
+    public:
+        SkeletonBossHead(const PAA_ENTITY& e, const PAA_ENTITY& body);
+        ~SkeletonBossHead() = default;
+
+        void on_collision(const paa::CollisionBox& other) override;
+        void update() override;
+    };
+
     using Enemy = std::shared_ptr<AEnemy>;
     class EnemyFactory {
     public:
@@ -104,6 +125,10 @@ namespace game {
 
         static PAA_ENTITY make_enemy_by_type(
             const std::string& enemy_type, const float x, const float y);
+
+        static PAA_ENTITY make_skeleton_boss(
+            double const& x, double const& y
+        );
     };
 }
 }

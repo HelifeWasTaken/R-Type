@@ -75,5 +75,31 @@ namespace game {
         e.insertComponent(std::move(dmb));
         return e.getEntity();
     }
+
+    PAA_ENTITY EnemyFactory::make_skeleton_boss(double const &x,
+                                                double const &y)
+    {
+        paa::DynamicEntity e = PAA_NEW_ENTITY();
+        paa::DynamicEntity head = PAA_NEW_ENTITY();
+        paa::Position head_position = paa::Position(
+            x + (159/*Boss sprite width*/ / 2), y + (190/*Boss sprite height*/ / 2));
+        auto& s = e.attachSprite("skeleton_boss")
+                      ->setPosition(x, y)
+                      .useAnimation("skeleton_boss_animation");
+        auto& head_s = head.attachSprite("skeleton_boss_head")
+                        ->setPosition(head_position.x, head_position.y)
+                        .useAnimation("skeleton_boss_head_animation");
+        e.attachHealth(paa::Health(10000));
+        e.attachPosition(paa::Position(x, y));
+        head.attachHealth(paa::Health(15));
+        head.attachPosition(head_position);
+        head.attachCollision(CollisionFactory::makeEnemyCollision(
+            paa::recTo<int>(head_s.getGlobalBounds()), head.getEntity()));
+        Enemy skeleton = EnemyFactory::make_enemy<SkeletonBoss>(e.getEntity());
+        Enemy skeletonHead = EnemyFactory::make_enemy<SkeletonBossHead>(head.getEntity(), e.getEntity());
+        e.insertComponent(std::move(skeleton));
+        head.insertComponent(std::move(skeletonHead));
+        return head.getEntity();
+    }
 }
 }

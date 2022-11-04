@@ -6,7 +6,7 @@
 
 using namespace rtype::net;
 
-static const int SCROLL_SPEED = 2;
+static const int SCROLL_SPEED = 6;
 
 static paa::Controller new_keyboard()
 {

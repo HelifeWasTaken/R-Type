@@ -1,7 +1,7 @@
 #include "PileAA/AnimatedSprite.hpp"
 #include "PileAA/Math.hpp"
 #include "PileAA/ResourceManager.hpp"
-
+#include <iostream>
 namespace paa {
 
 void AnimatedSprite::_setRect(const unsigned int& index)
@@ -33,7 +33,8 @@ void AnimatedSprite::registerAnimation(
     _reg[animationName] = animation;
 }
 
-AnimatedSprite& AnimatedSprite::useAnimation(const std::string& animationName)
+AnimatedSprite& AnimatedSprite::useAnimation(const std::string& animationName,
+                                                                    bool loop)
 {
     try {
         if (_uses_default)
@@ -48,11 +49,16 @@ AnimatedSprite& AnimatedSprite::useAnimation(const std::string& animationName)
     }
     _timer.setTarget(_currentAnimation->speed);
     _setRect(0);
+    _loop = loop;
     return *this;
 }
 
 void AnimatedSprite::update()
 {
+    if (!_loop && _animationIndex ==
+        _currentAnimation->rects.size() - 1) {
+        return;
+    }
     if (_timer.isFinished()) {
         _setRect(_animationIndex + 1);
     }

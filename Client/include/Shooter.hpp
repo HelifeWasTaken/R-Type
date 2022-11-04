@@ -50,7 +50,7 @@ namespace game {
 
     class ConeShooter : public AShooter {
     public:
-        ConeShooter(const PAA_ENTITY& e, double reloadTime=0);
+        ConeShooter(const PAA_ENTITY& e, double reloadTime=1500);
 
         ~ConeShooter() = default;
 
@@ -58,7 +58,6 @@ namespace game {
 
     private:
         std::vector<Shooter> _shooterList;
-        float const _travelingTime = 1.5f;
     };
 }
 }

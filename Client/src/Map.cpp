@@ -4,6 +4,7 @@
 #include "PileAA/DynamicEntity.hpp"
 #include "PileAA/QuadTree.hpp"
 #include "PileAA/ResourceManager.hpp"
+#include "PileAA/MusicPlayer.hpp"
 #include "PileAA/external/nlohmann/json.hpp"
 
 #include "ClientScenes.hpp"
@@ -143,6 +144,8 @@ namespace game {
                 } else if (effect->type == "end") {
                     g_game.launch_transition();
                     _changes = true;
+                } else if (effect->type == "launch_music") {
+                    paa::GMusicPlayer::play(effect->name);
                 }
                 to_delete.push_back(i - to_delete.size());
                 spdlog::info("effect {} of type {} activated", effect->name,

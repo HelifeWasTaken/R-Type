@@ -632,6 +632,16 @@
          "opacity":1,
          "properties":[
                 {
+                 "name":"..\/assets\/maps\/BydoEmpire\/BydoMap.ogg",
+                 "type":"string",
+                 "value":"launch_music,0"
+                }, 
+                {
+                 "name":"..\/assets\/maps\/BydoEmpire\/BydoMap2.ogg",
+                 "type":"string",
+                 "value":"launch_music,300"
+                }, 
+                {
                  "name":"end_map",
                  "type":"string",
                  "value":"end,4500"

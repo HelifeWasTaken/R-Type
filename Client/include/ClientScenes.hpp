@@ -208,4 +208,5 @@ public:
 #include "Scenes/SceneConnectRoom.hpp"
 #include "Scenes/SceneCreateRoom.hpp"
 #include "Scenes/SceneGame.hpp"
+#include "Scenes/SceneGameOver.hpp"
 #include "Scenes/SceneRoomWait.hpp"

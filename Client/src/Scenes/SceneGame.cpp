@@ -3,6 +3,7 @@
 #include "Enemies.hpp"
 #include "Player.hpp"
 #include "utils.hpp"
+#include "PileAA/MusicPlayer.hpp"
 
 using namespace rtype::net;
 
@@ -218,6 +219,10 @@ static void handle_transition(unsigned int& map_index, std::unique_ptr<rtype::ga
     if (g_game.in_transition()) {
         g_game.transition.update();
         if (g_game.transition_is_halfway()) {
+            if (g_game.everyone_is_dead()) {
+                PAA_SET_SCENE(game_over);
+                return;
+            }
             if ((map == nullptr || map->changes())) {
                 reinitialize_game();
                 map = load_next_map(map_index);
@@ -232,6 +237,11 @@ static void handle_transition(unsigned int& map_index, std::unique_ptr<rtype::ga
 PAA_UPDATE_CPP(game_scene)
 {
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
+
+    if (g_game.everyone_is_dead() && !g_game.in_transition()) {
+        paa::GMusicPlayer::play("../assets/R-Type-Game-Over.ogg", false);
+        g_game.launch_transition();
+    }
 
     handle_transition(map_index, map);
 

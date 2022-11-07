@@ -89,6 +89,6 @@ PAA_END_CPP(client_connect) { gui.clear(); }
 
 PAA_UPDATE_CPP(client_connect)
 {
-    connect_server_if_not_connected();
     gui.update();
+    connect_server_if_not_connected();
 }

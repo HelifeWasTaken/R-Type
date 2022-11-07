@@ -1,6 +1,7 @@
 #pragma once
 #include "PileAA/DynamicEntity.hpp"
 #include "Shooter.hpp"
+#include "Bullet.hpp"
 
 namespace rtype {
 namespace game {

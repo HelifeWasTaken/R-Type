@@ -7,6 +7,7 @@
 #include "PileAA/Math.hpp"
 #include <PileAA/Types.hpp>
 #include <cmath>
+#include <functional>
 
 namespace paa {
 class CollisionBox;
@@ -19,10 +20,12 @@ namespace game {
 
     using bullet_type_t = uint8_t;
 
-    enum BulletType : bullet_type_t { BASIC_BULLET };
+    enum BulletType : bullet_type_t {
+        BASIC_BULLET,
+        SKELETON_BULLET,
+    };
 
     // Base impl
-
     class ABullet {
     private:
         paa::Timer _timer;
@@ -57,10 +60,19 @@ namespace game {
     class BasicBullet : public ABullet {
     private:
         paa::Vector2f _dir;
-
     public:
         BasicBullet(
             const PAA_ENTITY& e, const double& aim_angle, bool from_player);
+        void update() override;
+    };
+
+    class SkeletonBullet : public ABullet {
+    private:
+        paa::Vector2f _dir;
+    public:
+        SkeletonBullet(
+            const PAA_ENTITY&e, const double &aim_angle, bool from_player);
+
         void update() override;
     };
 
@@ -72,8 +84,20 @@ namespace game {
             return std::make_shared<B>(std::forward<Args>(args)...);
         }
 
+        static void make_bullet_by_type(
+            const std::string& bullet_type, paa::Position const& ref,
+            const bool& from_player, float aim);
+
+        static void make_skeleton_bullet(
+            float aim_angle, paa::Position const& posRef, const bool& from_player);
+
         static void make_basic_bullet(float aim_angle,
             paa::Position const& posRef, const bool& from_player);
+    private:
+        static inline std::unordered_map<std::string, std::function<void(float, paa::Position const&, const bool&)>> _matching_type = {
+            {"basic_bullet", &make_basic_bullet},
+            {"skeleton_bullet", &make_skeleton_bullet}
+        };
     };
 }
 }

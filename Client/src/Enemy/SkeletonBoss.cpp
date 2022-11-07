@@ -38,7 +38,7 @@ namespace game {
             _start = true;
             _timer = 0.0f;
         }
-        if (_start && _timer > 1.5f) {
+        if (_start && _timer > .7f) {
             _head_sprite->useAnimation("skeleton_boss_head_animation");
             _timer = 0.0f;
         }

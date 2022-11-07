@@ -52,7 +52,7 @@ namespace game {
     {
         if (_controllerRef->isButtonPressedOrHeld(RTYPE_SHOOT_BUTTON)) {
             for (auto& shooter : _shooterList)
-                shooter->shoot();
+                shooter->shoot("basic_bullet");
         }
     }
 

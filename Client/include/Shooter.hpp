@@ -23,7 +23,7 @@ namespace game {
         AShooter& aim(float const& aim_angle, bool isRadian = false);
         bool angle_is_set(void);
         bool is_attached_to_player() const;
-        virtual void shoot() = 0;
+        virtual void shoot(std::string const& bullet_type) = 0;
     };
 
     using Shooter = std::shared_ptr<AShooter>;
@@ -45,7 +45,7 @@ namespace game {
 
         ~BasicShooter() = default;
 
-        void shoot() override final;
+        void shoot(std::string const& bullet_type) override final;
     };
 
     class ConeShooter : public AShooter {
@@ -54,7 +54,7 @@ namespace game {
 
         ~ConeShooter() = default;
 
-        void shoot() override final;
+        void shoot(std::string const& bullet_type) override final;
 
     private:
         std::vector<Shooter> _shooterList;

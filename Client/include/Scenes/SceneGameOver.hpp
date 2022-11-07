@@ -3,6 +3,7 @@
 #include "ClientScenes.hpp"
 #include "Map.hpp"
 #include "PileAA/InputHandler.hpp"
+#include "PileAA/Timer.hpp"
 
 PAA_SCENE(game_over)
 {
@@ -16,6 +17,7 @@ PAA_SCENE(game_over)
 
     paa::Font& font = PAA_RESOURCE_MANAGER.get<paa::Font>("font");
     paa::Controller keyboard;
+    paa::Timer pressAnyKeyTimer;
 
     paa::Text gameOverText;
     paa::Text retryText;

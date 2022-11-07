@@ -17,6 +17,9 @@ static paa::Controller new_keyboard()
 PAA_START_CPP(game_over)
 {
     keyboard = new_keyboard();
+    pressAnyKeyTimer.setTarget(1000);
+    pressAnyKeyTimer.restart();
+    
     gameOverText.setCharacterSize(20);
     gameOverText.setString("Game Over");
     gameOverText.setFont(font);
@@ -68,7 +71,6 @@ static void update_server_event()
 PAA_UPDATE_CPP(game_over)
 {
     g_game.use_hud_view();
-
     
     if (g_game.in_transition()) {
         g_game.transition.update();
@@ -76,7 +78,7 @@ PAA_UPDATE_CPP(game_over)
             PAA_SET_SCENE(client_connect);
         }
     } else {
-        if (keyboard->isButtonPressed(RTYPE_SHOOT_BUTTON)) {
+        if (pressAnyKeyTimer.isFinished() && keyboard->isButtonPressed(RTYPE_SHOOT_BUTTON)) {
             exitGameOver = true;
             g_game.launch_transition();
         }

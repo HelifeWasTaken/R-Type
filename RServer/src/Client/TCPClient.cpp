@@ -22,6 +22,7 @@ namespace net {
 
         if (error) {
             spdlog::warn("Error thrown by TCP client: {}", error.message());
+            _stopped = true;
             return;
         }
 

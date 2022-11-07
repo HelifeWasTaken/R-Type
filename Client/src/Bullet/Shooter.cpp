@@ -64,7 +64,7 @@ namespace game {
     ConeShooter::ConeShooter(const PAA_ENTITY& e, double reloadTime) :
                                             AShooter(e, reloadTime)
     {
-        static const float angles[3] = {2.26893f, 3.14159f, 4.01426f};
+        static const float angles[3] = {2.96706f, 3.14159f, 3.31613f};
 
         _aim_angle = 1;
         for (std::size_t i = 0; i < 3; i++) {

@@ -98,7 +98,11 @@ namespace game {
         const PAA_ENTITY _boss_body;
         const paa::Sprite& _head_sprite;
         float _timer = 0.0f;
+        float _last_shoot = 0.0f;
+        float _shoot_delay = .3f;
         bool _start = false;
+        std::size_t _shoot_index = 0;
+        const float _shoot_cycle = 2.0f;
 
     public:
         SkeletonBossHead(const PAA_ENTITY& e, const PAA_ENTITY& body,
@@ -106,6 +110,7 @@ namespace game {
         ~SkeletonBossHead() = default;
 
         void on_collision(const paa::CollisionBox& other) override;
+        void delay_shoot();
         void update() override;
     };
 

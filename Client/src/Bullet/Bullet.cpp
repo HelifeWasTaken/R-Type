@@ -65,8 +65,8 @@ namespace game {
         const auto dt = PAA_DELTA_TIMER.getDeltaTime();
         paa::Position& posRef = PAA_GET_COMPONENT(_e, paa::Position);
 
-        posRef.x += _dir.x * BASIC_BULLET_SPEED * dt;
-        posRef.y += _dir.y * BASIC_BULLET_SPEED * dt;
+        posRef.x += _dir.x * SKELETON_BULLET_SPEED * dt;
+        posRef.y += _dir.y * SKELETON_BULLET_SPEED * dt;
     }
 
     void BulletFactory::make_bullet_by_type(

@@ -92,7 +92,7 @@ namespace game {
                         .useAnimation("skeleton_boss_head_animation");
         e.attachHealth(paa::Health(10000));
         e.attachPosition(paa::Position(x, y));
-        head.attachHealth(paa::Health(15));
+        head.attachHealth(paa::Health(100));
         head.attachPosition(head_position);
         head.attachCollision(CollisionFactory::makeEnemyCollision(
             paa::recTo<int>(head_s_animated.getGlobalBounds()), head.getEntity()));

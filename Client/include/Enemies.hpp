@@ -11,7 +11,9 @@ namespace game {
         KEY_ENEMY,
         MASTODONTE_ENEMY,
         DUMBY_BOY_ENEMY,
-        SKELETON_BOSS
+        SKELETON_BOSS,
+        CENTIPEDE_BOSS,
+        CENTIPEDE_BODY_BOSS
     };
 
     class AEnemy {
@@ -26,9 +28,11 @@ namespace game {
 
         virtual ~AEnemy() = default;
 
-        bool is_alive() const;
+        virtual bool is_alive() const;
+
         EnemyType get_type() const;
         paa::Position& get_position() const;
+        paa::Health& get_health() const;
 
         virtual void update() = 0;
         virtual void on_collision(const paa::CollisionBox& other);
@@ -96,7 +100,7 @@ namespace game {
     class SkeletonBossHead : public AEnemy {
     private:
         const PAA_ENTITY _boss_body;
-        const paa::Sprite& _head_sprite;
+        const paa::Sprite _head_sprite;
         float _timer = 0.0f;
         float _last_shoot = 0.0f;
         float _shoot_delay = .3f;
@@ -113,6 +117,78 @@ namespace game {
         void delay_shoot();
         void update() override;
     };
+
+    #define RTYPE_CENTIPEDE_BODY_COUNT 10
+
+    using CentipedeBack = std::pair<paa::Position, float>;
+
+    class CentipedeBody : public AEnemy {
+    private:
+        PAA_ENTITY _child;
+        PAA_ENTITY _parent;
+        int _depth;
+
+        bool _alive = true;
+        float _angle = 0.0f;
+
+        paa::Timer _timer;
+        CentipedeBack _lastPosition;
+        CentipedeBack _target;
+
+        paa::Sprite s;
+
+    public:
+        static PAA_ENTITY build_centipede(const PAA_ENTITY& parent,
+            int depth=RTYPE_CENTIPEDE_BODY_COUNT);
+
+    public:
+        CentipedeBody(const PAA_ENTITY& self, const PAA_ENTITY& parent, int depth);
+
+        void on_collision(const paa::CollisionBox& other);
+
+        void kill();
+
+        bool is_alive() const override;
+
+        bool centipede_part_functional();
+
+        CentipedeBack get_back();
+
+        void update() override;
+    };
+
+    class Centipede : public AEnemy {
+    protected:
+        PAA_ENTITY _body_part;
+        paa::Sprite s;
+
+        float _angle = 0.0f;
+        paa::Timer _timer;
+
+        std::vector<paa::Vector2f> _path;
+
+        CentipedeBack _lastPosition;
+
+        int _path_index = -1;
+
+        bool _phase_one = true;
+
+        float determine_time_to_next_point();
+
+    public:
+        Centipede(const PAA_ENTITY& e);
+
+        ~Centipede() = default;
+
+        void on_collision(const paa::CollisionBox& other) override;
+
+        bool is_alive() const override;
+
+        CentipedeBack get_back();
+
+        void update() override;
+    };
+
 
     using Enemy = std::shared_ptr<AEnemy>;
     class EnemyFactory {
@@ -137,6 +213,10 @@ namespace game {
             const std::string& enemy_type, const float x, const float y);
 
         static PAA_ENTITY make_skeleton_boss(
+            double const& x, double const& y
+        );
+
+        static PAA_ENTITY make_centipede_boss(
             double const& x, double const& y
         );
     };

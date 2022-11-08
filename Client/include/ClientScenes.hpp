@@ -211,4 +211,5 @@ public:
 #include "Scenes/SceneCreateRoom.hpp"
 #include "Scenes/SceneGame.hpp"
 #include "Scenes/SceneGameOver.hpp"
+#include "Scenes/SceneGameWin.hpp"
 #include "Scenes/SceneRoomWait.hpp"

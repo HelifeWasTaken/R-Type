@@ -110,6 +110,11 @@ namespace game {
 
         bool _is_hurt = false;
 
+        bool _clamp_position = true;
+
+        int _speed_x;
+        int _speed_y;
+
         bool _is_colliding_with_wall = false;
 
         bool _is_local; // is this player local or remote
@@ -139,6 +144,11 @@ namespace game {
         void use_frame();
         void update_position();
         void update();
+        void set_clamp_position(bool clamp_position);
+        void set_speed_x(int speed);
+        void set_speed_y(int speed);
+        int get_speed_x();
+        int get_speed_y();
         void on_collision(const paa::CollisionBox& other);
         void add_shooter(Shooter shooter);
         bool is_dead() const;
@@ -150,7 +160,7 @@ namespace game {
     class PlayerFactory {
     public:
         static PAA_ENTITY addPlayer(
-            const net::PlayerID pid, paa::Controller& controller);
+            const net::PlayerID pid, paa::Controller& controller, bool checkScreenBounds = true, bool isOnline = true);
     };
 
 }

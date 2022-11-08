@@ -4,7 +4,7 @@
 namespace rtype {
 namespace game {
 
-    SkeletoxnBoss::SkeletonBoss(const PAA_ENTITY& e) : AEnemy(e, SKELETON_BOSS)
+    SkeletonBoss::SkeletonBoss(const PAA_ENTITY& e) : AEnemy(e, SKELETON_BOSS)
     {
     }
 

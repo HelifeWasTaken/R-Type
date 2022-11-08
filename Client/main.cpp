@@ -27,24 +27,22 @@ static void register_enemy_system()
 {
     PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
         const auto view = PAA_SCREEN.getView();
-        const double left_border
-            = view.getCenter().x - view.getSize().x / 2 - 100;
-
+        const double left_border = view.getCenter().x - view.getSize().x / 2 - 100;
         unsigned int count = 0;
-        for (const auto&& [entity, enemy, id] :
-            r.view<rtype::game::Enemy, paa::Id>()) {
+
+        for (const auto&& [entity, enemy, id] : r.view<rtype::game::Enemy, paa::Id>()) {
             enemy->update();
-            /*
             const auto& hp = PAA_GET_COMPONENT(entity, paa::Health);
             const auto& pos = PAA_GET_COMPONENT(entity, paa::Position);
-            if (hp.hp <= 0 || pos.x < left_border) {
+            if (enemy->is_alive() == false || hp.hp <= 0 || pos.x < left_border) {
                 r.kill_entity(entity);
-                g_game.enemies_to_entities.erase(id.id);
-                g_game.service.tcp().send(rtype::net::UpdateMessage(g_game.id,
-                    SerializedEnemyDeath(id.id),
-                    rtype::net::message_code::UPDATE_ENEMY_DESTROYED));
+                if (id.id != -1) {
+                    g_game.enemies_to_entities.erase(id.id);
+                    g_game.service.tcp().send(rtype::net::UpdateMessage(g_game.id,
+                        SerializedEnemyDeath(id.id),
+                        rtype::net::message_code::UPDATE_ENEMY_DESTROYED));
+                }
             }
-            */
             count++;
         }
 
@@ -76,6 +74,7 @@ PAA_SCENE(test)
 
     PAA_START
     {
+        g_game.use_game_view();
         rtype::game::EnemyFactory::make_centipede_boss(0, 0);
     }
 

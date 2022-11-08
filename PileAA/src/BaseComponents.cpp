@@ -34,7 +34,9 @@ static inline void sys_collision_box_sync(hl::silva::registry& r)
 {
     for (auto&& [_, c, s] : r.view<SCollisionBox, Sprite>()) {
         const auto r = s->getGlobalBounds();
-        c->set_position(Vector2i(r.left, r.top));
+        const auto o = s->getOrigin();
+
+        c->set_position(Vector2i(r.left + o.x, r.top + o.y));
         c->set_size(Vector2i(r.width, r.height));
     }
 }

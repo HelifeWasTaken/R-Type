@@ -2,6 +2,12 @@
 #include "Enemies.hpp"
 #include "PileAA/Math.hpp"
 #include "PileAA/BaseComponents.hpp"
+#include "PileAA/external/nlohmann/json.hpp"
+
+#include <fstream>
+
+#define RTYPE_CENTIPEDE_FRAME_OFFSET 150
+#define RTYPE_CENTIPEDE_SPEED 100
 
 namespace rtype {
 namespace game {
@@ -30,7 +36,9 @@ namespace game {
     {
         paa::DynamicEntity dp = parent;
         paa::DynamicEntity e = PAA_NEW_ENTITY();
-        auto s = e.attachSprite("centipede_boss_body");
+        auto s = e.attachSprite("centiped_boss");
+
+        depth ? s->useAnimation("body") : s->useAnimation("head");
         auto ppos = dp.getComponent<paa::Position>();
 
         e.attachPosition(ppos);
@@ -40,7 +48,7 @@ namespace game {
         e.attachCollision(CollisionFactory::makeEnemyCollision(
             paa::recTo<int>(s->getGlobalBounds()), e.getEntity()));
 
-        e.attachId(paa::Id(135));
+        e.attachId(paa::Id(-1));
 
         Enemy enemy = EnemyFactory::make_enemy<CentipedeBody>(e.getEntity(), parent, depth);
         e.insertComponent(std::move(enemy));
@@ -52,8 +60,9 @@ namespace game {
         , _parent(parent)
         , _depth(depth)
         , _lastPosition({{0, 0}, 0})
+        , _target({{0, 0}, 0})
     {
-        _timer.setTarget(50 * (RTYPE_CENTIPEDE_BODY_COUNT - depth));
+        _timer.setTarget(RTYPE_CENTIPEDE_FRAME_OFFSET);
 
         if (depth > 0) {
             _child = build_centipede(self, depth - 1);
@@ -63,6 +72,7 @@ namespace game {
 
         s->setPosition(sp->getPosition().x, sp->getPosition().y);
         _lastPosition = {{sp->getPosition().x, sp->getPosition().y}, 0};
+        _target = _lastPosition;
     }
 
     void CentipedeBody::on_collision(const paa::CollisionBox& other)
@@ -70,7 +80,11 @@ namespace game {
         AEnemy::on_collision(other);
         auto& hp = get_health().hp;
 
-        hp = hp < 1 ? 1 : hp;
+        if (hp <= 1) {
+            hp = 1;
+            if (_depth > 0)
+                s->useAnimation("damage");
+        }
     }
 
     void CentipedeBody::kill()
@@ -86,8 +100,8 @@ namespace game {
     bool CentipedeBody::centipede_part_functional()
     {
         if (_depth == 0)
-            return get_health().hp <= 1;
-        return get_health().hp <= 1 ||
+            return false;
+        return get_health().hp > 1 ||
             get_centipede_body(_child)->centipede_part_functional();
     }
 
@@ -99,25 +113,34 @@ namespace game {
     void CentipedeBody::update()
     {
         auto& cpos = get_position();
-        CentipedeBack target = {{0, 0}, 0};
 
-        if (_depth != RTYPE_CENTIPEDE_BODY_COUNT) {
-            target = get_centipede_body(_parent)->get_back();
-        } else {
-            target = get_centipede(_parent)->get_back();
-        }
-
-        auto target_angle = paa::Math::direction_to_angle(cpos, target.first);
+        auto target_angle = paa::Math::direction_to_angle(cpos, _target.first);
         const double angle_speed = 0.05;
 
-        if (_timer.isFinished()) {
-            _timer.setTarget(50);
-            _lastPosition = {cpos, _angle};
-        }
+        spdlog::info("head angle");
 
-        cpos = target.first;
-        _angle = target.second;
-        s->setRotation(_angle, false);
+        if (_timer.isFinished()) {
+            _lastPosition = {cpos, _angle};
+            cpos = _target.first;
+            _timer.setTarget(RTYPE_CENTIPEDE_FRAME_OFFSET);
+
+            if (_depth != RTYPE_CENTIPEDE_BODY_COUNT) {
+                _target = get_centipede_body(_parent)->get_back();
+            } else {
+                _target = get_centipede(_parent)->get_back();
+            }
+            _angle = _target.second;
+            s->setRotation(_angle + 180);
+        } else {
+            paa::Vector2f dir = {(float)_target.first.x - (float)cpos.x, (float)_target.first.y - (float)cpos.y};
+            const double speed = RTYPE_CENTIPEDE_SPEED * PAA_DELTA_TIMER.getDeltaTime();
+
+            dir.x = dir.x > 0 ? 1 : dir.x < 0 ? -1 : 0;
+            dir.y = dir.y > 0 ? 1 : dir.y < 0 ? -1 : 0;
+
+            cpos.x += speed * dir.x;
+            cpos.y += speed * dir.y;
+        }
     }
 
     float Centipede::determine_time_to_next_point()
@@ -127,24 +150,37 @@ namespace game {
         return 1000.f;
     }
 
+    static void load_centipede_path(std::vector<paa::Vector2f>& path)
+    {
+        std::ifstream file("../assets/map/RecyclingFactory/centipede.json");
+        nlohmann::json j;
+
+        file >> j;
+
+        for (auto& p : j["path"]) {
+            path.push_back({p[0].get<float>(), p[1].get<float>()});
+        }
+    }
+
     Centipede::Centipede(const PAA_ENTITY& e)
         : AEnemy(e, EnemyType::CENTIPEDE_BOSS)
         , _lastPosition({{0, 0}, 0})
     {
-        _path = {
-            {100, 0},
-            {500, 200}
-        };
 
-        _timer.setTarget(50);
+        paa::DynamicEntity(e).attachId(paa::Id(-1));
+
+        _timer.setTarget(RTYPE_CENTIPEDE_FRAME_OFFSET);
+
+        _path.push_back({0, 0});
+        _path.push_back({0, 100});
+        _path.push_back({100, 100});
+        _path.push_back({100, 0});
 
         s = PAA_GET_COMPONENT(e, paa::Sprite);
         PAA_GET_COMPONENT(e, paa::Depth).z = 1;
         _body_part = CentipedeBody::build_centipede(_e);
 
         _lastPosition = {{s->getPosition().x, s->getPosition().y}, 0};
-
-        s->setColor(sf::Color::Red);
 
         determine_time_to_next_point();
     }
@@ -173,22 +209,43 @@ namespace game {
         const auto dir = paa::Math::angle_to_direction(inverted_angle);
         auto pos = s->getGlobalBounds();
 
-        spdlog::info("dir: {}, {}", dir.x, dir.y);
-
         return _lastPosition;
+    }
+
+    static void update_angle(float &angle, const paa::Vector2f &dir)
+    {
+        if (dir.x == 0) {
+            if (dir.y == 0) {
+            } else if (dir.y < 0) {
+                angle = 180;
+            } else {
+                angle = 0;
+            }
+        } else if (dir.x < 0) {
+            if (dir.y == 0) {
+                angle = 90;
+            } else if (dir.y < 0) {
+                angle = 135;
+            } else {
+                angle = 45;
+            }
+        } else {
+            if (dir.y == 0) {
+                angle = 270;
+            } else if (dir.y < 0) {
+                angle = 225;
+            } else {
+                angle = 315;
+            }
+        }
     }
 
     void Centipede::update()
     {
         auto& cpos = get_position();
         const auto target = _path[_path_index];
-        const float target_angle = paa::Math::toDegrees(paa::Math::direction_to_angle(cpos, target));
         const float angle_speed = 0.1f;
-        const float speed = 500.f * PAA_DELTA_TIMER.getDeltaTime();
-
-        _angle = target_angle;
-
-        s->setRotation(_angle);
+        const float speed = RTYPE_CENTIPEDE_SPEED * PAA_DELTA_TIMER.getDeltaTime();
 
         if (_timer.isFinished()) {
             _lastPosition = {{cpos.x, cpos.y}, _angle};
@@ -203,12 +260,12 @@ namespace game {
         cpos.x = dir.x < 0 ? cpos.x + speed : dir.x > 0 ? cpos.x - speed : cpos.x;
         cpos.y = dir.y < 0 ? cpos.y + speed : dir.y > 0 ? cpos.y - speed : cpos.y;
 
-        if (std::abs(cpos.x - target.x) < speed) {
-            cpos.x = target.x;
-        }
-        if (std::abs(cpos.y - target.y) < speed) {
-            cpos.y = target.y;
-        }
+        cpos.x = std::abs(cpos.x - target.x) < speed ? target.x : cpos.x;
+        cpos.y = std::abs(cpos.y - target.y) < speed ? target.y : cpos.y;
+
+        update_angle(_angle, dir);
+
+        s->setRotation(_angle);
 
         if (cpos.x == target.x && cpos.y == target.y) {
             determine_time_to_next_point();
@@ -218,18 +275,16 @@ namespace game {
     PAA_ENTITY EnemyFactory::make_centipede_boss(double const& x, double const& y)
     {
         paa::DynamicEntity e = PAA_NEW_ENTITY();
-        auto s = e.attachSprite("centipede_boss");
+        auto s = e.attachSprite("centiped_boss");
 
-        e.attachId(paa::Id(135));
+        s->useAnimation("head");
 
         e.attachPosition(paa::Position(x, y));
         e.attachHealth(paa::Health(1));
         s->setPosition(x, y);
         s->setOrigin(s->getGlobalBounds().width / 2, s->getGlobalBounds().height / 2);
-        /*
         e.attachCollision(CollisionFactory::makeEnemyCollision(
             paa::recTo<int>(s->getGlobalBounds()), e.getEntity()));
-            */
 
         Enemy enemy = EnemyFactory::make_enemy<Centipede>(e.getEntity());
         e.insertComponent(std::move(enemy));

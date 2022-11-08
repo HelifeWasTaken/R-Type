@@ -128,6 +128,7 @@ namespace game {
 
         paa::Timer _timer;
         CentipedeBack _lastPosition;
+        CentipedeBack _target;
 
         paa::Sprite s;
 

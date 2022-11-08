@@ -16,6 +16,7 @@ static paa::Controller new_keyboard()
 
 PAA_START_CPP(game_over)
 {
+    exitGameOver = false;
     keyboard = new_keyboard();
     pressAnyKeyTimer.setTarget(1000);
     pressAnyKeyTimer.restart();

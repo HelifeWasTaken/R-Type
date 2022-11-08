@@ -10,10 +10,12 @@
 #include "utils.hpp"
 #include <spdlog/spdlog.h>
 #include <unordered_map>
+#include <string>
 
 struct Game {
     RTYPE_CLIENT service;
     rtype::net::Bool is_host = false;
+    std::string server_address = "";
     rtype::net::ClientID id = 0;
 
     std::array<rtype::net::Bool, RTYPE_PLAYER_COUNT> connected_players
@@ -208,4 +210,5 @@ public:
 #include "Scenes/SceneConnectRoom.hpp"
 #include "Scenes/SceneCreateRoom.hpp"
 #include "Scenes/SceneGame.hpp"
+#include "Scenes/SceneGameOver.hpp"
 #include "Scenes/SceneRoomWait.hpp"

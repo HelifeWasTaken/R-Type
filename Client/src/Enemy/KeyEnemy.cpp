@@ -33,7 +33,7 @@ namespace game {
         posRef.x -= 80 * deltaTime;
         posRef.y += value;
         if (_last_shoot >= _shoot_cycle) {
-            _shooterList[0]->shoot();
+            _shooterList[0]->shoot("basic_bullet");
             _last_shoot = 0.0f;
         }
     }

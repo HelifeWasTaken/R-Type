@@ -44,7 +44,7 @@ namespace game {
             paa::Vector2f pos = paa::Vector2f(to_aim->getPosition());
 
             _shooterList[0]->aim(pos);
-            _shooterList[0]->shoot();
+            _shooterList[0]->shoot("basic_bullet");
             _last_shoot = 0.0f;
         }
     }

@@ -48,7 +48,7 @@ namespace game {
         return _parentEntity.hasComponent<rtype::game::Player>();
     }
 
-    void BasicShooter::shoot()
+    void BasicShooter::shoot(std::string const& bullet_type)
     {
         if (can_shoot_and_restart()) {
             paa::Position pos = _parentEntity.getComponent<paa::Position>();
@@ -56,15 +56,15 @@ namespace game {
 
             pos.x += (sprite->getGlobalBounds().width / 2);
             pos.y += (sprite->getGlobalBounds().height / 2);
-            BulletFactory::make_basic_bullet(
-                _aim_angle, pos, is_attached_to_player());
+            BulletFactory::make_bullet_by_type(bullet_type, pos,
+                        is_attached_to_player(), _aim_angle);
         }
     }
 
     ConeShooter::ConeShooter(const PAA_ENTITY& e, double reloadTime) :
                                             AShooter(e, reloadTime)
     {
-        static const float angles[3] = {2.26893f, 3.14159f, 4.01426f};
+        static const float angles[3] = {2.96706f, 3.14159f, 3.31613f};
 
         _aim_angle = 1;
         for (std::size_t i = 0; i < 3; i++) {
@@ -74,7 +74,7 @@ namespace game {
         }
     }
 
-    void ConeShooter::shoot()
+    void ConeShooter::shoot(std::string const& bullet_type)
     {
         if (can_shoot_and_restart()) {
             paa::Position pos = _parentEntity.getComponent<paa::Position>();
@@ -83,7 +83,7 @@ namespace game {
             pos.x += (sprite->getGlobalBounds().width / 2);
             pos.y += (sprite->getGlobalBounds().height / 2);
             for (auto &shooter : _shooterList)
-                shooter->shoot();
+                shooter->shoot(bullet_type);
         }
     }
 }

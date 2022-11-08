@@ -166,6 +166,8 @@ namespace game {
 
         int _path_index = -1;
 
+        bool _phase_one = true;
+
         float determine_time_to_next_point();
 
     public:

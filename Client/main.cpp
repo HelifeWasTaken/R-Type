@@ -103,7 +103,7 @@ PAA_SCENE(ecs)
 
     PAA_END { }
 
-    PAA_UPDATE { PAA_SET_SCENE(test); }
+    PAA_UPDATE { PAA_SET_SCENE(client_connect); }
 };
 
 PAA_MAIN("../Resources.conf", {

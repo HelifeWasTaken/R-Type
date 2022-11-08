@@ -3,10 +3,11 @@
 #include "PileAA/Math.hpp"
 #include "PileAA/BaseComponents.hpp"
 #include "PileAA/external/nlohmann/json.hpp"
+#include "ClientScenes.hpp"
 
 #include <fstream>
 
-#define RTYPE_CENTIPEDE_FRAME_OFFSET 150
+#define RTYPE_CENTIPEDE_FRAME_OFFSET 100
 #define RTYPE_CENTIPEDE_SPEED 100
 
 namespace rtype {
@@ -114,10 +115,10 @@ namespace game {
     {
         auto& cpos = get_position();
 
+        //cpos.x -= g_game.scroll;
+
         auto target_angle = paa::Math::direction_to_angle(cpos, _target.first);
         const double angle_speed = 0.05;
-
-        spdlog::info("head angle");
 
         if (_timer.isFinished()) {
             _lastPosition = {cpos, _angle};
@@ -141,18 +142,18 @@ namespace game {
             cpos.x += speed * dir.x;
             cpos.y += speed * dir.y;
         }
+
+        //cpos.x += g_game.scroll;
     }
 
-    float Centipede::determine_time_to_next_point()
-    {
-        _path_index = (_path_index + 1) % _path.size();
+    #define RTYPE_CENTIPEDE_PATH_ONE "../assets/maps/RecyclingFactory/centipede_p1.json"
+    #define RTYPE_CENTIPEDE_PATH_TWO "../assets/maps/RecyclingFactory/centipede_p2.json"
 
-        return 1000.f;
-    }
-
-    static void load_centipede_path(std::vector<paa::Vector2f>& path)
+    static void load_centipede_path(std::vector<paa::Vector2f>& path, const std::string& filepath)
     {
-        std::ifstream file("../assets/map/RecyclingFactory/centipede.json");
+        path.clear();
+
+        std::ifstream file(filepath);
         nlohmann::json j;
 
         file >> j;
@@ -160,6 +161,20 @@ namespace game {
         for (auto& p : j["path"]) {
             path.push_back({p[0].get<float>(), p[1].get<float>()});
         }
+    }
+
+    float Centipede::determine_time_to_next_point()
+    {
+        _path_index += 1;
+        if (_path_index == _path.size()) {
+            if (_phase_one) {
+                load_centipede_path(_path, RTYPE_CENTIPEDE_PATH_TWO);
+                _phase_one = false;
+                // TODO: Heal the centipede
+            }
+            _path_index = 0;
+        }
+        return 0.f;
     }
 
     Centipede::Centipede(const PAA_ENTITY& e)
@@ -171,10 +186,7 @@ namespace game {
 
         _timer.setTarget(RTYPE_CENTIPEDE_FRAME_OFFSET);
 
-        _path.push_back({0, 0});
-        _path.push_back({0, 100});
-        _path.push_back({100, 100});
-        _path.push_back({100, 0});
+        load_centipede_path(_path, RTYPE_CENTIPEDE_PATH_ONE);
 
         s = PAA_GET_COMPONENT(e, paa::Sprite);
         PAA_GET_COMPONENT(e, paa::Depth).z = 1;
@@ -193,6 +205,8 @@ namespace game {
 
     bool Centipede::is_alive() const
     {
+        if (_phase_one)
+            return true;
         auto c = get_centipede_body(_body_part);
         bool a = c->centipede_part_functional();
 
@@ -243,9 +257,12 @@ namespace game {
     void Centipede::update()
     {
         auto& cpos = get_position();
+        //cpos.x -= g_game.scroll;
+
         const auto target = _path[_path_index];
         const float angle_speed = 0.1f;
         const float speed = RTYPE_CENTIPEDE_SPEED * PAA_DELTA_TIMER.getDeltaTime();
+
 
         if (_timer.isFinished()) {
             _lastPosition = {{cpos.x, cpos.y}, _angle};
@@ -253,6 +270,8 @@ namespace game {
         }
 
         auto dir = paa::Math::distance(cpos, target);
+
+        spdlog::info("target: {}, {}", target.x, target.y);
 
         dir.x = dir.x < speed && dir.x > -speed ? 0 : dir.x;
         dir.y = dir.y < speed && dir.y > -speed ? 0 : dir.y;
@@ -270,6 +289,8 @@ namespace game {
         if (cpos.x == target.x && cpos.y == target.y) {
             determine_time_to_next_point();
         }
+
+        //cpos.x += g_game.scroll;
     }
 
     PAA_ENTITY EnemyFactory::make_centipede_boss(double const& x, double const& y)

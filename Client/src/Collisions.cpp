@@ -57,8 +57,6 @@ namespace game {
         return make(
             rect,
             [](const paa::CollisionBox& self, const paa::CollisionBox& other) {
-                spdlog::warn(
-                    "CollisionBox: {}, {}", self.get_id(), other.get_id());
             },
             CollisionType::STATIC_WALL, e);
     }

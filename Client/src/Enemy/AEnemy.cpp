@@ -15,7 +15,12 @@ namespace game {
     paa::Position& AEnemy::get_position() const
     {
         return PAA_GET_COMPONENT(_e, paa::Position);
-    };
+    }
+
+    paa::Health& AEnemy::get_health() const
+    {
+        return PAA_GET_COMPONENT(_e, paa::Health);
+    }
 
     void AEnemy::on_collision(const paa::CollisionBox& other)
     {

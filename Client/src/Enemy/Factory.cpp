@@ -20,9 +20,10 @@ namespace game {
             return make_skeleton_boss(x, y);
         else if (enemy_type == "mattis_boss")
             return make_mattis_boss(x, y);
+        else if (enemy_type == "centipede_boss")
+            return make_centipede_boss(x, y);
         else
-            throw std::runtime_error(
-                std::string("Enemy ") + enemy_type + " not found");
+            throw std::runtime_error("Unknown enemy type: " + enemy_type);
     }
 
 }

@@ -18,6 +18,8 @@ namespace game {
             return make_dumby_boy_enemy(x, y);
         else if (enemy_type == "skeleton_boss")
             return make_skeleton_boss(x, y);
+        else if (enemy_type == "mattis_boss")
+            return make_mattis_boss(x, y);
         else
             throw std::runtime_error(
                 std::string("Enemy ") + enemy_type + " not found");

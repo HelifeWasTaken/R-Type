@@ -11,7 +11,8 @@ namespace game {
         KEY_ENEMY,
         MASTODONTE_ENEMY,
         DUMBY_BOY_ENEMY,
-        SKELETON_BOSS
+        SKELETON_BOSS,
+        MATTIS_BOSS
     };
 
     class AEnemy {
@@ -114,6 +115,23 @@ namespace game {
         void update() override;
     };
 
+    class Mattis : public AEnemy {
+    public:
+        Mattis(const PAA_ENTITY& e);
+        ~Mattis() = default;
+
+       void update() override;
+    };
+
+    class MattisMouth : public AEnemy {
+    public:
+        MattisMouth(const PAA_ENTITY& e, const PAA_ENTITY& body);
+        ~MattisMouth() = default;
+
+        void update() override;
+    };
+
+
     using Enemy = std::shared_ptr<AEnemy>;
     class EnemyFactory {
     public:
@@ -139,6 +157,9 @@ namespace game {
         static PAA_ENTITY make_skeleton_boss(
             double const& x, double const& y
         );
+
+        static PAA_ENTITY make_mattis_boss(
+                double const& x, double const& y);
     };
 }
 }

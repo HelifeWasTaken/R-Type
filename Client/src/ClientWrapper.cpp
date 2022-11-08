@@ -1,4 +1,5 @@
 #include "ClientWrapper.hpp"
+#include "ClientScenes.hpp"
 #include <fstream>
 
 namespace rtype {
@@ -9,6 +10,7 @@ namespace game {
         const rtype::net::PortType& udp_port)
     {
         try {
+            g_game.server_address = host;
             this->host = host;
             this->tcp_port = tcp_port;
             this->udp_port = udp_port;
@@ -33,7 +35,10 @@ namespace game {
             nlohmann::json json;
             std::ifstream file(configuration_file);
             file >> json;
-            return run(json["host"], json["tcp_port"], json["udp_port"]);
+            if (g_game.server_address == "") {
+                g_game.server_address = json["host"];
+            }
+            return run(g_game.server_address, json["tcp_port"], json["udp_port"]);
         } catch (const std::exception& e) {
             spdlog::error("ClientWrapper::run: configuration file {} "
                           "could not be opened or is invalid.",
@@ -42,7 +47,10 @@ namespace game {
         }
     }
 
-    bool ClientWrapper::run() { return run(host, tcp_port, udp_port); }
+    bool ClientWrapper::run() {
+        g_game.server_address = host;
+        return run(host, tcp_port, udp_port);
+    }
 
     void ClientWrapper::stop() { client = nullptr; }
 

@@ -121,6 +121,7 @@ PAA_MAIN("../Resources.conf", {
     PAA_REGISTER_SCENE(client_connect);
     PAA_REGISTER_SCENE(connect_room);
     PAA_REGISTER_SCENE(game_scene);
+    PAA_REGISTER_SCENE(game_over);
     PAA_REGISTER_SCENE(waiting_room);
     PAA_SET_SCENE(ecs);
 });

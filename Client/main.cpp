@@ -34,6 +34,7 @@ static void register_enemy_system()
         for (const auto&& [entity, enemy, id] :
             r.view<rtype::game::Enemy, paa::Id>()) {
             enemy->update();
+            /*
             const auto& hp = PAA_GET_COMPONENT(entity, paa::Health);
             const auto& pos = PAA_GET_COMPONENT(entity, paa::Position);
             if (hp.hp <= 0 || pos.x < left_border) {
@@ -43,6 +44,7 @@ static void register_enemy_system()
                     SerializedEnemyDeath(id.id),
                     rtype::net::message_code::UPDATE_ENEMY_DESTROYED));
             }
+            */
             count++;
         }
 
@@ -68,6 +70,20 @@ static void register_player_system()
     });
 }
 
+PAA_SCENE(test)
+{
+    PAA_SCENE_DEFAULT(test);
+
+    PAA_START
+    {
+        rtype::game::EnemyFactory::make_centipede_boss(0, 0);
+    }
+
+    PAA_UPDATE { }
+
+    PAA_END { }
+};
+
 PAA_SCENE(ecs)
 {
 
@@ -88,35 +104,12 @@ PAA_SCENE(ecs)
 
     PAA_END { }
 
-    PAA_UPDATE { PAA_SET_SCENE(client_connect); }
+    PAA_UPDATE { PAA_SET_SCENE(test); }
 };
-
-/*
-#include "PileAA/LuaApi.hpp"
-
-PAA_SCENE(test)
-{
-    sol::state lua;
-
-    PAA_START
-    {
-        paa::LuaApi::load_api(lua);
-        //
-        // Lua example:
-        // addSprite(newEntity(), "textureName").useAnimation("animationName")
-        //
-        lua.script_file("init.lua");
-    }
-
-    PAA_UPDATE
-    {
-        lua.script_file("update.lua");
-    }
-};
-*/
 
 PAA_MAIN("../Resources.conf", {
     PAA_REGISTER_SCENE(ecs);
+    PAA_REGISTER_SCENE(test);
     PAA_REGISTER_SCENE(create_room);
     PAA_REGISTER_SCENE(client_connect);
     PAA_REGISTER_SCENE(connect_room);

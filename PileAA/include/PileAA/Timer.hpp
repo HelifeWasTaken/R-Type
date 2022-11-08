@@ -32,6 +32,19 @@ public:
      * @return Timer&
      */
     Timer& setTarget(const TimeUnit& target);
+
+    /**
+     * @brief Get the percentage of the target reached by the clock
+     * @param capped If true, the percentage will be capped at 1.0
+     * @return double
+     */
+    double getPercentage(bool capped=true) const
+    {
+        double f = getElapsedTime().asMilliseconds() / _targetTime;
+
+        return capped ? std::min(f, 1.0) : f;
+    }
+
 };
 
 class DeltaTimer : public Clock {

@@ -10,7 +10,7 @@ private:
     std::size_t _index = 0;
 
 public:
-    Backtrace(std::size_t max_backlog = 10)
+    Backtrace(std::size_t max_backlog = 1)
         : _max_backlog(max_backlog)
     {
     }

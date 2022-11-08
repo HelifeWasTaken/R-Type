@@ -28,7 +28,7 @@ PAA_START_CPP(game_over)
     gameOverText.setOutlineColor(sf::Color::White);
     gameOverText.setFillColor(sf::Color::Red);
     auto gameOverTextRect = gameOverText.getGlobalBounds();
-    gameOverText.setPosition(RTYPE_HUD_WIDTH - (int)(gameOverTextRect.width/2), 250);
+    gameOverText.setPosition(RTYPE_HUD_WIDTH - (int)(gameOverTextRect.width/2), 200);
 
     retryText.setCharacterSize(10);
     retryText.setString("Press Space to continue");
@@ -37,7 +37,7 @@ PAA_START_CPP(game_over)
     retryText.setOutlineColor(sf::Color::White);
     retryText.setFillColor(sf::Color::Blue);
     auto retryTextRect = retryText.getGlobalBounds();
-    retryText.setPosition(RTYPE_HUD_WIDTH - (int)(retryTextRect.width/2), 400);
+    retryText.setPosition(RTYPE_HUD_WIDTH - (int)(retryTextRect.width/2), 350);
 
     scoreText.setCharacterSize(12);
     scoreText.setString("Score - " +  std::to_string(g_game.score) + " pts");
@@ -46,7 +46,7 @@ PAA_START_CPP(game_over)
     scoreText.setOutlineColor(sf::Color::White);
     scoreText.setFillColor(sf::Color::Blue);
     auto scoreTextRect = scoreText.getGlobalBounds();
-    scoreText.setPosition(RTYPE_HUD_WIDTH - (int)(scoreTextRect.width/2), 350);
+    scoreText.setPosition(RTYPE_HUD_WIDTH - (int)(scoreTextRect.width/2), 300);
 
     g_game.service.stop();
 }

@@ -100,8 +100,8 @@ static void reinitialize_game()
     spdlog::info("Added player {} on the field", g_game.id);
 
     auto player = PAA_GET_COMPONENT(g_game.players_entities[g_game.id], rtype::game::Player);
-    player->set_speed_x(player->get_speed_x() / 3);
-    player->set_speed_y(player->get_speed_y() / 3);
+    player->set_speed_x(150.f / 3.f);
+    player->set_speed_y(100.f / 3.f);
     auto& p = PAA_GET_COMPONENT(g_game.players_entities[g_game.id], paa::Position);
     p.x = -15;
     spdlog::info("Position: ({}, {})", p.x, p.y);
@@ -117,8 +117,8 @@ static void spawn_spaceships_batch(bool doubleShipsAmount, std::vector<hl::silva
         spdlog::info("Added spaceship {} on the field", playerEntity);
 
         auto player = PAA_GET_COMPONENT(playerEntity, rtype::game::Player);
-        player->set_speed_x(player->get_speed_x() / 3 + (rand() % 60) - 60);
-        player->set_speed_y(player->get_speed_y() / 3);
+        player->set_speed_x(150.f / 3.f + (rand() % 60) - 60);
+        player->set_speed_y(100.f / 3.f);
         auto& p = PAA_GET_COMPONENT(playerEntity, paa::Position);
         p.y += (rand() % 300) - 150;
         p.x = -100;

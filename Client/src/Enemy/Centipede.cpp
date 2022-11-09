@@ -176,10 +176,10 @@ namespace game {
 
     void CentipedeBody::heal_self_and_child()
     {
-        s->useAnimation("body");
         if (_depth == 0) {
             return;
         }
+        s->useAnimation("body");
         PAA_GET_COMPONENT(_e, paa::Health).hp = RTYPE_CENTIPEDE_HP;
         auto c = get_centipede_body(_child);
         if (!c) {

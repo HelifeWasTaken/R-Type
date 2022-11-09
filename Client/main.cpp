@@ -21,6 +21,12 @@ static void register_bullet_system()
             }
         }
     });
+
+    PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
+        for (const auto&& [_, b] : r.view<rtype::game::BulletExplosion>()) {
+            b.update();
+        }
+    });
 }
 
 static void register_enemy_system()
@@ -93,7 +99,7 @@ PAA_SCENE(ecs)
 
     PAA_START
     {
-        PAA_REGISTER_COMPONENTS(rtype::game::Enemy, rtype::game::Bullet,
+        PAA_REGISTER_COMPONENTS(rtype::game::Enemy, rtype::game::Bullet, rtype::game::BulletExplosion,
             rtype::game::Player, rtype::game::EffectZones::EffectZoneData);
 
         register_bullet_system();

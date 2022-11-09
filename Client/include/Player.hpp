@@ -125,8 +125,8 @@ namespace game {
         static constexpr int MAX_HEALTH = 3;
         static constexpr int SYNC_RATE = 250;
         static constexpr int Y_FRAMES = 4;
-        static constexpr int SPEED_X = 150;
-        static constexpr int SPEED_Y = 100;
+        static constexpr int SPEED_X = 200;
+        static constexpr int SPEED_Y = 150;
         static constexpr int FRAME_RATE = 50;
         static constexpr int HURT_TIME = 800;
 

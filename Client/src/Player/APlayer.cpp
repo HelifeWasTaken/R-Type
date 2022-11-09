@@ -224,7 +224,7 @@ namespace game {
 
         player->set_clamp_position(checkScreenBounds);
 
-        player->add_shooter(make_shooter<BasicShooter>(entity.getEntity(), 0));
+        player->add_shooter(make_shooter<BasicShooter>(entity.getEntity(), 100));
 
         entity.attachCollision(CollisionFactory::makePlayerCollision(
             paa::recTo<int>(sprite->getGlobalBounds()), entity.getId()));

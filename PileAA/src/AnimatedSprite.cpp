@@ -53,10 +53,14 @@ AnimatedSprite& AnimatedSprite::useAnimation(const std::string& animationName,
     return *this;
 }
 
+bool AnimatedSprite::isLastFrame() const
+{
+    return _animationIndex == _currentAnimation->rects.size() - 1;
+}
+
 void AnimatedSprite::update()
 {
-    if (!_loop && _animationIndex ==
-        _currentAnimation->rects.size() - 1) {
+    if (!_loop && isLastFrame()) {
         return;
     }
     if (_timer.isFinished()) {

@@ -18,12 +18,12 @@ namespace game {
         static inline constexpr float OFFSET_BOT_BOOST_Y = 70;
         static inline constexpr float OFFSET_BOOST_X     = 15;
 
-        static inline constexpr float SHOOTER_MAX_MOVEMENT = 20;
+        static inline constexpr float SHOOTER_MAX_MOVEMENT = 40;
 
         static inline constexpr float UP_SHOOTER_MIN_Y = 30;
         float  dir_y_top                               = UP_SHOOTER_MIN_Y;
 
-        static inline constexpr float DOWN_SHOOTER_MIN_Y = 192;
+        static inline constexpr float DOWN_SHOOTER_MIN_Y = 140;
         float dir_y_bot = 0.0f;
         float speed = 20.0f;
 
@@ -57,8 +57,8 @@ namespace game {
             new_position_direction_shooter(dir_y_top, UP_SHOOTER_MIN_Y);
             new_position_direction_shooter(dir_y_bot, DOWN_SHOOTER_MIN_Y);
 
-            _up_shooter_comp = make_shooter<BasicShooter>(*_up_shooter, 200.f);
-            _down_shooter_comp = make_shooter<BasicShooter>(*_down_shooter, 200.f);
+            _up_shooter_comp = make_shooter<BasicShooter>(*_up_shooter, 900.f);
+            _down_shooter_comp = make_shooter<BasicShooter>(*_down_shooter, 900.f);
         }
 
         void new_position_direction_shooter(float& dir_y, const float& min_y)
@@ -133,6 +133,16 @@ namespace game {
             }
         });
     }
+
+    // void RobotBossEye::on_collision(const paa::CollisionBox& other)
+    // {
+    //    AEntity::on_collision(other);
+    //    paa::Health& health = PAA_GET_COMPONENT(self, paa::Health);
+
+    //    if (health.hp <= 0) {
+    //         PAA_ECS.kill_entity(self);
+    //    }
+    // }
 
     RobotBossEye::RobotBossEye(const PAA_ENTITY& e)
         : AEnemy(e, ROBOT_BOSS_EYE)

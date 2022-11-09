@@ -155,6 +155,8 @@ namespace game {
         CentipedeBack get_back();
 
         void update() override;
+
+        void heal_self_and_child();
     };
 
     class Centipede : public AEnemy {

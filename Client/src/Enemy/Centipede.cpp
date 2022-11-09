@@ -9,6 +9,7 @@
 
 #define RTYPE_CENTIPEDE_FRAME_OFFSET 100
 #define RTYPE_CENTIPEDE_SPEED 100
+#define RTYPE_CENTIPEDE_HP 10
 
 namespace rtype {
 namespace game {
@@ -25,12 +26,20 @@ namespace game {
 
     static Centipede *get_centipede(PAA_ENTITY e)
     {
-        return get_centipede(PAA_GET_COMPONENT(e, Enemy));
+        try {
+            return get_centipede(PAA_GET_COMPONENT(e, Enemy));
+        } catch (...) {
+            return nullptr;
+        }
     }
 
     static CentipedeBody *get_centipede_body(PAA_ENTITY e)
     {
-        return get_centipede_body(PAA_GET_COMPONENT(e, Enemy));
+        try {
+            return get_centipede_body(PAA_GET_COMPONENT(e, Enemy));
+         } catch (...) {
+             return nullptr;
+         }
     }
 
     PAA_ENTITY CentipedeBody::build_centipede(const PAA_ENTITY& parent, int depth)
@@ -43,7 +52,7 @@ namespace game {
         auto ppos = dp.getComponent<paa::Position>();
 
         e.attachPosition(ppos);
-        e.attachHealth(paa::Health(10));
+        e.attachHealth(paa::Health(RTYPE_CENTIPEDE_HP));
         s->setPosition(ppos.x, ppos.y);
         s->setOrigin(s->getGlobalBounds().width / 2, s->getGlobalBounds().height / 2);
         e.attachCollision(CollisionFactory::makeEnemyCollision(
@@ -92,7 +101,10 @@ namespace game {
     {
         _alive = false;
         if (_depth != 0) {
-            get_centipede_body(_child)->kill();
+            auto c = get_centipede_body(_child);
+            if (c) {
+                c->kill();
+            }
         }
     }
 
@@ -102,8 +114,14 @@ namespace game {
     {
         if (_depth == 0)
             return false;
-        return get_health().hp > 1 ||
-            get_centipede_body(_child)->centipede_part_functional();
+        auto c = get_centipede_body(_child);
+        if (!c) {
+            _alive = false;
+            return false;
+        }
+        if (get_health().hp > 1)
+            return true;
+        return c->centipede_part_functional();
     }
 
     CentipedeBack CentipedeBody::get_back()
@@ -126,9 +144,19 @@ namespace game {
             _timer.setTarget(RTYPE_CENTIPEDE_FRAME_OFFSET);
 
             if (_depth != RTYPE_CENTIPEDE_BODY_COUNT) {
-                _target = get_centipede_body(_parent)->get_back();
+                auto c = get_centipede_body(_parent);
+                if (!c) {
+                    _alive = false;
+                    return;
+                }
+                _target = c->get_back();
             } else {
-                _target = get_centipede(_parent)->get_back();
+                auto c = get_centipede(_parent);
+                if (!c) {
+                    _alive = false;
+                    return;
+                }
+                _target = c->get_back();
             }
             _angle = _target.second;
             s->setRotation(_angle + 180);
@@ -144,6 +172,21 @@ namespace game {
         }
 
         //cpos.x += g_game.scroll;
+    }
+
+    void CentipedeBody::heal_self_and_child()
+    {
+        s->useAnimation("body");
+        if (_depth == 0) {
+            return;
+        }
+        PAA_GET_COMPONENT(_e, paa::Health).hp = RTYPE_CENTIPEDE_HP;
+        auto c = get_centipede_body(_child);
+        if (!c) {
+            _alive = false;
+            return;
+        }
+        c->heal_self_and_child();
     }
 
     #define RTYPE_CENTIPEDE_PATH_ONE "../assets/maps/RecyclingFactory/centipede_p1.json"
@@ -170,7 +213,14 @@ namespace game {
             if (_phase_one) {
                 load_centipede_path(_path, RTYPE_CENTIPEDE_PATH_TWO);
                 _phase_one = false;
-                // TODO: Heal the centipede
+                auto c = get_centipede_body(_body_part);
+                spdlog::critical("Healing!");
+                if (!c) {
+                    spdlog::critical("Healing aled!");
+                    return 0.f;
+                }
+                c->heal_self_and_child();
+                spdlog::critical("Healing healed!");
             }
             _path_index = 0;
         }
@@ -208,6 +258,11 @@ namespace game {
         if (_phase_one)
             return true;
         auto c = get_centipede_body(_body_part);
+
+        if (!c) {
+            return false;
+        }
+
         bool a = c->centipede_part_functional();
 
         if (!a) {
@@ -271,7 +326,7 @@ namespace game {
 
         auto dir = paa::Math::distance(cpos, target);
 
-        spdlog::info("target: {}, {}", target.x, target.y);
+        //spdlog::info("target: {}, {}", target.x, target.y);
 
         dir.x = dir.x < speed && dir.x > -speed ? 0 : dir.x;
         dir.y = dir.y < speed && dir.y > -speed ? 0 : dir.y;

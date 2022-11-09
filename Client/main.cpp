@@ -35,6 +35,9 @@ static void register_enemy_system()
             const auto& hp = PAA_GET_COMPONENT(entity, paa::Health);
             const auto& pos = PAA_GET_COMPONENT(entity, paa::Position);
             if (enemy->is_alive() == false || hp.hp <= 0 || pos.x < left_border) {
+                if (pos.x > left_border) {
+                    g_game.score += 10;
+                }
                 r.kill_entity(entity);
                 if (id.id != -1) {
                     g_game.enemies_to_entities.erase(id.id);

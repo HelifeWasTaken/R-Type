@@ -134,7 +134,7 @@ struct Game {
         return transition.phase_two();
     }
 
-    unsigned int score = 0;
+    int score = 0;
 
     int old_scroll = 0;
     int scroll = 0;

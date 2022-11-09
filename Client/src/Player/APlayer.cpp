@@ -171,6 +171,7 @@ namespace game {
                 paa::Health& healthRef
                     = PAA_GET_COMPONENT(_entity, paa::Health);
                 healthRef.hp -= 1;
+                g_game.score -= 100;
             }
             _hurtTimer.restart();
             _is_hurt = true;

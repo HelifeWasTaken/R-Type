@@ -26,7 +26,6 @@ namespace game {
         {
             auto& eye_pos = _eye->getComponent<paa::Position>();
             auto& self_pos = _self->getComponent<paa::Position>();
-            auto& top_pos = _up_booster->getComponent<paa::Position>();
 
             self_pos.x = eye_pos.x;
             self_pos.y = eye_pos.y - 100 / 2;

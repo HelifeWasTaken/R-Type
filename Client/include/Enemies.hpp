@@ -175,6 +175,12 @@ namespace game {
 
         bool _phase_one = true;
 
+        static inline bool _on_death_triggered;
+
+        static void on_death();
+
+        static void attempt_trigger_death_event();
+
         float determine_time_to_next_point();
 
     public:

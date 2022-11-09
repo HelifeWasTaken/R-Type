@@ -7,8 +7,6 @@
 
 using namespace rtype::net;
 
-static const int SCROLL_SPEED = 1;
-
 static paa::Controller new_keyboard()
 {
     paa::ControllerKeyboard* keyboard = new paa::ControllerKeyboard();
@@ -47,8 +45,8 @@ static void scroll_map(rtype::game::Map& map)
 {
     if (g_game.in_transition() == false && g_game.lock_scroll == false) {
         g_game.old_scroll = g_game.scroll;
-        g_game.scroll += SCROLL_SPEED;
-        g_game.game_view.move(SCROLL_SPEED, 0);
+        g_game.scroll += g_game.scroll_speed;
+        g_game.game_view.move(g_game.scroll_speed, 0);
         g_game.use_game_view();
     }
     map.update();
@@ -60,6 +58,7 @@ static void reinitialize_game()
 
     g_game.scroll = 0;
     g_game.old_scroll = 0;
+    g_game.scroll_speed = DEFAULT_SCROLL_SPEED;
     g_game.enemies_to_entities.clear();
 
     g_game.reset_game_view();
@@ -160,8 +159,7 @@ static void update_sync_scroll(shared_message_t& msg)
     auto current_scroll = g_game.scroll;
 
     g_game.scroll = s.getElement();
-    g_game.old_scroll = g_game.old_scroll >= SCROLL_SPEED ?
-                        (g_game.scroll - SCROLL_SPEED) : 0;
+    g_game.old_scroll = g_game.old_scroll >= g_game.scroll_speed ? (g_game.scroll - g_game.scroll_speed) : 0;
 
     g_game.reset_game_view();
     g_game.game_view.move(g_game.scroll, 0);

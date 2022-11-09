@@ -6,6 +6,7 @@
 #include "ClientScenes.hpp"
 
 #include <fstream>
+#include <PileAA/MusicPlayer.hpp>
 
 #define RTYPE_CENTIPEDE_FRAME_OFFSET 100
 #define RTYPE_CENTIPEDE_SPEED 100
@@ -230,10 +231,12 @@ namespace game {
     Centipede::Centipede(const PAA_ENTITY& e)
         : AEnemy(e, EnemyType::CENTIPEDE_BOSS)
         , _lastPosition({{0, 0}, 0})
+        , _phase_one(true)
     {
 
         paa::DynamicEntity(e).attachId(paa::Id(-1));
 
+        _on_death_triggered = false;
         _timer.setTarget(RTYPE_CENTIPEDE_FRAME_OFFSET);
 
         load_centipede_path(_path, RTYPE_CENTIPEDE_PATH_ONE);
@@ -253,6 +256,17 @@ namespace game {
         (void)other;
     }
 
+    void Centipede::on_death() {
+        paa::GMusicPlayer::play("../assets/a_combat_is_over.ogg", false);
+    }
+
+    void Centipede::attempt_trigger_death_event() {
+        if (!_on_death_triggered) {
+            on_death();
+            _on_death_triggered = true;
+        }
+    }
+
     bool Centipede::is_alive() const
     {
         if (_phase_one)
@@ -266,6 +280,7 @@ namespace game {
         bool a = c->centipede_part_functional();
 
         if (!a) {
+            attempt_trigger_death_event();
             c->kill();
             return false;
         }

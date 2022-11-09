@@ -12,6 +12,8 @@
 #include <unordered_map>
 #include <string>
 
+#define DEFAULT_SCROLL_SPEED 1
+
 struct Game {
     RTYPE_CLIENT service;
     rtype::net::Bool is_host = false;
@@ -137,6 +139,7 @@ struct Game {
     int score = 0;
 
     int old_scroll = 0;
+    int scroll_speed = DEFAULT_SCROLL_SPEED;
     int scroll = 0;
     bool lock_scroll = false;
 };

@@ -56,6 +56,7 @@ static void reinitialize_game()
 {
     PAA_ECS.clear();
 
+    g_game.score = 0;
     g_game.scroll = 0;
     g_game.old_scroll = 0;
     g_game.scroll_speed = DEFAULT_SCROLL_SPEED;

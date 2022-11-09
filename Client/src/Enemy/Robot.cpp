@@ -20,18 +20,48 @@ namespace game {
         {
             _self->attachSprite("robot_boss")->useAnimation("boss");
             _self->attachPosition(_eye->getComponent<paa::Position>());
+
+            _up_booster = paa::make_dynamic_entity(PAA_NEW_ENTITY());
+            _up_booster->attachSprite("robot_boss")->useAnimation("up_booster");
+            _up_booster->attachPosition(_eye->getComponent<paa::Position>());
+
+            _down_booster = paa::make_dynamic_entity(PAA_NEW_ENTITY());
+            _down_booster->attachSprite("robot_boss")->useAnimation("down_booster");
+            _down_booster->attachPosition(_eye->getComponent<paa::Position>());
+
+            _up_shooter = paa::make_dynamic_entity(PAA_NEW_ENTITY());
+            _up_shooter->attachSprite("robot_boss")->useAnimation("weapon");
+            _up_shooter->attachPosition(_eye->getComponent<paa::Position>());
+
+            _down_shooter = paa::make_dynamic_entity(PAA_NEW_ENTITY());
+            _down_shooter->attachSprite("robot_boss")->useAnimation("weapon");
+            _down_shooter->attachPosition(_eye->getComponent<paa::Position>());
         }
 
         void update()
         {
             auto& eye_pos = _eye->getComponent<paa::Position>();
             auto& self_pos = _self->getComponent<paa::Position>();
+            auto& top_pos = _up_booster->getComponent<paa::Position>();
+            auto& bot_pos = _down_booster->getComponent<paa::Position>();
+            auto& top_shooter_pos = _up_shooter->getComponent<paa::Position>();
+            auto& bot_shooter_pos = _down_shooter->getComponent<paa::Position>();
 
             self_pos.x = eye_pos.x;
             self_pos.y = eye_pos.y - 100 / 2;
-        }
 
-        HL_AUTO_COMPLETE_CANONICAL_FORM(RobotBody);
+            top_pos.x = eye_pos.x;
+            top_pos.y = eye_pos.y - 90;
+
+            bot_pos.x = eye_pos.x;
+            bot_pos.y = eye_pos.y + 70;
+
+            top_shooter_pos.x = eye_pos.x - 15;
+            top_shooter_pos.y = eye_pos.y - 50;
+
+            bot_shooter_pos.x = eye_pos.x - 15;
+            bot_shooter_pos.y = eye_pos.y + 60;
+        }
     };
 
     void RobotBossEye::register_robot_components()

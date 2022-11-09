@@ -90,7 +90,7 @@ PAA_SCENE(boosted)
     PAA_START
     {
         g_game.use_game_view();
-        rtype::game::EnemyFactory::make_robot_boss(170, 190);
+        rtype::game::EnemyFactory::make_robot_boss(170, 170);
     }
 
     PAA_UPDATE {}

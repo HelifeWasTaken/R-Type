@@ -230,7 +230,7 @@ static void handle_transition(unsigned int& map_index, std::unique_ptr<rtype::ga
                 reinitialize_game();
                 map = load_next_map(map_index);
                 if (map == nullptr) {
-                    // TODO: Handle Tada you finished
+                    PAA_SET_SCENE(game_win);
                 }
             }
         }

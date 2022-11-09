@@ -42,8 +42,7 @@ namespace game {
             const std::string type = value.substr(0, value.find(","));
             const std::string scroll_index = value.substr(value.find(",") + 1);
             zones.addEffect(std::stoi(scroll_index), type, name);
-            spdlog::info(
-                "Effect zone: ({}) ({}) ({})", type, name, scroll_index);
+            spdlog::info("Effect zone: ({}) ({}) ({})", type, name, scroll_index);
         }
     }
 
@@ -124,6 +123,45 @@ namespace game {
         wave.activateWave(name);
     }
 
+    static void activate_play_music_event(EffectZones::EffectZoneData& effect)
+    {
+        // "name|{"loop": true, "offset": 42, "length": 69}"
+
+        bool loop = true;
+        double offset = -1;
+        double length = -1;
+
+        auto index = effect.name.find('|');
+        if (index == std::string::npos) {
+            paa::GMusicPlayer::play(effect.name);
+            return;
+        }
+        std::string name = effect.name.substr(0, index);
+        std::string json = effect.name.substr(index + 1);
+
+        try {
+            auto j = nlohmann::json::parse(json);
+            try {
+                loop = j.at("loop").get<bool>();
+            } catch (...) {}
+            try {
+                offset = j.at("offset").get<double>();
+            } catch (...) {}
+            try {
+                length = j.at("length").get<double>();
+            } catch (...) {}
+        } catch (...) {
+        }
+        if (offset != -1 || length != -1) {
+            if (offset < 0 || length < 0) {
+                spdlog::warn("Invalid offset/length for music {} ignoring length/offset", name);
+            } else {
+                paa::GMusicPlayer::setLoopPoints(offset, length);
+            }
+        }
+        paa::GMusicPlayer::play(name, loop);
+    }
+
     static void lock_scroll_event()
     {
         g_game.lock_scroll = true;
@@ -145,7 +183,7 @@ namespace game {
                     g_game.launch_transition();
                     _changes = true;
                 } else if (effect->type == "launch_music") {
-                    paa::GMusicPlayer::play(effect->name);
+                    activate_play_music_event(*effect);
                 }
                 to_delete.push_back(i - to_delete.size());
                 spdlog::info("effect {} of type {} activated", effect->name,

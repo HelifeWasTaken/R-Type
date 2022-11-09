@@ -643,9 +643,9 @@
                  "value":"end,4500"
                 }, 
                 {
-                 "name":"music",
+                 "name":"faster_player_after_wave",
                  "type":"string",
-                 "value":"scroll_speed:2,300"
+                 "value":"scroll_speed=2,300"
                 }, 
                 {
                  "name":"wave1",

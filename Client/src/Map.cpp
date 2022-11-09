@@ -72,7 +72,7 @@ namespace game {
         std::unique_ptr<Wave> wave(new Wave);
 
         for (const auto& j : layer["objects"]) {
-            try {
+                try {
                 wave->addWaveData(j.at("type"), j["id"], j["x"], j["y"]);
             } catch (...) {
                 wave->addWaveData(j.at("class"), j["id"], j["x"], j["y"]);
@@ -86,6 +86,8 @@ namespace game {
         const std::string old_path = std::filesystem::current_path().string();
         const std::string path = std::filesystem::path(filepath).parent_path().string();
         const std::string file = std::filesystem::path(filepath).filename().string();
+
+        g_game.scroll_speed = DEFAULT_SCROLL_SPEED;
 
         std::filesystem::current_path(path);
 
@@ -184,7 +186,9 @@ namespace game {
                     _changes = true;
                 } else if (effect->type == "launch_music") {
                     activate_play_music_event(*effect);
-                }
+                } else if (effect->type.starts_with("scroll_speed=")) {
+                    g_game.scroll_speed = std::atoi(effect->type.c_str() + 13);
+                } 
                 to_delete.push_back(i - to_delete.size());
                 spdlog::info("effect {} of type {} activated", effect->name,
                     effect->type);

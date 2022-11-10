@@ -57,5 +57,6 @@ jobs:
           - name: Build
             run: |
               cd build
+              ((Get-Content -path .\CMakeLists.txt -Raw) -replace '/MP8','/MP1') | Set-Content -Path .\CMakeLists.txt
               cmake ..
               cmake --build .

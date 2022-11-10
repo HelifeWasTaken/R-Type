@@ -1,0 +1,65 @@
+name: Build
+
+on:
+    release:
+jobs:
+    build-linux:
+        runs-on: ubuntu-20.04
+        steps:
+        - uses: actions/checkout@v2
+        - name: Install dependencies
+          run: |
+            sudo apt-get update
+            sudo apt-get install libpthread-stubs0-dev
+            sudo apt-get install libgl1-mesa-dev
+            sudo apt-get install libx11-dev
+            sudo apt-get install libxrandr-dev
+            sudo apt-get install libxcursor-dev
+            sudo apt-get install libxinerama-dev 
+            sudo apt-get install libxi-dev
+            sudo apt-get install libfreetype6-dev
+            sudo apt-get install libglew1.5-dev
+            sudo apt-get install libjpeg8-dev
+            sudo apt-get install libsndfile1-dev
+            sudo apt-get install libopenal-dev
+            sudo apt-get install libudev-dev
+        - name: Build
+          run: "mkdir build -p"
+        - name: Cache deps
+          id: build-deps
+          uses: actions/cache@v3
+          with:
+            path: build/_deps
+            key: ${{ runner.os }}-deps-${{ hashFiles('**/CMakeLists.txt') }}
+        - name: Build
+          shell: bash
+          run: "./build.sh"
+    build-windows:
+        runs-on: windows-latest
+        steps:
+          - uses: actions/checkout@v2
+          - name: Build
+            run: |
+              if (Test-Path build) {}
+              else {
+                    New-Item build -ItemType Directory
+              }
+          - name: Cache deps
+            id: build-deps
+            uses: actions/cache@v3
+            with:
+              path: build/_deps
+              key: ${{ runner.os }}-deps-${{ hashFiles('**/CMakeLists.txt') }}
+          - name: Build
+            run: |
+              .\build.bat
+          - name: generate artifact
+            uses: actions/upload-artifact@v2
+            with: 
+              name: r-type_win32.zip
+              path: .
+          - name: generate artifact
+            uses: actions/upload-artifact@v2
+            with: 
+              name: r-type_setup.exe
+              path: .

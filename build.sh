@@ -14,7 +14,7 @@ if [[ $1 != "--fast" ]] && [[ $2 != "--fast" ]]; then
 fi
 
 if [[ $1 == "--release" ]]; then
-    cmake --build . -j 8 --config Release
+    cmake --build . --config Release
 else
     cmake --build . -j 8 --config Debug
 fi

@@ -58,6 +58,7 @@ namespace game {
             pos.y += (sprite->getGlobalBounds().height / 2);
             BulletFactory::make_bullet_by_type(bullet_type, pos,
                         is_attached_to_player(), _aim_angle);
+            _sound.play();
         }
     }
 

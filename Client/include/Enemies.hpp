@@ -31,6 +31,7 @@ namespace game {
         virtual ~AEnemy() = default;
 
         virtual bool is_alive() const;
+        virtual bool dies_when_leave_screen() const;
 
         EnemyType get_type() const;
         paa::Position& get_position() const;
@@ -157,6 +158,8 @@ namespace game {
         CentipedeBack get_back();
 
         void update() override;
+
+        void heal_self_and_child();
     };
 
     class Centipede : public AEnemy {
@@ -174,6 +177,12 @@ namespace game {
         int _path_index = -1;
 
         bool _phase_one = true;
+
+        static inline bool _on_death_triggered;
+
+        static void on_death();
+
+        static void attempt_trigger_death_event();
 
         float determine_time_to_next_point();
 

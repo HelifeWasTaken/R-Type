@@ -23,7 +23,7 @@ namespace game {
         static inline constexpr float UP_SHOOTER_MIN_Y = 30;
         float  dir_y_top                               = UP_SHOOTER_MIN_Y;
 
-        static inline constexpr float DOWN_SHOOTER_MIN_Y = 140;
+        static inline constexpr float DOWN_SHOOTER_MIN_Y = 120;
         float dir_y_bot = 0.0f;
         float speed = 50.0f;
 
@@ -37,7 +37,7 @@ namespace game {
             , _eye(paa::make_dynamic_entity(eye))
         {
             static const char *const animations[] = {
-                "up_booster", "down_booster", "weapon", "shooter"
+                "up_booster", "down_booster", "weapon", "weapon"
             };
             std::reference_wrapper<paa::SDynamicEntity> entities_ref[] = {
                 _up_booster, _down_booster, _up_shooter, _down_shooter
@@ -50,6 +50,10 @@ namespace game {
                 entities_ref[i].get() = paa::make_dynamic_entity(PAA_NEW_ENTITY());
                 entities_ref[i].get()->attachSprite("robot_boss")->useAnimation(animations[i]);
                 entities_ref[i].get()->attachPosition(_eye->getComponent<paa::Position>());
+
+                entities_ref[i].get()->attachCollision(CollisionFactory::makeT(
+                    paa::recTo<int>(entities_ref[i].get()->getComponent<paa::Sprite>()->getGlobalBounds()),
+                    entities_ref[i].get()->getEntity()));
             }
 
             new_position_direction_shooter(dir_y_top, UP_SHOOTER_MIN_Y);

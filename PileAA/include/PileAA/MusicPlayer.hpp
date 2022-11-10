@@ -36,6 +36,12 @@ namespace paa
         {
             _music.setLoop(vloop);
         }
+
+        void setLoopPoints(double start_sec, double length_sec)
+        {
+            sf::Music::TimeSpan t(sf::seconds(start_sec), sf::seconds(length_sec));
+            _music.setLoopPoints(t);
+        }
     };
 
     class GMusicPlayer
@@ -81,6 +87,11 @@ namespace paa
         static void setLoop(bool loop)
         {
             get().loop(loop);
+        }
+
+        static void setLoopPoints(double start_sec, double length_sec)
+        {
+            get().setLoopPoints(start_sec, length_sec);
         }
     };
 }

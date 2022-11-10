@@ -21,6 +21,12 @@ static void register_bullet_system()
             }
         }
     });
+
+    PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
+        for (const auto&& [_, b] : r.view<rtype::game::BulletExplosion>()) {
+            b.update();
+        }
+    });
 }
 
 static void register_enemy_system()
@@ -34,7 +40,10 @@ static void register_enemy_system()
             enemy->update();
             const auto& hp = PAA_GET_COMPONENT(entity, paa::Health);
             const auto& pos = PAA_GET_COMPONENT(entity, paa::Position);
-            if (enemy->is_alive() == false || hp.hp <= 0 || pos.x < left_border) {
+            if (enemy->is_alive() == false || hp.hp <= 0 || enemy->dies_when_leave_screen() && pos.x < left_border) {
+                if (pos.x > left_border) {
+                    g_game.score += 10;
+                }
                 r.kill_entity(entity);
                 if (id.id != -1) {
                     g_game.enemies_to_entities.erase(id.id);
@@ -68,46 +77,17 @@ static void register_player_system()
     });
 }
 
-PAA_SCENE(test)
-{
-    PAA_SCENE_DEFAULT(test);
-
-    PAA_START
-    {
-        g_game.use_game_view();
-        rtype::game::EnemyFactory::make_centipede_boss(0, 0);
-    }
-
-    PAA_UPDATE { }
-
-    PAA_END { }
-};
-
-PAA_SCENE(boosted)
-{
-    PAA_SCENE_DEFAULT(boosted);
-
-    PAA_START
-    {
-        g_game.use_game_view();
-        rtype::game::EnemyFactory::make_robot_boss(170, 170);
-    }
-
-    PAA_UPDATE {}
-    PAA_END {}
-};
-
 PAA_MAIN("../Resources.conf", {
-    PAA_REGISTER_SCENE(test);
-    PAA_REGISTER_SCENE(boosted);
     PAA_REGISTER_SCENE(create_room);
     PAA_REGISTER_SCENE(client_connect);
     PAA_REGISTER_SCENE(connect_room);
     PAA_REGISTER_SCENE(game_scene);
     PAA_REGISTER_SCENE(game_over);
+    PAA_REGISTER_SCENE(game_win);
     PAA_REGISTER_SCENE(waiting_room);
 
     PAA_REGISTER_COMPONENTS(rtype::game::Enemy, rtype::game::Bullet,
+        rtype::game::BulletExplosion,
         rtype::game::Player, rtype::game::EffectZones::EffectZoneData);
     rtype::game::RobotBossEye::register_robot_components();
     register_bullet_system();

@@ -30,10 +30,15 @@ namespace game {
         const bool should_kill
             = (other_type == CollisionType::PLAYER && !_from_player)
             | (other_type == CollisionType::ENEMY && _from_player)
-            | (other_type == CollisionType::STATIC_WALL);
+            | (other_type == CollisionType::STATIC_WALL)
+            | (other_type == CollisionType::TRANSPARENT_WALL && _from_player);
 
         if (should_kill) {
             PAA_ECS.kill_entity(_e);
+            paa::DynamicEntity e = PAA_NEW_ENTITY();
+            e.emplaceComponent<BulletExplosion>(e);
+            e.attachPosition(get_position());
+            spdlog::info("Bullet explosion!");
         }
     }
 

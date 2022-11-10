@@ -116,6 +116,29 @@ namespace game {
             {"missile_bullet", &make_missile_bullet}
         };
     };
+
+    class BulletExplosion {
+    private:
+        paa::Sprite _s;
+        PAA_ENTITY _e;
+
+    public:
+        BulletExplosion(const PAA_ENTITY& e)
+            : _e(e)
+            , _s(paa::DynamicEntity(e).attachSprite("basic_bullet"))
+        {
+            _s->useAnimation("explosion");
+        }
+
+        ~BulletExplosion() = default;
+
+        void update()
+        {
+            if (_s->isLastFrame()) {
+                PAA_ECS.kill_entity(_e);
+            }
+        }
+    };
 }
 }
 

@@ -14,6 +14,8 @@ jobs:
         - name: Install dependencies
           run: |
             sudo apt-get update
+            sudo apt-get install gcc-10 g++-10
+            sudo apt-get install libstdc++-10-dev
             sudo apt-get install libpthread-stubs0-dev
             sudo apt-get install libgl1-mesa-dev
             sudo apt-get install libx11-dev
@@ -56,6 +58,7 @@ jobs:
               key: ${{ runner.os }}-deps-${{ hashFiles('**/CMakeLists.txt') }}
           - name: Build
             run: |
+              ((Get-Content -path .\CMakeLists.txt -Raw) -replace '/MP8','/MP1') | Set-Content -Path .\CMakeLists.txt
               cd build
               cmake ..
               cmake --build .

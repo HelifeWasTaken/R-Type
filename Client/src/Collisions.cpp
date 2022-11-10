@@ -61,6 +61,16 @@ namespace game {
             CollisionType::STATIC_WALL, e);
     }
 
+    paa::SCollisionBox CollisionFactory::makeTransparentWallCollision(
+        const paa::IntRect& rect, const PAA_ENTITY& e)
+    {
+        return make(
+            rect,
+            [](const paa::CollisionBox& self, const paa::CollisionBox& other) {
+            },
+            CollisionType::TRANSPARENT_WALL, e);
+    }
+
     paa::SCollisionBox CollisionFactory::makePowerUpCollision(
         const paa::IntRect& rect, const PAA_ENTITY& e)
     {

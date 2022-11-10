@@ -47,6 +47,12 @@ public:
         const std::string& animationName, const Animation& animation);
 
     /**
+     * @brief Tells you if you are on the last frame of the animation
+     * @return true if you are on the last frame
+     */
+    bool isLastFrame() const;
+
+    /**
      * @brief Set the current animation
      * @param animationName Animation name
      * @return *this

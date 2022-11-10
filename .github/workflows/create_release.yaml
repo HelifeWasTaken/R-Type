@@ -52,6 +52,7 @@ jobs:
               key: ${{ runner.os }}-deps-${{ hashFiles('**/CMakeLists.txt') }}
           - name: Build
             run: |
+              ((Get-Content -path .\CMakeLists.txt -Raw) -replace '/MP8','/MP1') | Set-Content -Path .\CMakeLists.txt
               .\build.bat /release
           - name: generate artifact
             uses: actions/upload-artifact@v2

@@ -29,6 +29,7 @@ namespace game {
         virtual ~AEnemy() = default;
 
         virtual bool is_alive() const;
+        virtual bool dies_when_leave_screen() const;
 
         EnemyType get_type() const;
         paa::Position& get_position() const;

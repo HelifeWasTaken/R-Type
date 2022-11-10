@@ -40,7 +40,7 @@ static void register_enemy_system()
             enemy->update();
             const auto& hp = PAA_GET_COMPONENT(entity, paa::Health);
             const auto& pos = PAA_GET_COMPONENT(entity, paa::Position);
-            if (enemy->is_alive() == false || hp.hp <= 0 || pos.x < left_border) {
+            if (enemy->is_alive() == false || hp.hp <= 0 || enemy->dies_when_leave_screen() && pos.x < left_border) {
                 if (pos.x > left_border) {
                     g_game.score += 10;
                 }

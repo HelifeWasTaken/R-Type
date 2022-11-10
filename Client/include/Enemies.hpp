@@ -203,13 +203,23 @@ namespace game {
     private:
         paa::DynamicEntity _body;
 
+        static constexpr float VULNERABLE_TIME = 2000.f;
+        static constexpr float INVULNERABLE_TIME = 500.f;
+
+        paa::Timer _vulnerable_timer;
+        enum class State {
+            VULNERABLE,
+            TRANSITION,
+            INVULNERABLE
+        } _state = State::VULNERABLE;
+
     public:
         static void register_robot_components();
 
         RobotBossEye(const PAA_ENTITY& e);
         ~RobotBossEye() = default;
 
-        void on_collision(const PAA_ENTITY& self, const paa::CollisionBox& other);
+        void on_collision(const paa::CollisionBox& other) override;
         void update() override;
     };
 

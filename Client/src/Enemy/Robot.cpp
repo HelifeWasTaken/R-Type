@@ -18,15 +18,16 @@ namespace game {
         static inline constexpr float OFFSET_BOT_BOOST_Y = 70;
         static inline constexpr float OFFSET_BOOST_X     = 15;
 
-        static inline constexpr float SHOOTER_MAX_MOVEMENT = 40;
+        static inline constexpr float SHOOTER_MAX_MOVEMENT = 80;
 
         static inline constexpr float UP_SHOOTER_MIN_Y = 30;
         float  dir_y_top                               = UP_SHOOTER_MIN_Y;
 
         static inline constexpr float DOWN_SHOOTER_MIN_Y = 140;
         float dir_y_bot = 0.0f;
-        float speed = 20.0f;
+        float speed = 50.0f;
 
+        static inline constexpr float SHOOTER_RELOAD_TIME = 750.f;
         Shooter _up_shooter_comp;
         Shooter _down_shooter_comp;
 
@@ -35,30 +36,27 @@ namespace game {
             : _self(paa::make_dynamic_entity(self))
             , _eye(paa::make_dynamic_entity(eye))
         {
+            static const char *const animations[] = {
+                "up_booster", "down_booster", "weapon", "shooter"
+            };
+            std::reference_wrapper<paa::SDynamicEntity> entities_ref[] = {
+                _up_booster, _down_booster, _up_shooter, _down_shooter
+            };
+
             _self->attachSprite("robot_boss")->useAnimation("boss");
             _self->attachPosition(_eye->getComponent<paa::Position>());
 
-            _up_booster = paa::make_dynamic_entity(PAA_NEW_ENTITY());
-            _up_booster->attachSprite("robot_boss")->useAnimation("up_booster");
-            _up_booster->attachPosition(_eye->getComponent<paa::Position>());
-
-            _down_booster = paa::make_dynamic_entity(PAA_NEW_ENTITY());
-            _down_booster->attachSprite("robot_boss")->useAnimation("down_booster");
-            _down_booster->attachPosition(_eye->getComponent<paa::Position>());
-
-            _up_shooter = paa::make_dynamic_entity(PAA_NEW_ENTITY());
-            _up_shooter->attachSprite("robot_boss")->useAnimation("weapon");
-            _up_shooter->attachPosition(_eye->getComponent<paa::Position>());
-
-            _down_shooter = paa::make_dynamic_entity(PAA_NEW_ENTITY());
-            _down_shooter->attachSprite("robot_boss")->useAnimation("weapon");
-            _down_shooter->attachPosition(_eye->getComponent<paa::Position>());
+            for (size_t i = 0; i < 4; ++i) {
+                entities_ref[i].get() = paa::make_dynamic_entity(PAA_NEW_ENTITY());
+                entities_ref[i].get()->attachSprite("robot_boss")->useAnimation(animations[i]);
+                entities_ref[i].get()->attachPosition(_eye->getComponent<paa::Position>());
+            }
 
             new_position_direction_shooter(dir_y_top, UP_SHOOTER_MIN_Y);
             new_position_direction_shooter(dir_y_bot, DOWN_SHOOTER_MIN_Y);
 
-            _up_shooter_comp = make_shooter<BasicShooter>(*_up_shooter, 900.f);
-            _down_shooter_comp = make_shooter<BasicShooter>(*_down_shooter, 900.f);
+            _up_shooter_comp = make_shooter<BasicShooter>(*_up_shooter, SHOOTER_RELOAD_TIME);
+            _down_shooter_comp = make_shooter<BasicShooter>(*_down_shooter, SHOOTER_RELOAD_TIME);
         }
 
         void new_position_direction_shooter(float& dir_y, const float& min_y)
@@ -69,8 +67,6 @@ namespace game {
         void shooter_go_towards(paa::Position& cpos, float& dir_y, const float& min_y)
         {
             const float current_speed = speed * PAA_DELTA_TIMER.getDeltaTime();
-
-            spdlog::info("Current speed: {}, Dir: {}", current_speed, dir_y);
 
             if (std::abs(current_speed) > std::abs(cpos.y - dir_y)) {
                 cpos.y = dir_y;
@@ -87,6 +83,14 @@ namespace game {
         void update()
         {
             const float current_speed = speed * PAA_DELTA_TIMER.getDeltaTime();
+            if (!_eye->hasComponent<paa::Position>()) {
+                _self->kill();
+                _up_booster->kill();
+                _down_booster->kill();
+                _up_shooter->kill();
+                _down_shooter->kill();
+                return;
+            }
             auto& eye_pos         = _eye->getComponent<paa::Position>();
             auto& self_pos        = _self->getComponent<paa::Position>();
             auto& top_pos         = _up_booster->getComponent<paa::Position>();
@@ -134,33 +138,56 @@ namespace game {
         });
     }
 
-    // void RobotBossEye::on_collision(const paa::CollisionBox& other)
-    // {
-    //    AEntity::on_collision(other);
-    //    paa::Health& health = PAA_GET_COMPONENT(self, paa::Health);
+    void RobotBossEye::on_collision(const paa::CollisionBox& other)
+    {
+        paa::Health& health = PAA_GET_COMPONENT(_e, paa::Health);
 
-    //    if (health.hp <= 0) {
-    //         PAA_ECS.kill_entity(self);
-    //    }
-    // }
+        if (_state == State::VULNERABLE || _state == State::TRANSITION) {
+            AEnemy::on_collision(other);
+        }
+    }
 
     RobotBossEye::RobotBossEye(const PAA_ENTITY& e)
         : AEnemy(e, ROBOT_BOSS_EYE)
     {
         _body = PAA_NEW_ENTITY();
         _body.emplaceComponent<RobotBody>(_body, _e);
+
+        _vulnerable_timer.setTarget(VULNERABLE_TIME);
     }
 
     void RobotBossEye::update()
     {
-        spdlog::info("updating");
         constexpr int OFFSET_MAX = 50;
         const float min = g_game.scroll + RTYPE_PLAYFIELD_WIDTH - OFFSET_MAX;
         auto& cpos = get_position();
 
         if (min > cpos.x) {
             cpos.x = min;
-            spdlog::critical("cpos: {}", cpos.x);
+        }
+
+        auto& s = PAA_GET_COMPONENT(_e, paa::Sprite);
+
+        switch (_state) {
+        case State::VULNERABLE:
+            if (_vulnerable_timer.isFinished()) {
+                s->useAnimation("eye_close_animation", false);
+                _state = State::TRANSITION;
+            }
+            break;
+        case State::TRANSITION:
+            if (s->isLastFrame()) {
+                _state = State::INVULNERABLE;
+                _vulnerable_timer.setTarget(INVULNERABLE_TIME);
+            }
+            break;
+        case State::INVULNERABLE:
+            if (_vulnerable_timer.isFinished()) {
+                s->useAnimation("eye_open_animation", false);
+                _state = State::VULNERABLE;
+                _vulnerable_timer.setTarget(VULNERABLE_TIME);
+            }
+            break;
         }
     }
 }

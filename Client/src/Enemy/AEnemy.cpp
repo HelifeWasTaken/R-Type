@@ -135,7 +135,7 @@ namespace game {
         e.attachHealth(paa::Health(3));
 
         auto& s = e.attachSprite("robot_boss");
-        s->useAnimation("eye_open").setPosition(x, y);
+        s->useAnimation("eye_open_animation", false).setPosition(x, y);
 
         e.attachCollision(
             CollisionFactory::makeEnemyCollision(

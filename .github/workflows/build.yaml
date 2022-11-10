@@ -39,7 +39,7 @@ jobs:
             key: ${{ runner.os }}-deps-${{ hashFiles('**/CMakeLists.txt') }}
         - name: Build
           shell: bash
-          run: "cd build && cmake .. && make -j 2>&1"
+          run: "cd build && cmake .. && make -j1 2>&1"
     build-windows:
         runs-on: windows-latest
         steps:

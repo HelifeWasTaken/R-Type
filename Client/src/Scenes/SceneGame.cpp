@@ -26,7 +26,6 @@ static paa::Controller new_simulated_controller()
 }
 
 static const char *const MAPS[] = {
-    "../assets/maps/BydoEmpire/BydoMap.json",
     "../assets/maps/MiningField/MiningField.json",
     "../assets/maps/Ruins/Ruins.json",
     "../assets/maps/RecyclingFactory/RecyclingFactory.json",
@@ -108,7 +107,9 @@ PAA_END_CPP(game_scene)
     for (int i = 0; i < RTYPE_PLAYER_COUNT; i++) {
         if (g_game.players_entities[i]) {
             g_game.players_entities[i] = PAA_ENTITY();
-            g_game.connected_players[i] = false;
+            if (!g_game.everyone_is_dead()) {
+                g_game.connected_players[i] = false;
+            }
             g_game.players_alive[i] = false;
         }
     }
@@ -149,6 +150,7 @@ static void update_player_death(shared_message_t& msg)
 
     PAA_ECS.kill_entity(g_game.players_entities[e.getElement()]);
     g_game.players_alive[e.getElement()] = false;
+    spdlog::debug("Player {} is dead", e.getElement());
 }
 
 static void update_sync_scroll(shared_message_t& msg)

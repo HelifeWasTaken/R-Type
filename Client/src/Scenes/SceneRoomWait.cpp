@@ -1,6 +1,15 @@
 #include "ClientScenes.hpp"
+#include <boost/algorithm/string/case_conv.hpp>
 
 using namespace rtype::net;
+
+static PAA_SCENE_DECL(waiting_room) * self = nullptr;
+
+static void set_action_text(const std::string& msg) {
+    self->actionText.setString(msg);
+    auto rect = self->actionText.getGlobalBounds();
+    self->actionText.setPosition(RTYPE_HUD_WIDTH - (int)(rect.width/2), 500);
+}
 
 static void manage_room_client_connect(shared_message_t msg)
 {
@@ -69,6 +78,10 @@ static void manage_server_events()
 
 PAA_START_CPP(waiting_room)
 {
+    self = this;
+
+    isWaitingForServer = false;
+    
     std::memset(
         g_game.connected_players.data(), 0, g_game.connected_players.size());
     g_game.connected_players[g_game.id] = true;
@@ -85,6 +98,28 @@ PAA_START_CPP(waiting_room)
     gui.addObject(paa::GuiFactory::new_gui_text("Token: " + g_game.room_token));
     gui.addObject(paa::GuiFactory::new_button(
         "Disconnect", []() { PAA_SET_SCENE(client_connect); }));
+    
+    roomCode.setCharacterSize(40);
+    roomCode.setString(boost::to_upper_copy(std::string(g_game.room_token.begin() + 1, g_game.room_token.end())));
+    roomCode.setFont(font);
+    roomCode.setOutlineThickness(2);
+    roomCode.setOutlineColor(sf::Color::White);
+    roomCode.setFillColor(sf::Color::Red);
+    auto roomCodeRect = roomCode.getGlobalBounds();
+    roomCode.setPosition(RTYPE_HUD_WIDTH - (int)(roomCodeRect.width/2), 230);
+
+    actionText.setCharacterSize(15);
+    actionText.setString("_");
+    actionText.setFont(font);
+    actionText.setOutlineThickness(2);
+    actionText.setOutlineColor(sf::Color::White);
+    actionText.setFillColor(sf::Color::Blue);
+
+    playersCount.setCharacterSize(15);
+    playersCount.setFont(font);
+    playersCount.setOutlineThickness(2);
+    playersCount.setOutlineColor(sf::Color::White);
+    playersCount.setFillColor(sf::Color::Blue);
 }
 
 PAA_END_CPP(waiting_room) { gui.clear(); }
@@ -94,5 +129,35 @@ PAA_UPDATE_CPP(waiting_room)
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
     manage_server_events();
 
-    gui.update();
+    if (g_game.is_host) {
+        if (isWaitingForServer) {
+            set_action_text("Requested the server to launch the game..");
+        } else {
+            set_action_text("Press Enter to start the game");
+        }
+    } else {
+        set_action_text("Waiting for the host...");
+    }
+
+    if (g_game.is_host && !isWaitingForServer && PAA_INPUT.isKeyPressed(paa::Keyboard::Enter)) {
+        g_game.service.tcp().send(SignalMarker(message_code::LAUNCH_GAME));
+    }
+
+    if (PAA_INPUT.isKeyPressed(paa::Keyboard::Escape)) {
+        g_game.service.stop();
+        PAA_SET_SCENE(client_connect);
+    }
+
+    int playersNb = 0;
+    for (int i = 0; i < RTYPE_PLAYER_COUNT; i++)
+        if (g_game.connected_players[i])
+            playersNb++;
+    
+    playersCount.setString(std::to_string(playersNb) + " players connected");
+    auto playersCountRect = playersCount.getGlobalBounds();
+    playersCount.setPosition(RTYPE_HUD_WIDTH - (int)(playersCountRect.width/2), 300);
+
+    PAA_SCREEN.draw(roomCode);
+    PAA_SCREEN.draw(actionText);
+    PAA_SCREEN.draw(playersCount);
 }

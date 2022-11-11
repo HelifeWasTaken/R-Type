@@ -267,6 +267,10 @@ namespace net {
 
         serializer >> _magic >> _sender_id;
         _size = buffer.size();
+        if (_magic != RTYPE_MAGIC_NUMBER) {
+            spdlog::error("udp_server: Invalid magic number received");
+            throw std::runtime_error("Invalid magic number received");
+        }
     }
 
     Byte* udp_server::message_info::msg() const { return _msg; }
@@ -324,9 +328,15 @@ namespace net {
         BufferSizeType bytes_transferred)
     {
         if (!error && bytes_transferred > 0) {
-            _recv_queue->async_push(
-                shared_message_info_t(new message_info(_sender_endpoint,
-                    std::move(*_recv_buffer), bytes_transferred)));
+            try {
+                auto msg = shared_message_info_t(
+                    new message_info(_sender_endpoint, std::move(*_recv_buffer),
+                        bytes_transferred));
+                _recv_queue->async_push(msg);
+            } catch (const std::exception& e) {
+                spdlog::error("udp_server: Error while receiving message: {}", e.what());
+                return;
+            }
         } else {
             if (error) {
                 spdlog::error("udp_server: Cannot read: error {}: {}",

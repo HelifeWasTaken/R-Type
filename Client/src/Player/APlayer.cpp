@@ -176,7 +176,7 @@ namespace game {
         }
 
         if (other_id == CollisionType::STATIC_WALL) {
-            _is_colliding_with_wall = true;
+            _is_colliding_with_wall = _is_local;
         }
 
         bool hurtable_object = other_id == CollisionType::ENEMY_BULLET

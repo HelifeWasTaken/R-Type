@@ -48,6 +48,15 @@ namespace game {
         return _parentEntity.hasComponent<rtype::game::Player>();
     }
 
+    void AShooter::shoot_from_pos(std::string const& bullet_type,
+            paa::Position const& pos)
+    {
+        if (can_shoot_and_restart()) {
+            BulletFactory::make_bullet_by_type(bullet_type, pos,
+                    is_attached_to_player(), _aim_angle);
+        }
+    }
+
     void BasicShooter::shoot(std::string const& bullet_type)
     {
         if (can_shoot_and_restart()) {

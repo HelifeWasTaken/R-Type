@@ -28,8 +28,8 @@ namespace game {
 
         dir.x = (int)dir.x > 0 ? 1.0f : (int)dir.x < 0 ? -1.0f : 0;
         dir.y = (int)dir.y > 0 ? 1.0f : (int)dir.y < 0 ? -1.0f : 0;
-        current_pos.x += (int)dir.x * 100.0f * deltaTime;
-        current_pos.y += (int)dir.y * 100.0f * deltaTime;
+        current_pos.x += (int)dir.x * 50.0f * deltaTime;
+        current_pos.y += (int)dir.y * 50.0f * deltaTime;
         if (dir.x == 0 && dir.y == 0)
             _path_index += _path_index < 9 ? 1 : -_path_index;
     }
@@ -40,25 +40,50 @@ namespace game {
                             _body(body),
                             _last_mouth_pos(0, 0)
     {
+        float startingAngle = -230.0f;
+        for (std::size_t i = 0; i < 15; i++) {
+            auto shooter = make_shooter<BasicShooter>(_e, 100);
+            shooter->aim(startingAngle);
+            _shooterList.push_back(shooter);
+            startingAngle += 8.0f;
+        }
+    }
+
+    void MattisMouth::handle_shoot(float const& deltaTime,
+            paa::Position const& pos)
+    {
+        _last_shoot += deltaTime;
+        const paa::Position right_position(pos.x + 28, pos.y + 100);
+        if (_last_shoot >= _shooting_speed) {
+            _shooterList[_shoot_index++]
+                ->shoot_from_pos("basic_bullet", right_position);
+            _last_shoot = 0.0f;
+        }
+        if (_shoot_index >= _shooterList.size()) {
+            _shoot_index = 0;
+            _last_attack = 0.0f;
+            _as_attacked = false;
+            _close_mouth = true;
+            _start_attack = false;
+        }
     }
 
     void MattisMouth::check_mouth_offset(paa::Position& mouth_pos,
                                         const float& deltaTime)
     {
         if (_start_attack) {
-            if (mouth_pos.y <
-                    _last_mouth_pos.y + MOUTH_OFFSET_Y && !_close_mouth) {
-                _y_offset += 50.0f * deltaTime;
+            if (_y_offset < MOUTH_OFFSET_Y && !_close_mouth) {
+                _y_offset += 25.0f * deltaTime;
             } else {
-                _close_mouth = true;
-                if (_y_offset <= 0) {
-                    _y_offset = 0.0f;
-                    _start_attack = false;
-                    _last_attack = 0.0f;
-                    _as_attacked = false;
-                }
-                _y_offset -= 50.0f * deltaTime;
+                handle_shoot(deltaTime, mouth_pos);
             }
+        }
+
+        if (_close_mouth)
+            _y_offset -= 25.0f * deltaTime;
+        if (_y_offset <= 0.0f) {
+            _y_offset = 0;
+            _close_mouth = false;
         }
     }
 
@@ -80,9 +105,9 @@ namespace game {
 
         if (!_as_attacked)
             _last_attack += deltaTime;
-        open_mouth(posRef, deltaTime);
         posRef.x = parentPosRef.x;
         posRef.y = parentPosRef.y + _y_offset;
+        open_mouth(posRef, deltaTime);
     }
 }
 }

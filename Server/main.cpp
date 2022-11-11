@@ -218,12 +218,16 @@ public:
 
 #include <PileAA/external/nlohmann/json.hpp>
 #include <fstream>
+#include <filesystem>
 
-int main()
+int main(int argc, char **argv)
 {
     #if CMAKE_BUILD_TYPE == Release
         spdlog::set_level(spdlog::level::level_enum::critical);
     #endif
+
+    std::filesystem::current_path(std::filesystem::path(argv[0]).parent_path());
+
     std::ifstream ifs("../Server.conf");
     if (!ifs.is_open()) {
         spdlog::critical("Could not open file ../Server.conf");

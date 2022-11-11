@@ -164,9 +164,9 @@ namespace game {
     bool RobotBossEye::is_alive()
     {
         if (AEnemy::is_alive()) {
-            paa::GMusicPlayer::play(MUSIC_COMBAT_IS_OVER, false);
             return true;
         }
+        paa::GMusicPlayer::play(MUSIC_COMBAT_IS_OVER, false);
         return false;
     }
 

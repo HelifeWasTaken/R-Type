@@ -71,6 +71,7 @@ namespace paa
 
         static void play(const std::string& path, bool loop=true)
         {
+            spdlog::info("GMusicPlayer::play: {}", path);
             get().play(path, loop);
         }
 

@@ -180,7 +180,8 @@ namespace game {
         }
 
         const bool hurtable_object = other_id == CollisionType::ENEMY_BULLET
-            || other_id == CollisionType::ENEMY;
+            || other_id == CollisionType::ENEMY
+            || other_id == CollisionType::STATIC_WALL;
 
         if (hurtable_object && !_is_hurt) {
             if (_is_local) {
@@ -189,8 +190,13 @@ namespace game {
                 healthRef.hp -= 1;
                 g_game.score -= 100;
             }
-            _hurtTimer.restart();
+            if (other_id == CollisionType::STATIC_WALL) {
+                _hurtTimer.setTarget(HURT_TIME * 2);
+            } else {
+                _hurtTimer.setTarget(HURT_TIME);
+            }
             _is_hurt = true;
+            _hurt_sound.play();
         }
     }
 
@@ -214,7 +220,7 @@ namespace game {
         const paa::Position sposition(50, RTYPE_PLAYFIELD_HEIGHT / 2);
         const auto& id = entity.attachId(paa::Id(pid));
         const auto& position = entity.attachPosition(sposition);
-        auto& health = entity.attachHealth(paa::Health(APlayer::MAX_HEALTH + 30));
+        auto& health = entity.attachHealth(paa::Health(APlayer::MAX_HEALTH));
         auto& sprite = entity.attachSprite("player");
         sprite->setPosition(position.x, position.y);
 

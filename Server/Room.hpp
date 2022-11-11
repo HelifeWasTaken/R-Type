@@ -38,8 +38,8 @@ public:
         }
         for (rtype::net::PlayerID i = 0; i < RTYPE_PLAYER_COUNT; i++) {
             if (!_connected_players.at(i)) {
-                _connected_players.at(i) = true;
-                _client_to_index.at(client) = i;
+                _connected_players[i] = true;
+                _client_to_index[client] = i;
                 return i;
             }
         }
@@ -50,7 +50,7 @@ public:
     {
         auto index = _client_to_index.at(client);
 
-        _connected_players.at(_client_to_index.at(client)) = false;
+        _connected_players[_client_to_index.at(client)] = false;
         _client_to_index.erase(client);
 
         if (index == _hostID) {

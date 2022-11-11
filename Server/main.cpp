@@ -94,8 +94,7 @@ private:
 
             RTYPE_SERVER_MAIN_HANDLE_THIS_MESSAGE(rtype::net::message_code::REQUEST_CONNECT_ROOM,
                 {
-                    auto msg = parse_message<rtype::net::RequestConnectRoom>(
-                        message);
+                    auto msg = parse_message<rtype::net::RequestConnectRoom>(message);
                     if (msg) {
                         this->_roomManager.addPlayerToRoom(
                             msg->roomID(), client);
@@ -209,8 +208,10 @@ public:
                 while (_server.poll(event)) {
                     _events_types_handler.at(event.type)(event);
                 }
+            } catch (const std::exception& e) {
+                spdlog::critical("RTypeServer: std::exception caught: {}", e.what());
             } catch (...) {
-                spdlog::critical("RTypeServer: Exception caught");
+                spdlog::critical("RTypeServer: unknown caught");
             }
         }
     }
@@ -223,7 +224,7 @@ public:
 int main(int argc, char **argv)
 {
     #if CMAKE_BUILD_TYPE == Release
-        spdlog::set_level(spdlog::level::level_enum::critical);
+        // spdlog::set_level(spdlog::level::level_enum::critical);
     #endif
 
     std::filesystem::current_path(std::filesystem::path(argv[0]).parent_path());

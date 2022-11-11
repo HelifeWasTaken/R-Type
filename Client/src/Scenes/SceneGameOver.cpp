@@ -31,13 +31,10 @@ PAA_START_CPP(game_over)
     gameOverText.setPosition(RTYPE_HUD_WIDTH - (int)(gameOverTextRect.width/2), 200);
 
     retryText.setCharacterSize(10);
-    retryText.setString("Press Space to continue");
     retryText.setFont(font);
     retryText.setOutlineThickness(1);
     retryText.setOutlineColor(sf::Color::White);
     retryText.setFillColor(sf::Color::Blue);
-    auto retryTextRect = retryText.getGlobalBounds();
-    retryText.setPosition(RTYPE_HUD_WIDTH - (int)(retryTextRect.width/2), 350);
 
     scoreText.setCharacterSize(12);
     scoreText.setString("Score - " +  std::to_string(g_game.score) + " pts");
@@ -47,12 +44,42 @@ PAA_START_CPP(game_over)
     scoreText.setFillColor(sf::Color::Blue);
     auto scoreTextRect = scoreText.getGlobalBounds();
     scoreText.setPosition(RTYPE_HUD_WIDTH - (int)(scoreTextRect.width/2), 300);
-
-    g_game.service.stop();
 }
 
 PAA_END_CPP(game_over)
 {
+}
+
+static void manage_launch_game(shared_message_t msg)
+{
+    auto rep = parse_message<YesNoMarker>(msg.get());
+    if (!rep) {
+        spdlog::error("Client: Failed to parse LaunchGame message");
+        return;
+    } else if (rep->yes()) {
+        spdlog::info("Client: Launching game");
+        PAA_SET_SCENE(game_scene);
+    } else {
+        spdlog::info("Client: Receive no when tried to launch game");
+    }
+}
+
+static void update_player_room_client_disconnect(shared_message_t& msg)
+{
+    const auto sp = parse_message<UserDisconnectFromRoom>(msg);
+
+    spdlog::warn("User {} disconnected from the room, new host is {}",
+                sp->get_disconnected_user_id(), sp->get_new_host_id());
+
+    g_game.connected_players[sp->get_disconnected_user_id()] = false;
+    g_game.players_alive[sp->get_disconnected_user_id()] = false;
+    PAA_ECS.kill_entity(g_game.players_entities[sp->get_disconnected_user_id()]);
+    g_game.players_entities[sp->get_disconnected_user_id()] = PAA_ENTITY();
+
+    if (sp->get_new_host_id() == g_game.id) {
+        spdlog::warn("You are the new host");
+        g_game.is_host = true;
+    }
 }
 
 static void update_server_event()
@@ -63,7 +90,15 @@ static void update_server_event()
     shared_message_t msg;
     while (tcp.poll(msg) || udp.poll(msg)) {
         switch (msg->code()) {
+        case message_code::LAUNCH_GAME_REP:
+            manage_launch_game(msg);
+            break;
+        case message_code::ROOM_CLIENT_DISCONNECT:
+            update_player_room_client_disconnect(msg);
+            break;
         default:
+            spdlog::info(
+                "Client create_room: Received message of type {}", msg->type());
             break;
         }
     }
@@ -72,14 +107,24 @@ static void update_server_event()
 PAA_UPDATE_CPP(game_over)
 {
     g_game.use_hud_view();
+
+    if (g_game.is_host) {
+        retryText.setString("Press Space to continue");
+    } else {
+        retryText.setString("Waiting for the host...");
+    }
+    auto retryTextRect = retryText.getGlobalBounds();
+    retryText.setPosition(RTYPE_HUD_WIDTH - (int)(retryTextRect.width/2), 350);
     
     if (g_game.in_transition()) {
         g_game.transition.update();
         if (exitGameOver && g_game.transition_is_halfway()) {
-            PAA_SET_SCENE(client_connect);
+            if (g_game.is_host) {
+                g_game.service.tcp().send(SignalMarker(message_code::LAUNCH_GAME));
+            }
         }
     } else {
-        if (pressAnyKeyTimer.isFinished() && keyboard->isButtonPressed(RTYPE_SHOOT_BUTTON)) {
+        if (g_game.is_host && pressAnyKeyTimer.isFinished() && keyboard->isButtonPressed(RTYPE_SHOOT_BUTTON)) {
             exitGameOver = true;
             g_game.launch_transition();
         }
@@ -92,6 +137,8 @@ PAA_UPDATE_CPP(game_over)
     g_game.transition.draw();
 
     g_game.use_game_view();
+
+    update_server_event();
 }
 
 PAA_EVENTS_CPP(game_over) { }

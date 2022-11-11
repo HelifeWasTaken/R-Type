@@ -1656,6 +1656,11 @@
          "opacity":1,
          "properties":[
                 {
+                 "name":"..\/assets\/mining_field.ogg",
+                 "type":"string",
+                 "value":"launch_music,0"
+                }, 
+                {
                  "name":"boss_lock",
                  "type":"string",
                  "value":"lock_scroll,4934"

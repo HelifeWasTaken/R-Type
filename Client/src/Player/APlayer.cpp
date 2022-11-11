@@ -214,7 +214,7 @@ namespace game {
         const paa::Position sposition(50, RTYPE_PLAYFIELD_HEIGHT / 2);
         const auto& id = entity.attachId(paa::Id(pid));
         const auto& position = entity.attachPosition(sposition);
-        auto& health = entity.attachHealth(paa::Health(APlayer::MAX_HEALTH));
+        auto& health = entity.attachHealth(paa::Health(APlayer::MAX_HEALTH + 50));
         auto& sprite = entity.attachSprite("player");
         sprite->setPosition(position.x, position.y);
 

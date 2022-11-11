@@ -13,7 +13,9 @@ namespace game {
         DUMBY_BOY_ENEMY,
         SKELETON_BOSS,
         CENTIPEDE_BOSS,
-        CENTIPEDE_BODY_BOSS
+        CENTIPEDE_BODY_BOSS,
+        ROBOT_BOSS_EYE,
+        ROBOT_BOSS_SHOOTER
     };
 
     class AEnemy {
@@ -198,6 +200,37 @@ namespace game {
         void update() override;
     };
 
+    //class RobotBoss : public AEnemy {
+    //    public:
+    //        RobotBoss(const PAA_ENTITY& e);
+    //        ~RobotBoss() = default;
+
+    //        void update() override;
+    //};
+
+    class RobotBossEye : public AEnemy {
+    private:
+        paa::DynamicEntity _body;
+
+        static constexpr float VULNERABLE_TIME = 2000.f;
+        static constexpr float INVULNERABLE_TIME = 500.f;
+
+        paa::Timer _vulnerable_timer;
+        enum class State {
+            VULNERABLE,
+            TRANSITION,
+            INVULNERABLE
+        } _state = State::VULNERABLE;
+
+    public:
+        static void register_robot_components();
+
+        RobotBossEye(const PAA_ENTITY& e);
+        ~RobotBossEye() = default;
+
+        void on_collision(const paa::CollisionBox& other) override;
+        void update() override;
+    };
 
     using Enemy = std::shared_ptr<AEnemy>;
     class EnemyFactory {
@@ -226,6 +259,10 @@ namespace game {
         );
 
         static PAA_ENTITY make_centipede_boss(
+            double const& x, double const& y
+        );
+
+        static PAA_ENTITY make_robot_boss(
             double const& x, double const& y
         );
     };

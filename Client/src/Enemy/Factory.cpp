@@ -20,6 +20,8 @@ namespace game {
             return make_skeleton_boss(x, y);
         else if (enemy_type == "centipede_boss")
             return make_centipede_boss(x, y);
+        else if (enemy_type == "robot_boss")
+            return make_robot_boss(x, y);
         else
             throw std::runtime_error("Unknown enemy type: " + enemy_type);
     }

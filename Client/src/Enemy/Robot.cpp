@@ -51,7 +51,7 @@ namespace game {
                 entities_ref[i].get()->attachSprite("robot_boss")->useAnimation(animations[i]);
                 entities_ref[i].get()->attachPosition(_eye->getComponent<paa::Position>());
 
-                entities_ref[i].get()->attachCollision(CollisionFactory::makeT(
+                entities_ref[i].get()->attachCollision(CollisionFactory::makeTransparentWallCollision(
                     paa::recTo<int>(entities_ref[i].get()->getComponent<paa::Sprite>()->getGlobalBounds()),
                     entities_ref[i].get()->getEntity()));
             }

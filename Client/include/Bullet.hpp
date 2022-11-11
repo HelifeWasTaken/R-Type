@@ -15,6 +15,7 @@ class CollisionBox;
 
 #define BASIC_BULLET_SPEED 800
 #define SKELETON_BULLET_SPEED 750
+#define MATTIS_BULLET_SPEED 300
 
 namespace rtype {
 namespace game {
@@ -24,6 +25,7 @@ namespace game {
     enum BulletType : bullet_type_t {
         BASIC_BULLET,
         SKELETON_BULLET,
+        MATTIS_BULLET
     };
 
     // Base impl
@@ -77,6 +79,15 @@ namespace game {
         void update() override;
     };
 
+    class MattisBullet : public ABullet {
+    private:
+        paa::Vector2f _dir;
+    public:
+        MattisBullet(const PAA_ENTITY& e,
+                const double& aim_angle, bool from_player);
+        void update() override;
+    };
+
     class BulletFactory {
     public:
         template <typename B, typename... Args>
@@ -92,12 +103,16 @@ namespace game {
         static void make_skeleton_bullet(
             float aim_angle, paa::Position const& posRef, const bool& from_player);
 
+        static void make_mattis_bullet(
+            float aim_angle, paa::Position const& posRef, const bool& from_player);
+
         static void make_basic_bullet(float aim_angle,
             paa::Position const& posRef, const bool& from_player);
     private:
         static inline std::unordered_map<std::string, std::function<void(float, paa::Position const&, const bool&)>> _matching_type = {
             {"basic_bullet", &make_basic_bullet},
-            {"skeleton_bullet", &make_skeleton_bullet}
+            {"skeleton_bullet", &make_skeleton_bullet},
+            {"mattis_bullet", &make_mattis_bullet}
         };
     };
 }

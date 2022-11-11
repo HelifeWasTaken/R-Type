@@ -41,11 +41,11 @@ namespace game {
                             _last_mouth_pos(0, 0)
     {
         float startingAngle = -230.0f;
-        for (std::size_t i = 0; i < 15; i++) {
+        for (std::size_t i = 0; i < 10; i++) {
             auto shooter = make_shooter<BasicShooter>(_e, 100);
             shooter->aim(startingAngle);
             _shooterList.push_back(shooter);
-            startingAngle += 8.0f;
+            startingAngle += 14.0f;
         }
     }
 
@@ -56,7 +56,7 @@ namespace game {
         const paa::Position right_position(pos.x + 28, pos.y + 100);
         if (_last_shoot >= _shooting_speed) {
             _shooterList[_shoot_index++]
-                ->shoot_from_pos("basic_bullet", right_position);
+                ->shoot_from_pos("mattis_bullet", right_position);
             _last_shoot = 0.0f;
         }
         if (_shoot_index >= _shooterList.size()) {

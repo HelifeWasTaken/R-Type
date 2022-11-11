@@ -119,19 +119,54 @@ namespace game {
         void update() override;
     };
 
+    #define MOUTH_OFFSET_Y 20.0f
+
     class Mattis : public AEnemy {
     public:
         Mattis(const PAA_ENTITY& e);
         ~Mattis() = default;
 
-       void update() override;
+        void update() override;
+    private:
+        const float _path[10][2] = {
+           { 891.00f, 117.00f },
+           { 1110.00f, 77.00f },
+           { 1059.00f, 10.00f },
+           { 860.00f, 26.00f },
+           { 1005.00f, 29.00f},
+           { 1082.00f, 45.00f },
+           { 1039.00f, 189.00f },
+           { 1152.00f, 241.00f},
+           { 987.00f, 110.00f },
+           { 982.00f, 140.00f}
+        };
+        std::size_t _path_index = 0;
+        PAA_ENTITY _mouth;
     };
 
     class MattisMouth : public AEnemy {
     public:
-        MattisMouth(const PAA_ENTITY& e, const PAA_ENTITY& body);
+        MattisMouth(
+                const PAA_ENTITY& e, const PAA_ENTITY& body);
         ~MattisMouth() = default;
+
         void update() override;
+
+    private:
+        void open_mouth(paa::Position& mouth_pos,
+                const float& deltaTime);
+        void check_mouth_offset(paa::Position& mouth_pos,
+                const float& deltaTime);
+
+    private:
+        float _y_offset = 0.0f;
+        paa::Position _last_mouth_pos;
+        const float _attack_cd = 4.0f;
+        float _last_attack = 0.0f;
+        const paa::DynamicEntity _body;
+        bool _as_attacked = false;
+        bool _start_attack = false;
+        bool _close_mouth = false;
     };
 
     #define RTYPE_CENTIPEDE_BODY_COUNT 10
@@ -234,6 +269,7 @@ namespace game {
 
         static PAA_ENTITY make_mattis_boss(
                 double const& x, double const& y);
+
         static PAA_ENTITY make_centipede_boss(
             double const& x, double const& y
         );

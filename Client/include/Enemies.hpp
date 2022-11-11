@@ -228,6 +228,7 @@ namespace game {
         RobotBossEye(const PAA_ENTITY& e);
         ~RobotBossEye() = default;
 
+        bool is_alive() override;
         void on_collision(const paa::CollisionBox& other) override;
         void update() override;
     };

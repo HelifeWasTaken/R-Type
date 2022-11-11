@@ -160,6 +160,16 @@ namespace game {
         _vulnerable_timer.setTarget(VULNERABLE_TIME);
     }
 
+
+    bool RobotBossEye::is_alive()
+    {
+        if (AEnemy::is_alive()) {
+            paa::GMusicPlayer::play(MUSIC_COMBAT_IS_OVER, false);
+            return true;
+        }
+        return false;
+    }
+
     void RobotBossEye::update()
     {
         constexpr int OFFSET_MAX = 50;

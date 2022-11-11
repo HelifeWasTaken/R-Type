@@ -126,9 +126,9 @@ struct Game {
         return transition.finished() == false;
     }
 
-    void launch_transition()
+    void launch_transition(bool long_transition=false)
     {
-        transition.start();
+        transition.start(long_transition);
     }
 
     bool transition_is_halfway() const

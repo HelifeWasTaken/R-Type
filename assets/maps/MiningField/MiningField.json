@@ -1656,9 +1656,19 @@
          "opacity":1,
          "properties":[
                 {
+                 "name":"boss_lock",
+                 "type":"string",
+                 "value":"lock_scroll,4934"
+                }, 
+                {
                  "name":"end_map",
                  "type":"string",
-                 "value":"end,5500"
+                 "value":"end,5000"
+                }, 
+                {
+                 "name":"speed_up_boss",
+                 "type":"string",
+                 "value":"scroll_speed=3,2100"
                 }, 
                 {
                  "name":"wave1",
@@ -1683,7 +1693,7 @@
                 {
                  "name":"waveBoss",
                  "type":"string",
-                 "value":"activate_wave,2181"
+                 "value":"activate_wave,2100"
                 }],
          "type":"objectgroup",
          "visible":true,

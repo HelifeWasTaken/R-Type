@@ -111,8 +111,11 @@ PAA_END_CPP(game_scene)
     for (int i = 0; i < RTYPE_PLAYER_COUNT; i++) {
         if (g_game.players_entities[i]) {
             g_game.players_entities[i] = PAA_ENTITY();
+            if (!g_game.everyone_is_dead()) {
             g_game.connected_players[i] = false;
+            }
             g_game.players_alive[i] = false;
+            spdlog::debug("Player {} reset", i);
         }
     }
     PAA_ECS.clear();

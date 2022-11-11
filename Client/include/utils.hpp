@@ -20,3 +20,5 @@
 
 #define RTYPE_CLAMP(t, v, l, h) \
     std::clamp(static_cast<t>(v), static_cast<t>(l), static_cast<t>(h))
+
+#define MUSIC_COMBAT_IS_OVER "../assets/a_combat_is_over.ogg"

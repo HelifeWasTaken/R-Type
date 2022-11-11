@@ -628,34 +628,19 @@
          "opacity":1,
          "properties":[
                 {
-                 "name":"..\/assets\/maps\/BydoEmpire\/BydoMap.ogg",
+                 "name":"..\/assets\/idiomatic.ogg",
                  "type":"string",
-                 "value":"launch_music,0"
-                }, 
-                {
-                 "name":"..\/assets\/maps\/BydoEmpire\/BydoMap2.ogg",
-                 "type":"string",
-                 "value":"launch_music,300"
+                 "value":"launch_music,3500"
                 }, 
                 {
                  "name":"end_map",
                  "type":"string",
-                 "value":"end,4500"
+                 "value":"end,4300"
                 }, 
                 {
-                 "name":"faster_player_after_wave",
+                 "name":"map_global_speed_scroll",
                  "type":"string",
-                 "value":"scroll_speed=2,300"
-                }, 
-                {
-                 "name":"wave1",
-                 "type":"string",
-                 "value":"activate_wave,50"
-                }, 
-                {
-                 "name":"wave1_lock",
-                 "type":"string",
-                 "value":"lock_scroll,250"
+                 "value":"scroll_speed=2,0"
                 }, 
                 {
                  "name":"wave2",
@@ -679,152 +664,8 @@
         }, 
         {
          "draworder":"topdown",
-         "id":10,
-         "name":"wave1",
-         "objects":[
-                {
-                 "class":"key_enemy",
-                 "height":11.6099,
-                 "id":184,
-                 "name":"enemy2",
-                 "rotation":0,
-                 "visible":true,
-                 "width":9.28793,
-                 "x":449.20921806427,
-                 "y":77.1984005939689
-                }, 
-                {
-                 "class":"basic_enemy",
-                 "height":7.49365921143648,
-                 "id":185,
-                 "name":"another enemy",
-                 "rotation":0,
-                 "visible":true,
-                 "width":11.5287064791331,
-                 "x":469.896490863561,
-                 "y":53.2849304640912
-                }, 
-                {
-                 "class":"key_enemy",
-                 "height":11.6099,
-                 "id":211,
-                 "name":"enemy2",
-                 "rotation":0,
-                 "visible":true,
-                 "width":9.28793,
-                 "x":468.216819782476,
-                 "y":68.3593469842606
-                }, 
-                {
-                 "class":"basic_enemy",
-                 "height":7.49366,
-                 "id":212,
-                 "name":"another enemy",
-                 "rotation":0,
-                 "visible":true,
-                 "width":11.5287,
-                 "x":492.034200123687,
-                 "y":43.9986497926589
-                }, 
-                {
-                 "class":"key_enemy",
-                 "height":11.6099,
-                 "id":213,
-                 "name":"enemy2",
-                 "rotation":0,
-                 "visible":true,
-                 "width":9.28793,
-                 "x":443.397375648585,
-                 "y":44.8814944251746
-                }, 
-                {
-                 "class":"basic_enemy",
-                 "height":7.49366,
-                 "id":214,
-                 "name":"another enemy",
-                 "rotation":0,
-                 "visible":true,
-                 "width":11.5287,
-                 "x":505.002918680134,
-                 "y":78.6564321417858
-                }, 
-                {
-                 "class":"key_enemy",
-                 "height":11.6099,
-                 "id":215,
-                 "name":"enemy2",
-                 "rotation":0,
-                 "visible":true,
-                 "width":9.28793,
-                 "x":447.198551777199,
-                 "y":102.569932141786
-                }, 
-                {
-                 "class":"basic_enemy",
-                 "height":7.49366,
-                 "id":216,
-                 "name":"another enemy",
-                 "rotation":0,
-                 "visible":true,
-                 "width":11.5287,
-                 "x":499.627126981643,
-                 "y":21.8623888083779
-                }, 
-                {
-                 "class":"key_enemy",
-                 "height":11.6099,
-                 "id":217,
-                 "name":"enemy2",
-                 "rotation":0,
-                 "visible":true,
-                 "width":9.28793,
-                 "x":470.260760682423,
-                 "y":101.899136354383
-                }, 
-                {
-                 "class":"basic_enemy",
-                 "height":7.49366,
-                 "id":218,
-                 "name":"another enemy",
-                 "rotation":0,
-                 "visible":true,
-                 "width":11.5287,
-                 "x":468.67730250654,
-                 "y":35.0547059606262
-                }, 
-                {
-                 "class":"key_enemy",
-                 "height":11.6099,
-                 "id":219,
-                 "name":"enemy2",
-                 "rotation":0,
-                 "visible":true,
-                 "width":9.28793,
-                 "x":485.210313063338,
-                 "y":79.7628753701023
-                }, 
-                {
-                 "class":"basic_enemy",
-                 "height":7.49366,
-                 "id":220,
-                 "name":"another enemy",
-                 "rotation":0,
-                 "visible":true,
-                 "width":11.5287,
-                 "x":512.828869533163,
-                 "y":50.2594104750819
-                }],
-         "offsetx":-0.101701838889426,
-         "offsety":0.899989987834132,
-         "opacity":1,
-         "type":"objectgroup",
-         "visible":true,
-         "x":0,
-         "y":0
-        }, 
-        {
-         "draworder":"topdown",
          "id":11,
+         "locked":true,
          "name":"wave2",
          "objects":[
                 {

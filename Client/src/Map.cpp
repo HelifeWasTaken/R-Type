@@ -188,7 +188,7 @@ namespace game {
                     activate_play_music_event(*effect);
                 } else if (effect->type.starts_with("scroll_speed=")) {
                     g_game.scroll_speed = std::atoi(effect->type.c_str() + 13);
-                } 
+                }
                 to_delete.push_back(i - to_delete.size());
                 spdlog::info("effect {} of type {} activated", effect->name,
                     effect->type);

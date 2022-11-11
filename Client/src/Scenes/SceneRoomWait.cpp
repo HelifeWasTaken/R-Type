@@ -1,4 +1,5 @@
 #include "ClientScenes.hpp"
+#include "PileAA/MusicPlayer.hpp"
 
 using namespace rtype::net;
 
@@ -37,6 +38,7 @@ static void manage_launch_game(shared_message_t msg)
         return;
     } else if (rep->yes()) {
         spdlog::info("Client: Launching game");
+        paa::GMusicPlayer::play("../assets/launch_game.ogg", false);
         PAA_SET_SCENE(game_scene);
     } else {
         spdlog::info("Client: Receive no when tried to launch game");

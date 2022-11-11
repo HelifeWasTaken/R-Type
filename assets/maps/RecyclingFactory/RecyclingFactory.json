@@ -754,41 +754,13 @@
                 {
                  "name":"end_map",
                  "type":"string",
-                 "value":"end,3328"
+                 "value":"end,2700"
                 }, 
                 {
                  "name":"toto",
                  "type":"string",
                  "value":"scroll_speed:2,60"
-                }, 
-                {
-                 "name":"wave1",
-                 "type":"string",
-                 "value":"activate_wave,50"
-                }, 
-                {
-                 "name":"wave1_lock",
-                 "type":"string",
-                 "value":"lock_scroll,250"
-                }, 
-                {
-                 "name":"wave2",
-                 "type":"string",
-                 "value":"activate_wave,2000"
                 }],
-         "type":"objectgroup",
-         "visible":true,
-         "x":0,
-         "y":0
-        }, 
-        {
-         "draworder":"topdown",
-         "id":10,
-         "name":"wave1",
-         "objects":[],
-         "offsetx":-0.101701838889426,
-         "offsety":0.899989987834132,
-         "opacity":1,
          "type":"objectgroup",
          "visible":true,
          "x":0,
@@ -810,17 +782,6 @@
                  "x":1226.07826335333,
                  "y":99.2573550414167
                 }],
-         "opacity":1,
-         "type":"objectgroup",
-         "visible":true,
-         "x":0,
-         "y":0
-        }, 
-        {
-         "draworder":"topdown",
-         "id":11,
-         "name":"wave2",
-         "objects":[],
          "opacity":1,
          "type":"objectgroup",
          "visible":true,

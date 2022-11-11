@@ -30,7 +30,7 @@ namespace game {
 
         virtual ~AEnemy() = default;
 
-        virtual bool is_alive() const;
+        virtual bool is_alive();
         virtual bool dies_when_leave_screen() const;
 
         EnemyType get_type() const;
@@ -151,7 +151,7 @@ namespace game {
 
         void kill();
 
-        bool is_alive() const override;
+        bool is_alive() override;
 
         bool centipede_part_functional();
 
@@ -193,7 +193,7 @@ namespace game {
 
         void on_collision(const paa::CollisionBox& other) override;
 
-        bool is_alive() const override;
+        bool is_alive() override;
 
         CentipedeBack get_back();
 

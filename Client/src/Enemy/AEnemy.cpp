@@ -10,7 +10,7 @@ namespace game {
     {
     }
 
-    bool AEnemy::is_alive() const { return true; };
+    bool AEnemy::is_alive() { return true; };
     bool AEnemy::dies_when_leave_screen() const { return true; };
     EnemyType AEnemy::get_type() const { return _type; };
     paa::Position& AEnemy::get_position() const

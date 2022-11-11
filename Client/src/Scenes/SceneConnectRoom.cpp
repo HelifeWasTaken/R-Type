@@ -30,7 +30,7 @@ static void check_connect_room_reply(shared_message_t& msg)
             spdlog::error("Client: Failed to parse CONNECT_ROOM_REPLY message");
             show_status_message("Internal server error");
         } else if (rep->playerID() == RTYPE_INVALID_PLAYER_ID) {
-            spdlog::error("Client: Failed to connect to room");
+            spdlog::error("Client: Failed to connect to room {}", g_game.room_token);
             show_status_message("The room is full or does not exist");
         } else {
             spdlog::info("Client: Connected to room as {}", rep->playerID());
@@ -138,7 +138,8 @@ PAA_UPDATE_CPP(connect_room)
             PAA_SET_SCENE(client_connect);
         }
         if (!isWaitingForReply && inputBoxManager.isValidated()) {
-            g_game.room_token = boost::to_lower_copy(inputBoxManager.getValue());
+            g_game.room_token = "#" + boost::to_lower_copy(inputBoxManager.getValue());
+            spdlog::info("Joining room: {}", g_game.room_token);
             g_game.service.tcp().send(RequestConnectRoom(g_game.room_token));
             isWaitingForReply = true;
         }

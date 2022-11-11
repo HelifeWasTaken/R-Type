@@ -8,7 +8,7 @@ class Room {
 private:
     rtype::net::PlayerID _hostID = 0;
 
-    std::array<rtype::net::Bool, RTYPE_PLAYER_COUNT> _connected_players;
+    std::array<rtype::net::Bool, RTYPE_PLAYER_COUNT> _connected_players = { false };
     std::unordered_map<rtype::net::ClientID, rtype::net::PlayerID>
         _client_to_index;
 
@@ -22,7 +22,6 @@ public:
     Room(rtype::net::server& server, rtype::net::ClientID client)
         : _server(server)
     {
-        memset(_connected_players.data(), 0, _connected_players.size());
         _client_to_index[client] = 0;
         _connected_players[0] = true;
     }
@@ -38,9 +37,9 @@ public:
             return RTYPE_INVALID_PLAYER_ID;
         }
         for (rtype::net::PlayerID i = 0; i < RTYPE_PLAYER_COUNT; i++) {
-            if (!_connected_players[i]) {
-                _connected_players[i] = true;
-                _client_to_index[client] = i;
+            if (!_connected_players.at(i)) {
+                _connected_players.at(i) = true;
+                _client_to_index.at(client) = i;
                 return i;
             }
         }
@@ -49,15 +48,15 @@ public:
 
     void removePlayer(rtype::net::ClientID client)
     {
-        auto index = _client_to_index[client];
+        auto index = _client_to_index.at(client);
 
-        _connected_players[_client_to_index[client]] = false;
+        _connected_players.at(_client_to_index.at(client)) = false;
         _client_to_index.erase(client);
 
         if (index == _hostID) {
             _hostID = RTYPE_INVALID_PLAYER_ID;
             for (rtype::net::PlayerID i = 0; i < RTYPE_PLAYER_COUNT; i++) {
-                if (_connected_players[i]) {
+                if (_connected_players.at(i)) {
                     _hostID = i;
                     break;
                 }

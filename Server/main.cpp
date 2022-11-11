@@ -118,7 +118,7 @@ private:
     std::unordered_map<rtype::net::message_code,
         std::function<void(rtype::net::ClientID, rtype::net::IMessage&)>>
         _feed_message_handler = {
-            
+
             RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::DUMMY),
 
             RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CONN_INIT),
@@ -161,7 +161,7 @@ private:
                               "RTypeServer: Failed to parse Main Message");
                           return;
                       }
-                      this->_main_message_handlers[event.message->code()](
+                      this->_main_message_handlers.at(event.message->code())(
                           event.client->id(), *msg);
                   } },
 
@@ -173,7 +173,7 @@ private:
                               "RTypeServer: Failed to parse Feed Message");
                           return;
                       }
-                      this->_feed_message_handler[event.message->code()](
+                      this->_feed_message_handler.at(event.message->code())(
                           event.client->id(), *msg);
                   } },
 
@@ -205,8 +205,12 @@ public:
     {
         while (true) {
             rtype::net::server::event event;
-            while (_server.poll(event)) {
-                _events_types_handler[event.type](event);
+            try {
+                while (_server.poll(event)) {
+                    _events_types_handler.at(event.type)(event);
+                }
+            } catch (...) {
+                spdlog::critical("RTypeServer: Exception caught");
             }
         }
     }
@@ -222,15 +226,20 @@ int main()
     #endif
     std::ifstream ifs("../Server.conf");
     if (!ifs.is_open()) {
-        spdlog::error("Could not open file ../Server.conf");
-        return -1;
+        spdlog::critical("Could not open file ../Server.conf");
+        return 1;
     }
-    nlohmann::json json;
+    try {
+        nlohmann::json json;
 
-    ifs >> json;
+        ifs >> json;
 
-    RTypeServer(json["tcp_port"], json["udp_port"], json["authentificate"])
-        .run();
-    ifs.close();
+        RTypeServer(json["tcp_port"], json["udp_port"], json["authentificate"])
+            .run();
+        ifs.close();
+    } catch (...) {
+        spdlog::critical("Could not parse file ../Server.conf");
+        return 1;
+    }
     return 0;
 }

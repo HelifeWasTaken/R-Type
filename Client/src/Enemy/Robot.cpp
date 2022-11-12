@@ -61,6 +61,9 @@ namespace game {
 
             _up_shooter_comp = make_shooter<BasicShooter>(*_up_shooter, SHOOTER_RELOAD_TIME);
             _down_shooter_comp = make_shooter<BasicShooter>(*_down_shooter, SHOOTER_RELOAD_TIME);
+
+            _up_shooter_comp->aim(180);
+            _down_shooter_comp->aim(180);
         }
 
         void new_position_direction_shooter(float& dir_y, const float& min_y)

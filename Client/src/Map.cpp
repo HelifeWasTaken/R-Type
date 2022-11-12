@@ -172,7 +172,7 @@ namespace game {
     void Map::update()
     {
         if (g_game.everyone_is_dead()) {
-            break;
+            return;
         }
 
         auto& effects = _zones.getEffects();

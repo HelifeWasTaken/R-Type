@@ -57,7 +57,7 @@ static bool connect_server_if_not_connected()
         self->isTypingIP = true;
         self->timer.restart();
     }
-    
+
     if (g_game.service.is_service_on() == false)
         return false;
 
@@ -92,6 +92,8 @@ PAA_START_CPP(client_connect)
 {
     self = this;
 
+    paa::GMusicPlayer::play("../assets/menu.ogg", true);
+
     isThreadJoined = false;
     connectThread = nullptr;
     isTryingToReconnect = false;
@@ -108,7 +110,7 @@ PAA_START_CPP(client_connect)
 
     // use HUD View in case the player was in game
     g_game.use_hud_view();
-    
+
     ipInputBoxManager.setMaxLength(300);
 
     ipInputBoxTitle.setCharacterSize(20);
@@ -155,7 +157,7 @@ PAA_START_CPP(client_connect)
             text->setText("Cannot connect to room as server is not connected");
         }
     };
-    
+
     auto& hostButton = buttons[1];
     hostButton.setCharacterSize(22);
     hostButton.setString("Host a party");
@@ -172,7 +174,7 @@ PAA_START_CPP(client_connect)
             text->setText("Cannot host room as server is not connected");
         }
     };
-    
+
     auto& settingsButton = buttons[2];
     settingsButton.setCharacterSize(22);
     settingsButton.setString("Server settings");
@@ -230,7 +232,7 @@ PAA_UPDATE_CPP(client_connect)
     }
 
     if (isTypingIP) {
-        
+
         ipInputBoxManager.setValue(g_game.service.host);
         ipInputBoxManager.update();
         g_game.service.host = ipInputBoxManager.getValue();

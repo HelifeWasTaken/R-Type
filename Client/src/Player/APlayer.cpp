@@ -76,8 +76,8 @@ namespace game {
         // We only sync if the player is local
         // and if the timer is ready
         //
-
-        if (_is_local) {
+        
+        if (_is_local && g_game.service.is_service_on()) {
             SerializablePlayer info(_entity.getEntity());
             if (_syncTimer.isFinished() || !info.data_is_same(_info)) {
                 g_game.service.udp().send(net::UpdateMessage(

@@ -15,11 +15,6 @@ namespace net {
     {
         Serializer s(data, size);
 
-        std::cout << "[";
-        for (BufferSizeType i = 0; i < size; i++)
-            std::cout << " " << (int)data[i] << ", ";
-        std::cout << "]" << std::endl;
-
         s >> _message_code;
         _token = std::string(s.data.begin(), s.data.end());
     }

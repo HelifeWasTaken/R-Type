@@ -42,19 +42,29 @@ namespace game {
 
         healthRef.hp = info.get_hp();
 
-        const auto minoffset = 10;
+        const auto minoffsetx = SPEED_X / 10;
+        const auto minoffsety = SPEED_Y / 10;
         const auto offsetx = info.get_pos().x - positionRef.x;
         const auto offsety = info.get_pos().y - positionRef.y;
 
         _controllerRef->simulateAxisMovement(paa::Joystick::Axis::X,
-            offsetx < -minoffset      ? 100
-                : offsetx > minoffset ? -100
+            offsetx < -minoffsetx     ? 100
+                : offsetx > minoffsetx ? -100
                                       : 0);
 
         _controllerRef->simulateAxisMovement(paa::Joystick::Axis::Y,
-            offsety < -minoffset      ? 100
-                : offsety > minoffset ? -100
+            offsety < -minoffsety      ? 100
+                : offsety > minoffsety ? -100
                                       : 0);
+
+        if (std::abs(offsetx) > 1.2f * minoffsetx && std::abs(offsety) > 1.2f * minoffsety) {
+            if (std::abs(offsetx) < 15 * minoffsetx && std::abs(offsety) < 15 * minoffsety) {
+                _controllerRef->simulateAxisMovement(paa::Joystick::Axis::X, 0);
+                _controllerRef->simulateAxisMovement(paa::Joystick::Axis::Y, 0);
+                positionRef.x = info.get_pos().x;
+                positionRef.y = info.get_pos().y;
+            }
+        }
 
         info.get_shoot()
             ? _controllerRef->simulateButtonHeld(RTYPE_SHOOT_BUTTON)

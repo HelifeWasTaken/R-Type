@@ -17,6 +17,9 @@ static void manage_room_client_connect(shared_message_t msg)
     if (!rep) {
         spdlog::error("Client: Failed to parse ROOM_CLIENT_CONNECT message");
         return;
+    } else if (rep->playerID() == RTYPE_INVALID_PLAYER_ID) {
+        spdlog::error("Client: A player tried to join: Room full.");
+        return;
     }
     spdlog::info("Client: Player {} connected to room", rep->playerID());
     g_game.connected_players[rep->playerID()] = true;

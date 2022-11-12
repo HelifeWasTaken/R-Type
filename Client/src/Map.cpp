@@ -9,6 +9,7 @@
 
 #include "ClientScenes.hpp"
 #include "Enemies.hpp"
+#include "Player.hpp"
 #include <filesystem>
 #include <fstream>
 
@@ -195,6 +196,12 @@ namespace game {
                     g_game.show_gui = true;
                 } else if (effect->type == "hide_gui") {
                     g_game.show_gui = false;
+                } else if (effect->type == "reset_health") {
+                    for (int i = 0; i < RTYPE_PLAYER_COUNT; i++) {
+                        if (g_game.connected_players[i] && g_game.players_alive[i]) {
+                            PAA_GET_COMPONENT(g_game.players_entities[i], paa::Health).hp = APlayer::MAX_HEALTH;
+                        }
+                    }
                 } else if (effect->type.starts_with("scroll_speed=")) {
                     g_game.scroll_speed = std::atoi(effect->type.c_str() + 13);
                 }

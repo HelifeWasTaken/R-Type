@@ -171,6 +171,10 @@ namespace game {
 
     void Map::update()
     {
+        if (g_game.everyone_is_dead()) {
+            break;
+        }
+
         auto& effects = _zones.getEffects();
         std::vector<int> to_delete;
 
@@ -182,6 +186,7 @@ namespace game {
                 } else if (effect->type == "lock_scroll") {
                     lock_scroll_event();
                 } else if (effect->type.starts_with("end")) {
+
                     g_game.launch_transition(effect->type.find("short") == std::string::npos);
                     _changes = true;
                 } else if (effect->type == "launch_music") {

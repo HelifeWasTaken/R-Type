@@ -103,8 +103,8 @@ namespace game {
 
     SerializablePlayer& SerializablePlayer::set_pos(const paa::Position& pos)
     {
-        this->pos.x = static_cast<uint16_t>((int)pos.x - g_game.scroll);
-        this->pos.y = static_cast<uint16_t>((int)pos.y);
+        this->pos.x = static_cast<uint16_t>(pos.x - g_game.scroll);
+        this->pos.y = static_cast<uint16_t>(pos.y);
         return *this;
     }
 
@@ -146,7 +146,7 @@ namespace game {
 
     const net::vector2i SerializablePlayer::get_pos() const
     {
-        return net::vector2i(pos.x + g_game.scroll, pos.y);
+        return net::vector2i(pos.x + (int)g_game.scroll, pos.y);
     }
 
     bool SerializablePlayer::data_is_same(const SerializablePlayer& other) const

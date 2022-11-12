@@ -18,6 +18,12 @@
 #define RTYPE_HUD_WIDTH (ARCADE_SCREEN_SIZE_X)
 #define RTYPE_HUD_RECT (paa::recTo<T>(paa::FloatRect(RTYPE_HUD_LEFT, RTYPE_HUD_TOP, RTYPE_HUD_HEIGHT, RTYPE_HUD_WIDTH)))
 
+#define RTYPE_MENU_CENTER_X (400)
+#define RTYPE_MENU_CENTER_Y (300)
+
+#define RTYPE_MENU_CENTERED_X(element) (RTYPE_MENU_CENTER_X - (int)((element).getGlobalBounds().width / 2))
+#define RTYPE_MENU_CENTERED_Y(element) (RTYPE_MENU_CENTER_Y - (int)((element).getGlobalBounds().height / 2))
+
 #define RTYPE_CLAMP(t, v, l, h) \
     std::clamp(static_cast<t>(v), static_cast<t>(l), static_cast<t>(h))
 

@@ -48,6 +48,7 @@ namespace paa
     {
     private:
         static inline MusicPlayer *_musicPlayer = nullptr;
+        static inline std::string playedMusic;
 
     public:
         GMusicPlayer() = default;
@@ -69,10 +70,22 @@ namespace paa
             }
         }
 
+        static void playIfNotPlayed(const std::string& path, bool loop = true) {
+            setLoop(loop);
+            if (playedMusic == path)
+                return;
+            play(path, loop);
+        }
+
         static void play(const std::string& path, bool loop=true)
         {
             spdlog::info("GMusicPlayer::play: {}", path);
+            playedMusic = path;
             get().play(path, loop);
+        }
+
+        static std::string getPlayedMusic() {
+            return playedMusic;
         }
 
         static void pause()

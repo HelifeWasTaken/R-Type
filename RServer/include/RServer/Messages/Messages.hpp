@@ -79,7 +79,7 @@ namespace net {
         template <typename T>
         static T deserialize(const std::vector<Byte>& data)
         {
-            return from<T>(data.data(), data.size());
+            return deserialize<T>(data.data(), data.size());
         }
 
         Serializable() = default;

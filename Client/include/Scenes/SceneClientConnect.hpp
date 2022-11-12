@@ -3,6 +3,8 @@
 #include "ClientScenes.hpp"
 #include <boost/atomic.hpp>
 #include "PileAA/InputBox.hpp"
+#include "PileAA/Parallax.hpp"
+#include "PileAA/DynamicEntity.hpp"
 #include <functional>
 
 PAA_SCENE(client_connect)
@@ -23,10 +25,14 @@ PAA_SCENE(client_connect)
     paa::Timer connectionTimeoutTimer;
     paa::Text connectionPendingText;
 
+    paa::Sound clickSound =
+            paa::Sound(PAA_RESOURCE_MANAGER.get<paa::SoundBuffer>("menu_click"));
+
     bool isTypingIP;
     paa::Text ipInputBoxTitle;
     paa::Text ipInputBoxContent;
     paa::InputBox ipInputBoxManager;
+    paa::DynamicEntity logoEntity;
 
     std::array<paa::Text, 3> buttons;
     std::array<std::function<void()>, 3> actions;

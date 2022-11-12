@@ -7,6 +7,7 @@
 #include "Map.hpp"
 #include "Player.hpp"
 
+#include "RServer/AsciiTitle.hpp"
 #include "RServer/Messages/Messages.hpp"
 
 Game g_game;
@@ -47,9 +48,10 @@ static void register_enemy_system()
                 r.kill_entity(entity);
                 if (id.id != -1) {
                     g_game.enemies_to_entities.erase(id.id);
-                    g_game.service.tcp().send(rtype::net::UpdateMessage(g_game.id,
-                        SerializedEnemyDeath(id.id),
-                        rtype::net::message_code::UPDATE_ENEMY_DESTROYED));
+                    if (g_game.service.is_service_on())
+                        g_game.service.tcp().send(rtype::net::UpdateMessage(g_game.id,
+                            SerializedEnemyDeath(id.id),
+                            rtype::net::message_code::UPDATE_ENEMY_DESTROYED));
                 }
             }
             count++;
@@ -68,9 +70,10 @@ static void register_player_system()
             player->update();
             if (player->is_dead()) {
                 r.kill_entity(e);
-                g_game.service.tcp().send(rtype::net::UpdateMessage(g_game.id,
-                    SerializedPlayerDeath(id.id),
-                    rtype::net::message_code::UPDATE_PLAYER_DESTROYED));
+                if (g_game.service.is_service_on())
+                    g_game.service.tcp().send(rtype::net::UpdateMessage(g_game.id,
+                        SerializedPlayerDeath(id.id),
+                        rtype::net::message_code::UPDATE_PLAYER_DESTROYED));
                 g_game.players_alive[id.id] = false;
             }
         }
@@ -100,6 +103,8 @@ PAA_SCENE(test) {
 PAA_MAIN("../Resources.conf", {
     // PAA_REGISTER_SCENE(test);
     // PAA_SET_SCENE(test);
+
+    AsciiTitle::print("Powered by PileAA");
 
     PAA_REGISTER_SCENE(create_room);
     PAA_REGISTER_SCENE(client_connect);

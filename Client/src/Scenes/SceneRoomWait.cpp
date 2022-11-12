@@ -1,6 +1,7 @@
 #include "ClientScenes.hpp"
 #include <boost/algorithm/string/case_conv.hpp>
 #include "PileAA/MusicPlayer.hpp"
+#include "MenuParallax.hpp"
 
 using namespace rtype::net;
 
@@ -8,8 +9,7 @@ static PAA_SCENE_DECL(waiting_room) * self = nullptr;
 
 static void set_action_text(const std::string& msg) {
     self->actionText.setString(msg);
-    auto rect = self->actionText.getGlobalBounds();
-    self->actionText.setPosition(RTYPE_HUD_WIDTH - (int)(rect.width/2), 500);
+    self->actionText.setPosition(RTYPE_MENU_CENTERED_X(self->actionText), 500);
 }
 
 static void manage_room_client_connect(shared_message_t msg)
@@ -110,8 +110,7 @@ PAA_START_CPP(waiting_room)
     roomCode.setOutlineThickness(2);
     roomCode.setOutlineColor(sf::Color::White);
     roomCode.setFillColor(sf::Color::Red);
-    auto roomCodeRect = roomCode.getGlobalBounds();
-    roomCode.setPosition(RTYPE_HUD_WIDTH - (int)(roomCodeRect.width/2), 230);
+    roomCode.setPosition(RTYPE_MENU_CENTERED_X(roomCode), 230);
 
     actionText.setCharacterSize(15);
     actionText.setString("_");
@@ -132,6 +131,7 @@ PAA_END_CPP(waiting_room) { gui.clear(); }
 PAA_UPDATE_CPP(waiting_room)
 {
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
+    rtype::MenuParallax::update();
     manage_server_events();
 
     if (g_game.is_host) {
@@ -159,8 +159,7 @@ PAA_UPDATE_CPP(waiting_room)
             playersNb++;
     
     playersCount.setString(std::to_string(playersNb) + " players connected");
-    auto playersCountRect = playersCount.getGlobalBounds();
-    playersCount.setPosition(RTYPE_HUD_WIDTH - (int)(playersCountRect.width/2), 300);
+    playersCount.setPosition(RTYPE_MENU_CENTERED_X(playersCount), 300);
 
     PAA_SCREEN.draw(roomCode);
     PAA_SCREEN.draw(actionText);

@@ -1,4 +1,5 @@
 #include "ClientScenes.hpp"
+#include "MenuParallax.hpp"
 
 using namespace rtype::net;
 
@@ -40,7 +41,8 @@ static void manage_server_events()
 
 PAA_START_CPP(create_room)
 {
-    g_game.service.tcp().send(SignalMarker(message_code::CREATE_ROOM));
+    if (g_game.service.is_service_on())
+        g_game.service.tcp().send(SignalMarker(message_code::CREATE_ROOM));
 }
 
 PAA_END_CPP(create_room) { }
@@ -48,5 +50,6 @@ PAA_END_CPP(create_room) { }
 PAA_UPDATE_CPP(create_room)
 {
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
+    rtype::MenuParallax::update();
     manage_server_events();
 }

@@ -202,6 +202,12 @@ namespace game {
                             PAA_GET_COMPONENT(g_game.players_entities[i], paa::Health).hp = APlayer::MAX_HEALTH;
                         }
                     }
+                } else if (effect->type.starts_with("set_health=")) {
+                    for (int i = 0; i < RTYPE_PLAYER_COUNT; i++) {
+                        if (g_game.connected_players[i] && g_game.players_alive[i]) {
+                            PAA_GET_COMPONENT(g_game.players_entities[i], paa::Health).hp = std::atoi(effect->type.c_str() + 11);
+                        }
+                    }
                 } else if (effect->type.starts_with("scroll_speed=")) {
                     g_game.scroll_speed = std::atoi(effect->type.c_str() + 13);
                 }

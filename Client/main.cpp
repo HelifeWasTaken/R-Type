@@ -21,6 +21,12 @@ static void register_bullet_system()
             }
         }
     });
+
+    PAA_REGISTER_SYSTEM([](hl::silva::registry& r) {
+        for (const auto&& [_, b] : r.view<rtype::game::BulletExplosion>()) {
+            b.update();
+        }
+    });
 }
 
 static void register_enemy_system()
@@ -34,7 +40,10 @@ static void register_enemy_system()
             enemy->update();
             const auto& hp = PAA_GET_COMPONENT(entity, paa::Health);
             const auto& pos = PAA_GET_COMPONENT(entity, paa::Position);
-            if (enemy->is_alive() == false || hp.hp <= 0 || pos.x < left_border) {
+            if (enemy->is_alive() == false || hp.hp <= 0 || enemy->dies_when_leave_screen() && pos.x < left_border) {
+                if (pos.x > left_border) {
+                    g_game.score += 10;
+                }
                 r.kill_entity(entity);
                 if (id.id != -1) {
                     g_game.enemies_to_entities.erase(id.id);
@@ -68,52 +77,49 @@ static void register_player_system()
     });
 }
 
-PAA_SCENE(test)
-{
-    PAA_SCENE_DEFAULT(test);
+/*
+#include "PileAA/Parallax.hpp"
 
-    PAA_START
-    {
-        g_game.use_game_view();
-        rtype::game::EnemyFactory::make_centipede_boss(0, 0);
+PAA_SCENE(test) {
+    paa::Parallax parallax = paa::Parallax(
+        paa::Vector2f(200, 30),
+        paa::Vector2f(100, 80),
+        { "parallax_menu_1", "parallax_menu_2", "parallax_menu_3" },
+        paa::Vector2f(4, 4));
+
+    PAA_START {}
+
+    PAA_UPDATE {
+        parallax.update();
     }
 
-    PAA_UPDATE { }
-
-    PAA_END { }
+    PAA_END {}
 };
-
-PAA_SCENE(ecs)
-{
-
-    PAA_SCENE_DEFAULT(ecs);
-
-    PAA_START
-    {
-        PAA_REGISTER_COMPONENTS(rtype::game::Enemy, rtype::game::Bullet,
-            rtype::game::Player, rtype::game::EffectZones::EffectZoneData);
-
-        register_bullet_system();
-        register_enemy_system();
-        register_player_system();
-
-        g_game.hud_view = PAA_SCREEN.getView();
-        g_game.reset_game_view();
-    }
-
-    PAA_END { }
-
-    PAA_UPDATE { PAA_SET_SCENE(client_connect); }
-};
+*/
 
 PAA_MAIN("../Resources.conf", {
-    PAA_REGISTER_SCENE(ecs);
-    PAA_REGISTER_SCENE(test);
+    // PAA_REGISTER_SCENE(test);
+    // PAA_SET_SCENE(test);
+
     PAA_REGISTER_SCENE(create_room);
     PAA_REGISTER_SCENE(client_connect);
     PAA_REGISTER_SCENE(connect_room);
     PAA_REGISTER_SCENE(game_scene);
     PAA_REGISTER_SCENE(game_over);
+    PAA_REGISTER_SCENE(game_win);
     PAA_REGISTER_SCENE(waiting_room);
-    PAA_SET_SCENE(ecs);
+
+    PAA_REGISTER_COMPONENTS(rtype::game::Enemy, rtype::game::Bullet,
+        rtype::game::BulletExplosion,
+        rtype::game::Player, rtype::game::EffectZones::EffectZoneData);
+
+    rtype::game::RobotBossEye::register_robot_components();
+    register_bullet_system();
+    register_enemy_system();
+    register_player_system();
+    g_game.hud_view = PAA_SCREEN.getView();
+    g_game.reset_game_view();
+
+
+    PAA_SET_SCENE(client_connect);
 });

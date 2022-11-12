@@ -628,29 +628,19 @@
          "opacity":1,
          "properties":[
                 {
-                 "name":"..\/assets\/maps\/BydoEmpire\/BydoMap.ogg",
+                 "name":"..\/assets\/idiomatic.ogg",
                  "type":"string",
-                 "value":"launch_music,0"
-                }, 
-                {
-                 "name":"..\/assets\/maps\/BydoEmpire\/BydoMap2.ogg",
-                 "type":"string",
-                 "value":"launch_music,300"
+                 "value":"launch_music,3500"
                 }, 
                 {
                  "name":"end_map",
                  "type":"string",
-                 "value":"end,4500"
+                 "value":"end,4300"
                 }, 
                 {
-                 "name":"wave1",
+                 "name":"map_global_speed_scroll",
                  "type":"string",
-                 "value":"activate_wave,50"
-                }, 
-                {
-                 "name":"wave1_lock",
-                 "type":"string",
-                 "value":"lock_scroll,250"
+                 "value":"scroll_speed=2,0"
                 }, 
                 {
                  "name":"wave2",
@@ -830,6 +820,7 @@
         {
          "draworder":"topdown",
          "id":11,
+         "locked":true,
          "name":"wave2",
          "objects":[
                 {

@@ -7,8 +7,6 @@
 
 using namespace rtype::net;
 
-static const int SCROLL_SPEED = 6;
-
 static paa::Controller new_keyboard()
 {
     paa::ControllerKeyboard* keyboard = new paa::ControllerKeyboard();
@@ -28,10 +26,13 @@ static paa::Controller new_simulated_controller()
 }
 
 static const char *const MAPS[] = {
+    "../assets/maps/starting_map/start.json",
     "../assets/maps/BydoEmpire/BydoMap.json",
     "../assets/maps/MiningField/MiningField.json",
-    "../assets/maps/Ruins/Ruins.json",
     "../assets/maps/RecyclingFactory/RecyclingFactory.json",
+    /*
+    "../assets/maps/Ruins/Ruins.json",
+    */
     nullptr
 };
 
@@ -45,10 +46,10 @@ static std::unique_ptr<rtype::game::Map> load_next_map(unsigned int &index)
 
 static void scroll_map(rtype::game::Map& map)
 {
-    if (g_game.in_transition() == false && g_game.lock_scroll == false) {
+    if (g_game.lock_scroll == false) {
         g_game.old_scroll = g_game.scroll;
-        g_game.scroll += SCROLL_SPEED;
-        g_game.game_view.move(SCROLL_SPEED, 0);
+        g_game.scroll += g_game.scroll_speed;
+        g_game.game_view.move(g_game.scroll_speed, 0);
         g_game.use_game_view();
     }
     map.update();
@@ -58,8 +59,10 @@ static void reinitialize_game()
 {
     PAA_ECS.clear();
 
+    g_game.score = 0;
     g_game.scroll = 0;
     g_game.old_scroll = 0;
+    g_game.scroll_speed = DEFAULT_SCROLL_SPEED;
     g_game.enemies_to_entities.clear();
 
     g_game.reset_game_view();
@@ -108,8 +111,11 @@ PAA_END_CPP(game_scene)
     for (int i = 0; i < RTYPE_PLAYER_COUNT; i++) {
         if (g_game.players_entities[i]) {
             g_game.players_entities[i] = PAA_ENTITY();
-            g_game.connected_players[i] = false;
+            if (!g_game.everyone_is_dead()) {
+                g_game.connected_players[i] = false;
+            }
             g_game.players_alive[i] = false;
+            spdlog::debug("Player {} reset", i);
         }
     }
     PAA_ECS.clear();
@@ -149,6 +155,7 @@ static void update_player_death(shared_message_t& msg)
 
     PAA_ECS.kill_entity(g_game.players_entities[e.getElement()]);
     g_game.players_alive[e.getElement()] = false;
+    spdlog::debug("Player {} is dead", e.getElement());
 }
 
 static void update_sync_scroll(shared_message_t& msg)
@@ -160,8 +167,7 @@ static void update_sync_scroll(shared_message_t& msg)
     auto current_scroll = g_game.scroll;
 
     g_game.scroll = s.getElement();
-    g_game.old_scroll = g_game.old_scroll >= SCROLL_SPEED ?
-                        (g_game.scroll - SCROLL_SPEED) : 0;
+    g_game.old_scroll = g_game.old_scroll >= g_game.scroll_speed ? (g_game.scroll - g_game.scroll_speed) : 0;
 
     g_game.reset_game_view();
     g_game.game_view.move(g_game.scroll, 0);
@@ -227,7 +233,7 @@ static void handle_transition(unsigned int& map_index, std::unique_ptr<rtype::ga
                 reinitialize_game();
                 map = load_next_map(map_index);
                 if (map == nullptr) {
-                    // TODO: Handle Tada you finished
+                    PAA_SET_SCENE(game_win);
                 }
             }
         }
@@ -245,6 +251,7 @@ PAA_UPDATE_CPP(game_scene)
 
     handle_transition(map_index, map);
 
+    //spdlog::info("Scroll: {}", g_game.scroll);
     if (map != nullptr)
         scroll_map(*map);
 

@@ -39,6 +39,9 @@ namespace game {
     }
 
     class BasicShooter : public AShooter {
+    private:
+        paa::Sound _sound = paa::Sound(PAA_RESOURCE_MANAGER.get<paa::SoundBuffer>("laser_sound"));
+
     public:
         BasicShooter(const PAA_ENTITY& e, double reloadTime = 900)
             : AShooter(e, reloadTime)

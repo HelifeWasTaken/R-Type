@@ -41,6 +41,8 @@ void InputHandler::updateJoystickToNextState()
 
 void InputHandler::eventKeyPressed(const sf::Event& event)
 {
+    if (event.key.code >= _keys.size())
+        return;
     _keys[event.key.code] = Pressed;
     _keysPrivateEvent.push_back({ event.key.code, event.type });
     if (_keyTrace.has_value())
@@ -51,6 +53,8 @@ void InputHandler::eventKeyPressed(const sf::Event& event)
 
 void InputHandler::eventKeyReleased(const sf::Event& event)
 {
+    if (event.key.code >= _keys.size())
+        return;
     _keys[event.key.code] = Released;
     _keysPrivateEvent.push_back({ event.key.code, event.type });
     if (_keyTrace.has_value()) {
@@ -64,16 +68,24 @@ void InputHandler::eventKeyReleased(const sf::Event& event)
 
 void InputHandler::eventJoystickConnected(const sf::Event& event)
 {
+    if (event.joystickConnect.joystickId >= _joysticks.size())
+        return;
     _joysticks[event.joystickConnect.joystickId].is_connected = true;
 }
 
 void InputHandler::eventJoystickDisconnected(const sf::Event& event)
 {
+    if (event.joystickConnect.joystickId >= _joysticks.size())
+        return;
     _joysticks[event.joystickConnect.joystickId] = JoystickState();
 }
 
 void InputHandler::eventJoystickButtonPressed(const sf::Event& event)
 {
+    if (event.joystickConnect.joystickId >= _joysticks.size())
+        return;
+    if (event.joystickButton.button >= sf::Joystick::ButtonCount)
+        return;
     _joysticks[event.joystickButton.joystickId]
         .buttons[event.joystickButton.button]
         = Pressed;
@@ -91,6 +103,10 @@ void InputHandler::eventJoystickButtonPressed(const sf::Event& event)
 
 void InputHandler::eventJoystickButtonReleased(const sf::Event& event)
 {
+    if (event.joystickConnect.joystickId >= _joysticks.size())
+        return;
+    if (event.joystickButton.button >= sf::Joystick::ButtonCount)
+        return;
     _joysticks[event.joystickButton.joystickId]
         .buttons[event.joystickButton.button]
         = Released;
@@ -115,6 +131,10 @@ void InputHandler::eventJoystickButtonReleased(const sf::Event& event)
 
 void InputHandler::eventJoystickMoved(const sf::Event& event)
 {
+    if (event.joystickConnect.joystickId >= _joysticks.size())
+        return;
+    if (event.joystickMove.axis >= (int)sf::Joystick::AxisCount)
+        return;
     _joysticks[event.joystickMove.joystickId].axes[event.joystickMove.axis]
         = event.joystickMove.position;
     Vector2<float> pos = CENTER;
@@ -190,27 +210,39 @@ void InputHandler::eventUpdate(const sf::Event& event)
 InputHandler::KeyState InputHandler::getKeyState(
     const sf::Keyboard::Key& key) const
 {
+    if (key >= _keys.size())
+        return InputHandler::Idle;
     return _keys[key];
 }
 
 InputHandler::KeyState InputHandler::getJoystickButtonState(
     const JoystickIndex& joystick_id, const JoystickButton& button) const
 {
+    if (joystick_id >= _joysticks.size())
+        return InputHandler::Idle;
+    if (button >= sf::Joystick::ButtonCount)
+        return InputHandler::Idle;
     return _joysticks[joystick_id].buttons[button];
 }
 
 bool InputHandler::isKeyPressed(const sf::Keyboard::Key& key) const
 {
+    if (key >= _keys.size())
+        return false;
     return _keys[key] == InputHandler::KeyState::Pressed;
 }
 
 bool InputHandler::isKeyHeld(const sf::Keyboard::Key& key) const
 {
+    if (key >= _keys.size())
+        return false;
     return _keys[key] == InputHandler::KeyState::Held;
 }
 
 bool InputHandler::isKeyReleased(const sf::Keyboard::Key& key) const
 {
+    if (key >= _keys.size())
+        return false;
     return _keys[key] == InputHandler::KeyState::Released;
 }
 

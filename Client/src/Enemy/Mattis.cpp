@@ -116,7 +116,7 @@ namespace game {
                             _last_mouth_pos(0, 0)
     {
         float startingAngle = -230.0f;
-        for (std::size_t i = 0; i < 8; i++) {
+        for (std::size_t i = 0; i < 17; i++) {
             auto shooter = make_shooter<BasicShooter>(_e, 100);
             shooter->aim(startingAngle);
             _shooterList.push_back(shooter);

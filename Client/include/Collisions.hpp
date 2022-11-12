@@ -11,6 +11,7 @@ namespace game {
         PLAYER_BULLET,
         ENEMY_BULLET,
         STATIC_WALL,
+        TRANSPARENT_WALL,
         POWER_UP,
         EFFECT_ZONE,
         NONE
@@ -42,6 +43,9 @@ namespace game {
             const paa::IntRect& rect, const PAA_ENTITY& e);
 
         static paa::SCollisionBox makeEnemyBulletCollision(
+            const paa::IntRect& rect, const PAA_ENTITY& e);
+
+        static paa::SCollisionBox makeTransparentWallCollision(
             const paa::IntRect& rect, const PAA_ENTITY& e);
 
         static paa::SCollisionBox makeStaticWallCollision(

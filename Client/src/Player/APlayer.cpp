@@ -16,9 +16,22 @@ namespace game {
         _syncTimer.setTarget(SYNC_RATE);
         _frameTimer.setTarget(FRAME_RATE);
         _hurtTimer.setTarget(HURT_TIME);
+        _speed_x = SPEED_X;
+        _speed_y = SPEED_Y;
 
         use_frame();
     }
+
+    void APlayer::set_clamp_position(bool clamp_position) {
+        _clamp_position = clamp_position; }
+
+    void APlayer::set_speed_x(int speed) { _speed_x = speed; }
+
+    void APlayer::set_speed_y(int speed) { _speed_y = speed; }
+
+    int APlayer::get_speed_x() { return _speed_x; }
+
+    int APlayer::get_speed_y() { return _speed_y; }
 
     void APlayer::update_info(const SerializablePlayer& info)
     {
@@ -95,8 +108,8 @@ namespace game {
 
     void APlayer::update_position()
     {
-        const double xspeed = SPEED_X * PAA_DELTA_TIMER.getDeltaTime();
-        const double yspeed = SPEED_Y * PAA_DELTA_TIMER.getDeltaTime();
+        const double xspeed = _speed_x * PAA_DELTA_TIMER.getDeltaTime();
+        const double yspeed = _speed_y * PAA_DELTA_TIMER.getDeltaTime();
 
         const auto axis = _controllerRef->getAxisXY();
         auto& positionRef = _entity.getComponent<paa::Position>();
@@ -122,8 +135,11 @@ namespace game {
         }
 
         // Make sure he stays in bounds of the screen
-        positionRef.x = RTYPE_CLAMP(double, positionRef.x, g_game.scroll, g_game.scroll + RTYPE_PLAYFIELD_WIDTH - _spriteRef->getGlobalBounds().width);
-        positionRef.y = RTYPE_CLAMP(double, positionRef.y, 0, RTYPE_PLAYFIELD_HEIGHT - _spriteRef->getGlobalBounds().height);
+        if (_clamp_position) {
+            positionRef.x = RTYPE_CLAMP(double, positionRef.x, g_game.scroll,
+                g_game.scroll + RTYPE_PLAYFIELD_WIDTH - _spriteRef->getGlobalBounds().width);
+            positionRef.y = RTYPE_CLAMP(double, positionRef.y, 0, RTYPE_PLAYFIELD_HEIGHT - _spriteRef->getGlobalBounds().height);
+        }
 
         if (_frameTimer.isFinished()) {
             _frameTimer.restart();
@@ -160,20 +176,31 @@ namespace game {
         }
 
         if (other_id == CollisionType::STATIC_WALL) {
-            _is_colliding_with_wall = true;
+            _is_colliding_with_wall = _is_local;
         }
 
-        const bool hurtable_object = other_id == CollisionType::ENEMY_BULLET
+        bool hurtable_object = other_id == CollisionType::ENEMY_BULLET
             || other_id == CollisionType::ENEMY;
+
+        if (other_id == CollisionType::STATIC_WALL && g_game.lock_scroll == false) {
+            auto& cpos = _entity.getComponent<paa::Position>().x;
+            hurtable_object = cpos <= g_game.scroll;
+        }
 
         if (hurtable_object && !_is_hurt) {
             if (_is_local) {
-                paa::Health& healthRef
-                    = PAA_GET_COMPONENT(_entity, paa::Health);
-                healthRef.hp -= 1;
+                paa::Health& healthRef = PAA_GET_COMPONENT(_entity, paa::Health);
+                if (other_id == CollisionType::STATIC_WALL) {
+                    g_game.score -= 10 * healthRef.hp;
+                    healthRef.hp = 0;
+                } else {
+                    healthRef.hp -= 1;
+                    g_game.score -= 10;
+                }
             }
             _hurtTimer.restart();
             _is_hurt = true;
+            _hurt_sound.play();
         }
     }
 
@@ -190,7 +217,7 @@ namespace game {
     bool APlayer::is_local() const { return _is_local; }
 
     PAA_ENTITY PlayerFactory::addPlayer(
-        const net::PlayerID pid, paa::Controller& controller)
+        const net::PlayerID pid, paa::Controller& controller, bool checkScreenBounds, bool isOnline)
     {
         paa::DynamicEntity entity = PAA_NEW_ENTITY();
 
@@ -203,10 +230,11 @@ namespace game {
 
         entity.emplaceComponent<paa::Controller>(controller);
 
-        auto player = Player(new APlayer(
-            entity.getEntity(), id, sprite, controller, pid == g_game.id));
+        auto player = Player(new APlayer(entity.getEntity(), id, sprite, controller, isOnline && pid == g_game.id));
 
-        player->add_shooter(make_shooter<BasicShooter>(entity.getEntity(), 0));
+        player->set_clamp_position(checkScreenBounds);
+
+        player->add_shooter(make_shooter<BasicShooter>(entity.getEntity(), 100));
 
         entity.attachCollision(CollisionFactory::makePlayerCollision(
             paa::recTo<int>(sprite->getGlobalBounds()), entity.getId()));

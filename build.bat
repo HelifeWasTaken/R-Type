@@ -13,7 +13,7 @@ cmake ..
 :fast
 @echo Building...
 @if "%1"=="/release" (
-    cmake --build . -j 8 --config Release
+    cmake --build . --config Release
 ) else (
     cmake --build . -j 8 --config Debug
 )

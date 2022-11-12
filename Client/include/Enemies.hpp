@@ -14,7 +14,9 @@ namespace game {
         SKELETON_BOSS,
         MATTIS_BOSS,
         CENTIPEDE_BOSS,
-        CENTIPEDE_BODY_BOSS
+        CENTIPEDE_BODY_BOSS,
+        ROBOT_BOSS_EYE,
+        ROBOT_BOSS_SHOOTER
     };
 
     class AEnemy {
@@ -29,7 +31,8 @@ namespace game {
 
         virtual ~AEnemy() = default;
 
-        virtual bool is_alive() const;
+        virtual bool is_alive();
+        virtual bool dies_when_leave_screen() const;
 
         EnemyType get_type() const;
         paa::Position& get_position() const;
@@ -211,13 +214,15 @@ namespace game {
 
         void kill();
 
-        bool is_alive() const override;
+        bool is_alive() override;
 
         bool centipede_part_functional();
 
         CentipedeBack get_back();
 
         void update() override;
+
+        void heal_self_and_child();
     };
 
     class Centipede : public AEnemy {
@@ -236,6 +241,12 @@ namespace game {
 
         bool _phase_one = true;
 
+        static inline bool _on_death_triggered;
+
+        static void on_death();
+
+        static void attempt_trigger_death_event();
+
         float determine_time_to_next_point();
 
     public:
@@ -245,13 +256,45 @@ namespace game {
 
         void on_collision(const paa::CollisionBox& other) override;
 
-        bool is_alive() const override;
+        bool is_alive() override;
 
         CentipedeBack get_back();
 
         void update() override;
     };
 
+    //class RobotBoss : public AEnemy {
+    //    public:
+    //        RobotBoss(const PAA_ENTITY& e);
+    //        ~RobotBoss() = default;
+
+    //        void update() override;
+    //};
+
+    class RobotBossEye : public AEnemy {
+    private:
+        paa::DynamicEntity _body;
+
+        static constexpr float VULNERABLE_TIME = 2000.f;
+        static constexpr float INVULNERABLE_TIME = 500.f;
+
+        paa::Timer _vulnerable_timer;
+        enum class State {
+            VULNERABLE,
+            TRANSITION,
+            INVULNERABLE
+        } _state = State::VULNERABLE;
+
+    public:
+        static void register_robot_components();
+
+        RobotBossEye(const PAA_ENTITY& e);
+        ~RobotBossEye() = default;
+
+        bool is_alive() override;
+        void on_collision(const paa::CollisionBox& other) override;
+        void update() override;
+    };
 
     using Enemy = std::shared_ptr<AEnemy>;
     class EnemyFactory {
@@ -283,6 +326,10 @@ namespace game {
                 double const& x, double const& y);
 
         static PAA_ENTITY make_centipede_boss(
+            double const& x, double const& y
+        );
+
+        static PAA_ENTITY make_robot_boss(
             double const& x, double const& y
         );
     };

@@ -56,10 +56,18 @@ struct Math {
         return std::sqrt(distance_between_squared(origin, direction));
     }
 
-    template <typename V1, typename V2>
-    static paa::Vector2f normalize(V1 const& origin, V2 const& direction)
+    template <typename V1>
+    static float magnitude(V1 const& vec)
     {
-        return distance_between(origin, direction);
+        paa::Vector2f origin = {0, 0};
+        return paa::Math::distance_between(origin, vec);
+    }
+
+    template <typename V1>
+    static paa::Vector2f normalize(V1 const& vec)
+    {
+        float magnitude = paa::Math::magnitude(vec);
+        return { vec.x / magnitude, vec.y / magnitude };
     }
 
     static paa::Vector2f linear(const float x) { return paa::Vector2f(x, x); }

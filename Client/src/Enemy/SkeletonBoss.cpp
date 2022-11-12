@@ -1,5 +1,6 @@
 #include "Enemies.hpp"
 #include <iostream>
+#include "PileAA/MusicPlayer.hpp"
 
 namespace rtype {
 namespace game {
@@ -29,8 +30,10 @@ namespace game {
         paa::Health head_health = PAA_GET_COMPONENT(_e, paa::Health);
         paa::Health& body_health = PAA_GET_COMPONENT(_boss_body, paa::Health);
 
-        if (head_health.hp <= 0 && _start)
+        if (head_health.hp <= 0 && _start) {
             PAA_ECS.kill_entity(_boss_body);
+            paa::GMusicPlayer::play(MUSIC_COMBAT_IS_OVER, false);
+        }
     }
 
     void SkeletonBossHead::delay_shoot()

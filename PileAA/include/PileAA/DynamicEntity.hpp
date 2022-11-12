@@ -51,10 +51,43 @@ public:
     {
     }
 
+    DynamicEntity(const DynamicEntity& other)
+        : _entity(other.getEntity())
+    {
+    }
+
+    DynamicEntity(DynamicEntity&& other)
+        : _entity(other.getEntity())
+    {
+        other.setEntity(hl::silva::Entity::INVALID_ID);
+    }
     /**
      * @brief Destroy the Dynamic Entity object
      */
     ~DynamicEntity() = default;
+
+    /**
+     * @brief Copies another entity
+     * @param  other: The other dynamic entity
+     * @retval The other entity
+     */
+    DynamicEntity& operator=(const DynamicEntity& other)
+    {
+        setEntity(other.getEntity());
+        return *this;
+    }
+
+    /**
+     * @brief Moves another entity
+     * @param  entity: The other dynamic Entity
+     * @retval DynamicEntity&
+     */
+    DynamicEntity& operator=(DynamicEntity&& other)
+    {
+        setEntity(other.getEntity());
+        other.setEntity(hl::silva::Entity::INVALID_ID);
+        return *this;
+    }
 
     /**
      * @brief Set the Entity object
@@ -221,4 +254,12 @@ public:
 
     operator PAA_ENTITY() { return _entity; }
 };
+
+using SDynamicEntity = std::shared_ptr<DynamicEntity>;
+
+static inline SDynamicEntity make_dynamic_entity(const PAA_ENTITY& e)
+{
+    return std::make_shared<DynamicEntity>(e);
+}
+
 }

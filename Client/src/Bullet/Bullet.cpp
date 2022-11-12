@@ -30,10 +30,14 @@ namespace game {
         const bool should_kill
             = (other_type == CollisionType::PLAYER && !_from_player)
             | (other_type == CollisionType::ENEMY && _from_player)
-            | (other_type == CollisionType::STATIC_WALL);
+            | (other_type == CollisionType::STATIC_WALL)
+            | (other_type == CollisionType::TRANSPARENT_WALL && _from_player);
 
         if (should_kill) {
             PAA_ECS.kill_entity(_e);
+            paa::DynamicEntity e = PAA_NEW_ENTITY();
+            e.emplaceComponent<BulletExplosion>(e);
+            e.attachPosition(get_position());
         }
     }
 
@@ -77,6 +81,13 @@ namespace game {
     {
     }
 
+    MissileBullet::MissileBullet(
+        const PAA_ENTITY& e, const double& aim, bool from_player) :
+        ABullet(e, BulletType::MISSILE_BULLET, 2000, aim, 1, from_player),
+        _dir(paa::Math::angle_to_direction(aim))
+    {
+    }
+
     void MattisBullet::update()
     {
         const auto dt = PAA_DELTA_TIMER.getDeltaTime();
@@ -84,6 +95,15 @@ namespace game {
 
         posRef.x += _dir.x * MATTIS_BULLET_SPEED * dt;
         posRef.y += _dir.y * MATTIS_BULLET_SPEED * dt;
+    }
+
+    void MissileBullet::update()
+    {
+        const auto dt = PAA_DELTA_TIMER.getDeltaTime();
+        paa::Position& posRef = PAA_GET_COMPONENT(_e, paa::Position);
+
+        posRef.x += _dir.x * MISSILE_BULLET_SPEED * dt;
+        posRef.y += _dir.y * MISSILE_BULLET_SPEED * dt;
     }
 
     LaserBeam::LaserBeam(
@@ -198,5 +218,25 @@ namespace game {
         e.insertComponent(std::move(bullet));
     }
 
+    void BulletFactory::make_missile_bullet(
+        float aim_angle, paa::Position const& posRef, const bool& from_player)
+    {
+        paa::DynamicEntity e = PAA_NEW_ENTITY();
+        paa::Sprite& sprite = e.attachSprite("robot_boss");
+        auto global_bounds = sprite->getGlobalBounds();
+        paa::Position& pos = e.attachPosition(posRef);
+
+        sprite->setRotation(aim_angle, true);
+        e.emplaceComponent<paa::SCollisionBox>(
+            CollisionFactory::makeBulletCollision(
+                paa::IntRect(
+                    pos.x, pos.y, global_bounds.width, global_bounds.height),
+                e.getEntity(), from_player));
+
+        sprite->useAnimation("missile");
+        auto bullet
+            = make_bullet<MissileBullet>(e.getEntity(), aim_angle, from_player);
+        e.insertComponent(std::move(bullet));
+    }
 };
 }

@@ -94,8 +94,7 @@ private:
 
             RTYPE_SERVER_MAIN_HANDLE_THIS_MESSAGE(rtype::net::message_code::REQUEST_CONNECT_ROOM,
                 {
-                    auto msg = parse_message<rtype::net::RequestConnectRoom>(
-                        message);
+                    auto msg = parse_message<rtype::net::RequestConnectRoom>(message);
                     if (msg) {
                         this->_roomManager.addPlayerToRoom(
                             msg->roomID(), client);
@@ -118,7 +117,7 @@ private:
     std::unordered_map<rtype::net::message_code,
         std::function<void(rtype::net::ClientID, rtype::net::IMessage&)>>
         _feed_message_handler = {
-            
+
             RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::DUMMY),
 
             RTYPE_SERVER_FEED_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::CONN_INIT),
@@ -161,7 +160,7 @@ private:
                               "RTypeServer: Failed to parse Main Message");
                           return;
                       }
-                      this->_main_message_handlers[event.message->code()](
+                      this->_main_message_handlers.at(event.message->code())(
                           event.client->id(), *msg);
                   } },
 
@@ -173,7 +172,7 @@ private:
                               "RTypeServer: Failed to parse Feed Message");
                           return;
                       }
-                      this->_feed_message_handler[event.message->code()](
+                      this->_feed_message_handler.at(event.message->code())(
                           event.client->id(), *msg);
                   } },
 
@@ -205,8 +204,14 @@ public:
     {
         while (true) {
             rtype::net::server::event event;
-            while (_server.poll(event)) {
-                _events_types_handler[event.type](event);
+            try {
+                while (_server.poll(event)) {
+                    _events_types_handler.at(event.type)(event);
+                }
+            } catch (const std::exception& e) {
+                spdlog::critical("RTypeServer: std::exception caught: {}", e.what());
+            } catch (...) {
+                spdlog::critical("RTypeServer: unknown caught");
             }
         }
     }
@@ -214,23 +219,32 @@ public:
 
 #include <PileAA/external/nlohmann/json.hpp>
 #include <fstream>
+#include <filesystem>
 
-int main()
+int main(int argc, char **argv)
 {
     #if CMAKE_BUILD_TYPE == Release
-        spdlog::set_level(spdlog::level::level_enum::critical);
+        // spdlog::set_level(spdlog::level::level_enum::critical);
     #endif
+
+    std::filesystem::current_path(std::filesystem::path(argv[0]).parent_path());
+
     std::ifstream ifs("../Server.conf");
     if (!ifs.is_open()) {
-        spdlog::error("Could not open file ../Server.conf");
-        return -1;
+        spdlog::critical("Could not open file ../Server.conf");
+        return 1;
     }
-    nlohmann::json json;
+    try {
+        nlohmann::json json;
 
-    ifs >> json;
+        ifs >> json;
 
-    RTypeServer(json["tcp_port"], json["udp_port"], json["authentificate"])
-        .run();
-    ifs.close();
+        RTypeServer(json["tcp_port"], json["udp_port"], json["authentificate"])
+            .run();
+        ifs.close();
+    } catch (...) {
+        spdlog::critical("Could not parse file ../Server.conf");
+        return 1;
+    }
     return 0;
 }

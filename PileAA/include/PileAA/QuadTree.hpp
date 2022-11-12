@@ -88,10 +88,7 @@ public:
      */
     bool collides(const CollisionBox& box) const
     {
-        return this->get_x() < box.get_x() + box.get_w()
-            && this->get_x() + this->get_w() > box.get_x()
-            && this->get_y() < box.get_y() + box.get_h()
-            && this->get_h() + this->get_y() > box.get_y();
+        return _r.intersects(box.get_rect());
     }
 
     /**
@@ -132,7 +129,8 @@ using SCollisionBox = std::shared_ptr<paa::CollisionBox>;
 class Quadtree {
 public:
     using collision_t = std::vector<CollisionBox*>;
-    static constexpr int kQuadtreeNodeCapacity = 5;
+    static constexpr int kQuadtreeNodeCapacity = 4;
+    static constexpr int kQuadtreeMaxDepth = 10;
 
     /**
      * @brief Construct a new Quadtree object
@@ -140,8 +138,10 @@ public:
      * @param bounds
      * @param level
      */
-    Quadtree(const paa::IntRect& rect)
+    Quadtree(const paa::IntRect& rect, int level = kQuadtreeMaxDepth)
         : _rect(rect)
+        , _level(level)
+        , _is_root(level == kQuadtreeMaxDepth)
     {
     }
 
@@ -151,8 +151,10 @@ public:
      * @param bounds
      * @param level
      */
-    Quadtree(const int& x, const int& y, const int& w, const int& h)
+    Quadtree(const int& x, const int& y, const int& w, const int& h, int level=kQuadtreeMaxDepth)
         : _rect(paa::IntRect(x, y, w, h))
+        , _level(level)
+        , _is_root(level == kQuadtreeMaxDepth)
     {
     }
 
@@ -160,7 +162,13 @@ public:
      * @brief Destroy the Quadtree object
      *
      */
-    virtual ~Quadtree() = default;
+    virtual ~Quadtree()
+    {
+        if (_is_root) {
+            free_memory();
+        }
+    }
+
     /**
      * @brief  Get north west node
      * @retval Quadtree* north west node
@@ -213,16 +221,17 @@ public:
     {
         if (!contains(collision))
             return false;
-        if (get_size() < kQuadtreeNodeCapacity) {
+        if (get_size() <= kQuadtreeNodeCapacity || _level <= 0) {
             _collisions.push_back(collision);
             return true;
         }
         if (_northWest == nullptr)
             subdivide(this);
-        return (_northWest->insert_collision(collision)
-            || _northEast->insert_collision(collision)
-            || _southWest->insert_collision(collision)
-            || _southEast->insert_collision(collision));
+        const bool nw = _northWest->insert_collision(collision);
+        const bool ne = _northEast->insert_collision(collision);
+        const bool sw = _southWest->insert_collision(collision);
+        const bool se = _southEast->insert_collision(collision);
+        return nw || ne || sw || se;
     }
     /**
      * @brief  Divide the quadtree into 4 subnodes
@@ -231,21 +240,23 @@ public:
      */
     void subdivide(Quadtree* root)
     {
+        const int new_level = _level - 1;
         const int new_width = get_rect().width / 2;
         const int new_height = get_rect().height / 2;
-        _northWest = new Quadtree(
-            get_rect().left, get_rect().top, new_width, new_height);
-        _northEast = new Quadtree(
-            get_rect().left + new_width, get_rect().top, new_width, new_height);
-        _southWest = new Quadtree(get_rect().left, get_rect().top + new_height,
-            new_width, new_height);
-        _southEast = new Quadtree(get_rect().left + new_width,
-            get_rect().top + new_height, new_width, new_height);
+        const int left = get_rect().left;
+        const int top = get_rect().top;
+        const int right = left + new_width;
+        const int bottom = top + new_height;
+
+        _northWest = new Quadtree(left, top, new_width, new_height, new_level);
+        _northEast = new Quadtree(right, top, new_width, new_height, new_level);
+        _southWest = new Quadtree(left, bottom, new_width, new_height, new_level);
+        _southEast = new Quadtree(right, bottom, new_width, new_height, new_level);
         for (auto& node : root->_collisions) {
-            _northWest->insert_collision(node)
-                || _northEast->insert_collision(node)
-                || _southWest->insert_collision(node)
-                || _southEast->insert_collision(node);
+            _northWest->insert_collision(node);
+            _northEast->insert_collision(node);
+            _southWest->insert_collision(node);
+            _southEast->insert_collision(node);
         }
     }
     /**
@@ -284,15 +295,16 @@ public:
      * @brief  Clear the quadtree
      * @retval None
      */
-    void free_memory()
+    void free_memory(bool delete_this = false)
     {
-        if (get_north_west() != nullptr) {
-            get_north_west()->free_memory();
-            get_north_east()->free_memory();
-            get_south_west()->free_memory();
-            get_south_east()->free_memory();
+        if (_northWest != nullptr) {
+            _northWest->free_memory(true);
+            _northEast->free_memory(true);
+            _southWest->free_memory(true);
+            _southEast->free_memory(true);
         }
-        delete this;
+        if (delete_this)
+            delete this;
     }
 
 protected:
@@ -303,10 +315,13 @@ private:
     Quadtree* _southEast = nullptr;
     collision_t _collisions;
     paa::IntRect _rect;
+    int _level;
+    bool _is_root = false;
 };
 
 }
 
+/*
 #include <ostream>
 
 static inline std::ostream& operator<<(
@@ -315,3 +330,4 @@ static inline std::ostream& operator<<(
     return os << "Box(id: " << other.get_id() << ", rect: " << other.get_rect()
               << ")";
 }
+*/

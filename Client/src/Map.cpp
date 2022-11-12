@@ -181,14 +181,14 @@ namespace game {
                     activate_wave_event(_waves, effect->name);
                 } else if (effect->type == "lock_scroll") {
                     lock_scroll_event();
-                } else if (effect->type == "end") {
-                    g_game.launch_transition();
+                } else if (effect->type.starts_with("end")) {
+                    g_game.launch_transition(effect->type.find("short") == std::string::npos);
                     _changes = true;
                 } else if (effect->type == "launch_music") {
                     activate_play_music_event(*effect);
                 } else if (effect->type.starts_with("scroll_speed=")) {
                     g_game.scroll_speed = std::atoi(effect->type.c_str() + 13);
-                } 
+                }
                 to_delete.push_back(i - to_delete.size());
                 spdlog::info("effect {} of type {} activated", effect->name,
                     effect->type);

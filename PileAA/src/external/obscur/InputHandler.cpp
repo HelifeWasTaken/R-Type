@@ -133,7 +133,7 @@ void InputHandler::eventJoystickMoved(const sf::Event& event)
 {
     if (event.joystickConnect.joystickId >= _joysticks.size())
         return;
-    if (event.joystickMove.axis >= sf::Joystick::AxisCount)
+    if (event.joystickMove.axis >= (int)sf::Joystick::AxisCount)
         return;
     _joysticks[event.joystickMove.joystickId].axes[event.joystickMove.axis]
         = event.joystickMove.position;

@@ -26,9 +26,13 @@ static paa::Controller new_simulated_controller()
 }
 
 static const char *const MAPS[] = {
+    "../assets/maps/starting_map/start.json",
+    "../assets/maps/BydoEmpire/BydoMap.json",
     "../assets/maps/MiningField/MiningField.json",
-    "../assets/maps/Ruins/Ruins.json",
     "../assets/maps/RecyclingFactory/RecyclingFactory.json",
+    /*
+    "../assets/maps/Ruins/Ruins.json",
+    */
     nullptr
 };
 
@@ -42,7 +46,7 @@ static std::unique_ptr<rtype::game::Map> load_next_map(unsigned int &index)
 
 static void scroll_map(rtype::game::Map& map)
 {
-    if (g_game.in_transition() == false && g_game.lock_scroll == false) {
+    if (g_game.lock_scroll == false) {
         g_game.old_scroll = g_game.scroll;
         g_game.scroll += g_game.scroll_speed;
         g_game.game_view.move(g_game.scroll_speed, 0);
@@ -111,6 +115,7 @@ PAA_END_CPP(game_scene)
                 g_game.connected_players[i] = false;
             }
             g_game.players_alive[i] = false;
+            spdlog::debug("Player {} reset", i);
         }
     }
     PAA_ECS.clear();
@@ -246,6 +251,7 @@ PAA_UPDATE_CPP(game_scene)
 
     handle_transition(map_index, map);
 
+    //spdlog::info("Scroll: {}", g_game.scroll);
     if (map != nullptr)
         scroll_map(*map);
 

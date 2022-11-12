@@ -109,7 +109,7 @@ namespace game {
         }
     }
 
-    bool CentipedeBody::is_alive() const { return _alive; }
+    bool CentipedeBody::is_alive() { return _alive; }
 
     bool CentipedeBody::centipede_part_functional()
     {
@@ -257,7 +257,7 @@ namespace game {
     }
 
     void Centipede::on_death() {
-        paa::GMusicPlayer::play("../assets/a_combat_is_over.ogg", false);
+        paa::GMusicPlayer::play(MUSIC_COMBAT_IS_OVER, false);
     }
 
     void Centipede::attempt_trigger_death_event() {
@@ -267,7 +267,7 @@ namespace game {
         }
     }
 
-    bool Centipede::is_alive() const
+    bool Centipede::is_alive()
     {
         if (_phase_one)
             return true;

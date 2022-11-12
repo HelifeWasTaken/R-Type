@@ -10,7 +10,7 @@ namespace game {
     {
     }
 
-    bool AEnemy::is_alive() const { return true; };
+    bool AEnemy::is_alive() { return true; };
     bool AEnemy::dies_when_leave_screen() const { return true; };
     EnemyType AEnemy::get_type() const { return _type; };
     paa::Position& AEnemy::get_position() const
@@ -108,6 +108,84 @@ namespace game {
         e.insertComponent(std::move(skeleton));
         head.insertComponent(std::move(skeletonHead));
         return head.getEntity();
+    }
+
+    PAA_ENTITY EnemyFactory::make_robot_boss(double const &x,
+                                             double const &y)
+    {
+        /*
+        paa::DynamicEntity body = PAA_NEW_ENTITY();
+
+        paa::Position body_position = paa::Position(x + (300) / 2,
+                                                    y + (300) / 2);
+
+        auto& _body_s = body.attachSprite("robot");
+
+        body.attachCollision(CollisionFactory::makeEnemyCollision(
+            paa::recTo<int>(body.getEntity())));
+
+        Enemy robot = EnemyFactory::make_enemy<RobotBoss>(body.getEntity());
+        body.insertComponent(std::move(robot));
+
+        return body.getEntity();
+        */
+
+        paa::DynamicEntity e = PAA_NEW_ENTITY();
+
+        e.attachPosition(paa::Position(x, y));
+        e.attachHealth(paa::Health(3));
+
+        auto& s = e.attachSprite("robot_boss");
+        s->useAnimation("eye_open_animation", false).setPosition(x, y);
+
+        e.attachCollision(
+            CollisionFactory::makeEnemyCollision(
+                paa::recTo<int>(s->getGlobalBounds()),
+                e.getEntity()
+            )
+        );
+
+        Enemy enemy = make_enemy<RobotBossEye>(e.getEntity());
+        e.insertComponent(std::move(enemy));
+        return e.getEntity();
+
+
+        // paa::DynamicEntity e = PAA_NEW_ENTITY();
+        // paa::DynamicEntity body = PAA_NEW_ENTITY();
+        // paa::DynamicEntity u_boost = PAA_NEW_ENTITY();
+        // paa::DynamicEntity d_boost = PAA_NEW_ENTITY();
+
+        // paa::Position body_position = paa::Position(x, y + (100 / 2));
+        // auto& eye_s = body.attachSprite("robot_boss");
+        // auto& s = e.attachSprite("robot_boss")
+        //               ->setPosition(body_position.x, body_position.y)
+        //               .useAnimation("boss");
+        // auto& eye_s_animated = eye_s->setPosition(x, y + (100 / 2))
+        //                 .useAnimation("eye_close_animation");
+        // auto& d_boost_s = d_boost.attachSprite("robot_boss")
+        //                 ->setPosition(body_position.x, body_position.y + 70)
+        //                 .useAnimation("down_booster");
+        // auto& u_boost_s = u_boost.attachSprite("robot_boss")
+        //                 ->setPosition(body_position.x, body_position.y - 90)
+        //                 .useAnimation("up_booster");
+
+        // e.attachHealth(paa::Health(10000));
+
+        // e.attachPosition(paa::Position(x, y));
+
+        // body.attachHealth(paa::Health(100));
+        // body.attachPosition(body_position);
+        // body.attachCollision(CollisionFactory::makeEnemyCollision(
+        //     paa::recTo<int>(eye_s_animated.getGlobalBounds()), body.getEntity()));
+        // Enemy robot = EnemyFactory::make_enemy<RobotBoss>(e.getEntity(),
+        //                         d_boost.getEntity(), u_boost.getEntity(),
+        //                         d_boost_s, u_boost_s);
+        // Enemy robotEye = EnemyFactory::make_enemy<RobotBossEye>(
+        //                 body.getEntity(), e.getEntity(), eye_s);
+
+        // e.insertComponent(std::move(robot));
+        // body.insertComponent(std::move(robotEye));
+        // return body.getEntity();
     }
 }
 }

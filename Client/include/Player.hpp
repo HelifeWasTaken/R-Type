@@ -20,23 +20,23 @@ namespace game {
         using mask_t = uint8_t;
         using data_t = uint8_t;
 
-        static constexpr mask_t MOVE_LEFT_MASK = 0b0000000000000001;
-        static constexpr mask_t MOVE_LEFT_SHIFT = 0x0;
+        static constexpr mask_t MOVE_LEFT_MASK      = 0b00000001;
+        static constexpr mask_t MOVE_LEFT_SHIFT     = 0x0;
 
-        static constexpr mask_t MOVE_RIGHT_MASK = 0b0000000000000010;
-        static constexpr mask_t MOVE_RIGHT_SHIFT = 0x1;
+        static constexpr mask_t MOVE_RIGHT_MASK     = 0b00000010;
+        static constexpr mask_t MOVE_RIGHT_SHIFT    = 0x1;
 
-        static constexpr mask_t MOVE_UP_MASK = 0b0000000000000100;
-        static constexpr mask_t MOVE_UP_SHIFT = 0x2;
+        static constexpr mask_t MOVE_UP_MASK        = 0b00000100;
+        static constexpr mask_t MOVE_UP_SHIFT       = 0x2;
 
-        static constexpr mask_t MOVE_DOWN_MASK = 0b0000000000001000;
-        static constexpr mask_t MOVE_DOWN_SHIFT = 0x3;
+        static constexpr mask_t MOVE_DOWN_MASK      = 0b00001000;
+        static constexpr mask_t MOVE_DOWN_SHIFT     = 0x3;
 
-        static constexpr mask_t SHOOT_MASK = 0b0000000000010000;
-        static constexpr mask_t SHOOT_SHIFT = 0x4;
+        static constexpr mask_t SHOOT_MASK          = 0b00010000;
+        static constexpr mask_t SHOOT_SHIFT         = 0x4;
 
-        static constexpr mask_t HEALTH_MASK = 0b0000000001100000;
-        static constexpr mask_t HEALTH_SHIFT = 0x5;
+        static constexpr mask_t HEALTH_MASK         = 0b11100000;
+        static constexpr mask_t HEALTH_SHIFT        = 0x5;
 
         data_t data = 0x0;
         net::vector2i pos;
@@ -121,8 +121,11 @@ namespace game {
 
         int _y_frame = 0;
 
+        paa::Sound _hurt_sound =
+            paa::Sound(PAA_RESOURCE_MANAGER.get<paa::SoundBuffer>("player_hurt"));
+
     public:
-        static constexpr int MAX_HEALTH = 3;
+        static constexpr int MAX_HEALTH = 6;
         static constexpr int SYNC_RATE = 250;
         static constexpr int Y_FRAMES = 4;
         static constexpr int SPEED_X = 200;

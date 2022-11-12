@@ -176,21 +176,31 @@ namespace game {
         }
 
         if (other_id == CollisionType::STATIC_WALL) {
-            _is_colliding_with_wall = true;
+            _is_colliding_with_wall = _is_local;
         }
 
-        const bool hurtable_object = other_id == CollisionType::ENEMY_BULLET
+        bool hurtable_object = other_id == CollisionType::ENEMY_BULLET
             || other_id == CollisionType::ENEMY;
+
+        if (other_id == CollisionType::STATIC_WALL && g_game.lock_scroll == false) {
+            auto& cpos = _entity.getComponent<paa::Position>().x;
+            hurtable_object = cpos <= g_game.scroll;
+        }
 
         if (hurtable_object && !_is_hurt) {
             if (_is_local) {
-                paa::Health& healthRef
-                    = PAA_GET_COMPONENT(_entity, paa::Health);
-                healthRef.hp -= 1;
-                g_game.score -= 100;
+                paa::Health& healthRef = PAA_GET_COMPONENT(_entity, paa::Health);
+                if (other_id == CollisionType::STATIC_WALL) {
+                    g_game.score -= 10 * healthRef.hp;
+                    healthRef.hp = 0;
+                } else {
+                    healthRef.hp -= 1;
+                    g_game.score -= 10;
+                }
             }
             _hurtTimer.restart();
             _is_hurt = true;
+            _hurt_sound.play();
         }
     }
 

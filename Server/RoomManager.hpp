@@ -25,8 +25,7 @@ public:
         _rooms[roomID] = std::make_unique<Room>(_server, client);
         _client_to_room_id[client] = roomID;
 
-        _server.get_client(client)->send_main(
-            rtype::net::CreateRoomReply(roomID));
+        _server.get_client(client)->send_main(rtype::net::CreateRoomReply(roomID));
     }
 
     bool roomExists(const std::string& roomID) const
@@ -50,13 +49,11 @@ public:
             rtype::net::RequestConnectRoomReply(id));
 
         for (auto& already_connected : _rooms[roomID]->get_clients()) {
-            spdlog::info(
-                "RoomManager: Sending connection to {} that {} is connected",
+            spdlog::info("RoomManager: Sending connection to {} that {} is connected",
                 already_connected.first, id);
             _server.get_client(already_connected.first)
                 ->send_main(rtype::net::UserConnectRoom(id));
-            spdlog::info(
-                "RoomManager: Sending connection to {} that {} is connected",
+            spdlog::info("RoomManager: Sending connection to {} that {} is connected",
                 client, already_connected.second);
             _server.get_client(client)->send_main(
                 rtype::net::UserConnectRoom(already_connected.second));
@@ -68,7 +65,7 @@ public:
         auto it = _client_to_room_id.find(client);
         if (it != _client_to_room_id.end()) {
             spdlog::info("Client going to be removed from: {}", it->second);
-            auto& room = _rooms[it->second];
+            auto& room = _rooms.at(it->second);
             auto pid = room->get_client_player_id(client);
             room->removePlayer(client);
             if (room->isEmpty()) {
@@ -86,7 +83,7 @@ public:
     {
         auto it = _client_to_room_id.find(client);
         if (it != _client_to_room_id.end()) {
-            return _rooms[it->second].get();
+            return _rooms.at(it->second).get();
         }
         return nullptr;
     }
@@ -95,8 +92,8 @@ public:
     {
         auto it = _client_to_room_id.find(client);
         if (it != _client_to_room_id.end()
-            && _rooms[it->second]->launchGame()) {
-            _rooms[it->second]->main_broadcast(rtype::net::YesNoMarker(
+            && _rooms.at(it->second)->launchGame()) {
+            _rooms.at(it->second)->main_broadcast(rtype::net::YesNoMarker(
                 rtype::net::message_code::LAUNCH_GAME_REP, true));
         } else {
             _server.get_client(client)->send_main(rtype::net::YesNoMarker(

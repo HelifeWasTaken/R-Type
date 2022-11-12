@@ -107,6 +107,12 @@ PAA_START_CPP(client_connect)
     // create the parallax
     rtype::MenuParallax::recreate();
 
+    logoEntity = PAA_NEW_ENTITY();
+    logoEntity.attachSprite("logo");
+    auto& s = logoEntity.getComponent<paa::Sprite>();
+    auto logoRect = s->getGlobalBounds();
+    s->setPosition(RTYPE_HUD_WIDTH - (int)(logoRect.width / 2), 100);
+
     // Always restart on this
     async_connect("first");
 
@@ -122,9 +128,9 @@ PAA_START_CPP(client_connect)
     ipInputBoxTitle.setFont(font);
     ipInputBoxTitle.setOutlineThickness(2);
     ipInputBoxTitle.setOutlineColor(sf::Color::White);
-    ipInputBoxTitle.setFillColor(sf::Color::Red);
+    ipInputBoxTitle.setFillColor(sf::Color::Blue);
     auto inputBoxTitleTextRect = ipInputBoxTitle.getGlobalBounds();
-    ipInputBoxTitle.setPosition(RTYPE_HUD_WIDTH - (int)(inputBoxTitleTextRect.width/2), 200);
+    ipInputBoxTitle.setPosition(RTYPE_HUD_WIDTH - (int)(inputBoxTitleTextRect.width/2), 300);
 
     ipInputBoxContent.setCharacterSize(22);
     ipInputBoxContent.setString("_");
@@ -143,7 +149,7 @@ PAA_START_CPP(client_connect)
     connectionPendingText.setOutlineColor(sf::Color::White);
     connectionPendingText.setFillColor(sf::Color::Blue);
     auto connectionPendingTextRect = connectionPendingText.getGlobalBounds();
-    connectionPendingText.setPosition(RTYPE_HUD_WIDTH - (int)(connectionPendingTextRect.width/2), 250);
+    connectionPendingText.setPosition(RTYPE_HUD_WIDTH - (int)(connectionPendingTextRect.width/2), 350);
 
     auto& joinButton = buttons[0];
     joinButton.setCharacterSize(22);
@@ -153,7 +159,7 @@ PAA_START_CPP(client_connect)
     joinButton.setOutlineColor(sf::Color::White);
     joinButton.setFillColor(sf::Color::Red);
     auto joinButtonRect = joinButton.getGlobalBounds();
-    joinButton.setPosition(RTYPE_HUD_WIDTH - (int)(joinButtonRect.width/2), 250);
+    joinButton.setPosition(RTYPE_HUD_WIDTH - (int)(joinButtonRect.width/2), 300);
     actions[0] = [this]() {
         if (g_game.service.connected()) {
             PAA_SET_SCENE(connect_room);
@@ -170,7 +176,7 @@ PAA_START_CPP(client_connect)
     hostButton.setOutlineColor(sf::Color::White);
     hostButton.setFillColor(sf::Color::Red);
     auto hostButtonRect = hostButton.getGlobalBounds();
-    hostButton.setPosition(RTYPE_HUD_WIDTH - (int)(hostButtonRect.width/2), 300);
+    hostButton.setPosition(RTYPE_HUD_WIDTH - (int)(hostButtonRect.width/2), 350);
     actions[1] = [this]() {
         if (g_game.service.connected()) {
             PAA_SET_SCENE(create_room);
@@ -181,13 +187,13 @@ PAA_START_CPP(client_connect)
 
     auto& settingsButton = buttons[2];
     settingsButton.setCharacterSize(22);
-    settingsButton.setString("Server settings");
+    settingsButton.setString("Settings");
     settingsButton.setFont(font);
     settingsButton.setOutlineThickness(2);
     settingsButton.setOutlineColor(sf::Color::White);
     settingsButton.setFillColor(sf::Color::Red);
     auto settingsButtonRect = settingsButton.getGlobalBounds();
-    settingsButton.setPosition(RTYPE_HUD_WIDTH - (int)(settingsButtonRect.width/2), 350);
+    settingsButton.setPosition(RTYPE_HUD_WIDTH - (int)(settingsButtonRect.width/2), 400);
     actions[2] = [this]() {
         isTypingIP = true;
     };
@@ -204,6 +210,7 @@ PAA_START_CPP(client_connect)
 PAA_END_CPP(client_connect)
 {
     gui.clear();
+    logoEntity.kill();
 }
 
 PAA_UPDATE_CPP(client_connect)
@@ -256,7 +263,7 @@ PAA_UPDATE_CPP(client_connect)
 
         ipInputBoxContent.setString(ipInputBoxManager.getValue());
         auto ipInputBoxContentTextRect = ipInputBoxContent.getGlobalBounds();
-        ipInputBoxContent.setPosition(RTYPE_HUD_WIDTH - (int)(ipInputBoxContentTextRect.width/2), 230);
+        ipInputBoxContent.setPosition(RTYPE_HUD_WIDTH - (int)(ipInputBoxContentTextRect.width/2), 370);
         PAA_SCREEN.draw(ipInputBoxTitle);
         PAA_SCREEN.draw(ipInputBoxContent);
         return;

@@ -4,6 +4,7 @@
 #include <boost/atomic.hpp>
 #include "PileAA/InputBox.hpp"
 #include "PileAA/Parallax.hpp"
+#include "PileAA/DynamicEntity.hpp"
 #include <functional>
 
 PAA_SCENE(client_connect)
@@ -31,6 +32,7 @@ PAA_SCENE(client_connect)
     paa::Text ipInputBoxTitle;
     paa::Text ipInputBoxContent;
     paa::InputBox ipInputBoxManager;
+    paa::DynamicEntity logoEntity;
 
     std::array<paa::Text, 3> buttons;
     std::array<std::function<void()>, 3> actions;

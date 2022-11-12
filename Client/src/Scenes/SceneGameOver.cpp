@@ -37,7 +37,7 @@ PAA_START_CPP(game_over)
     retryText.setFillColor(sf::Color::Blue);
 
     scoreText.setCharacterSize(12);
-    scoreText.setString("Score - " +  std::to_string(g_game.score) + " pts");
+    scoreText.setString("Your score - " +  std::to_string(g_game.score) + " pts");
     scoreText.setFont(font);
     scoreText.setOutlineThickness(1);
     scoreText.setOutlineColor(sf::Color::White);

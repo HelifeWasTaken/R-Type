@@ -656,16 +656,6 @@
                  "name":"wave3_lock",
                  "type":"string",
                  "value":"lock_scroll, 3600"
-                }, 
-                {
-                 "name":"wave4",
-                 "type":"string",
-                 "value":"activate_wave, 860"
-                }, 
-                {
-                 "name":"wave4_lock",
-                 "type":"string",
-                 "value":"lock_scroll, 860"
                 }],
          "type":"objectgroup",
          "visible":true,
@@ -866,28 +856,6 @@
                  "width":127.59,
                  "x":3831.94593201288,
                  "y":4.25301675375172
-                }],
-         "opacity":1,
-         "type":"objectgroup",
-         "visible":true,
-         "x":0,
-         "y":0
-        }, 
-        {
-         "draworder":"topdown",
-         "id":14,
-         "name":"wave4",
-         "objects":[
-                {
-                 "class":"mattis_boss",
-                 "height":56,
-                 "id":225,
-                 "name":"mattis",
-                 "rotation":0,
-                 "visible":true,
-                 "width":54.6666666666667,
-                 "x":933.333333333333,
-                 "y":14.6666666666667
                 }],
          "opacity":1,
          "type":"objectgroup",

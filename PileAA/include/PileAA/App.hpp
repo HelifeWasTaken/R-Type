@@ -158,7 +158,7 @@ int paa_main(
 {
     try {
         #if CMAKE_BUILD_TYPE == Release
-            //spdlog::set_level(spdlog::level::level_enum::critical);
+            spdlog::set_level(spdlog::level::level_enum::critical);
         #endif
         return paa_unsafe_main(argc, argv, configuration_file, app);
     } catch (const paa::AABaseError& e) {

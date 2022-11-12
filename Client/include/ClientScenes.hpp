@@ -138,9 +138,9 @@ struct Game {
 
     int score = 0;
 
-    int old_scroll = 0;
-    int scroll_speed = DEFAULT_SCROLL_SPEED;
-    int scroll = 0;
+    float old_scroll = 0;
+    float scroll_speed = DEFAULT_SCROLL_SPEED;
+    float scroll = 0;
     bool lock_scroll = false;
 };
 

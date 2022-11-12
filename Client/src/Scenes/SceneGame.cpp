@@ -47,9 +47,11 @@ static std::unique_ptr<rtype::game::Map> load_next_map(unsigned int &index)
 static void scroll_map(rtype::game::Map& map)
 {
     if (g_game.lock_scroll == false) {
+        const float cspeed = PAA_DELTA_TIMER.getDeltaTime() * g_game.scroll_speed * 60;
+
         g_game.old_scroll = g_game.scroll;
-        g_game.scroll += g_game.scroll_speed;
-        g_game.game_view.move(g_game.scroll_speed, 0);
+        g_game.scroll += cspeed;
+        g_game.game_view.move(cspeed, 0);
         g_game.use_game_view();
     }
     map.update();

@@ -203,7 +203,7 @@ namespace game {
         // Sync everyone when effects zones are activated
         if (to_delete.size() && g_game.is_host) {
             g_game.service.tcp().send(
-                net::UpdateMessage(g_game.id, SerializedScroll(g_game.scroll),
+                net::UpdateMessage(g_game.id, SerializedScroll(static_cast<int>(g_game.scroll)),
                 net::message_code::UPDATE_SCROLL)
             );
         }

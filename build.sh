@@ -22,9 +22,13 @@ fi
 cd $targetdir
 
 echo "Cleaning old build"
-rm -rf RType r-type_unix.tar.gz
+rm -rf RType r-type_unix.tar.gz r-type_unix.zip RType-uncompressed
 
 echo "Done! Copying into RType subfolder."
+
+if [[ $1 == "--release" ]]; then
+    cp -Rv $projectdir/build/target RType-uncompressed
+fi
 
 cp -Rv $projectdir/build/target RType
 
@@ -56,7 +60,32 @@ echo $'#!/bin/sh\npath=$(dirname $0);$path/Server/binary/r-type_server' > RType/
 chmod +x RType/run-server.sh
 chmod +x RType/run-client.sh
 
+if [[ $1 == "--release" ]]; then
+    echo $'#!/bin/sh\npath=$(dirname $0);$path/Client/binary/r-type_client' > RType-uncompressed/run-client.sh
+    echo $'#!/bin/sh\npath=$(dirname $0);$path/Client/binary/r-type_client' > RType-uncompressed/run-server.sh
+    chmod +x RType-uncompressed/run-server.sh
+    chmod +x RType-uncompressed/run-client.sh
+fi
+
 tar -czvf r-type_unix.tar.gz RType
+zip -r r-type_unix.zip RType
+
+if [[ $1 == "--release" ]]; then
+    echo ""
+    uncompressed_size=$(du -sh RType-uncompressed | cut -f1 | sed 's/M*//g')
+    compressed_size=$(du -sh RType | cut -f1 | sed 's/M*//g')
+    zip_size=$(du -sh r-type_unix.zip | cut -f1 | sed 's/M*//g')
+    tar_size=$(du -sh r-type_unix.tar.gz | cut -f1 | sed 's/M*//g')
+    compressed_rate=$(echo "scale=2; 100 - $compressed_size / $uncompressed_size * 100" | bc)
+    zip_rate=$(echo "scale=2; 100 - $zip_size / $uncompressed_size * 100" | bc)
+    tar_rate=$(echo "scale=2; 100 - $tar_size / $uncompressed_size * 100" | bc)
+
+    echo "Uncompressed build size: $uncompressed_size M"
+    echo "Compressed build size: $compressed_size M"
+    echo "Compressed build size (tar.gz): $tar_size M"
+    echo "Compressed build size (zip): $zip_size M"
+    echo "Benchmark: compressed($compressed_rate%) / tar.gz($tar_rate%) / zip($zip_rate%)"
+fi
 
 echo ""
 echo "The game is into the RType subfolder."

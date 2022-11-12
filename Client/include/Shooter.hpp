@@ -23,6 +23,8 @@ namespace game {
         AShooter& aim(float const& aim_angle, bool isRadian = false);
         bool angle_is_set(void);
         bool is_attached_to_player() const;
+        void shoot_from_pos(std::string const& bullet_type,
+                paa::Position const& position);
         virtual void shoot(std::string const& bullet_type) = 0;
     };
 

@@ -40,6 +40,7 @@ r-type_client
 
 # Visual Studio
 .vs
+.cache
 
 # Release
 r-type_setup.exe

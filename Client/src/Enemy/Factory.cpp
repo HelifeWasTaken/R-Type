@@ -13,7 +13,8 @@ namespace game {
         { "dumby_boy_enemy", EnemyFactory::make_dumby_boy_enemy },
         { "skeleton_boss", EnemyFactory::make_skeleton_boss },
         { "centipede_boss", EnemyFactory::make_centipede_boss },
-        { "robot_boss", EnemyFactory::make_robot_boss }
+        { "robot_boss", EnemyFactory::make_robot_boss },
+        { "mattis_boss", EnemyFactory::make_mattis_boss }
     };
 
     PAA_ENTITY EnemyFactory::make_enemy_by_type(

@@ -27,8 +27,7 @@ PAA_START_CPP(game_over)
     gameOverText.setOutlineThickness(2);
     gameOverText.setOutlineColor(sf::Color::White);
     gameOverText.setFillColor(sf::Color::Red);
-    auto gameOverTextRect = gameOverText.getGlobalBounds();
-    gameOverText.setPosition(RTYPE_HUD_WIDTH - (int)(gameOverTextRect.width/2), 200);
+    gameOverText.setPosition(RTYPE_MENU_CENTERED_X(gameOverText), 200);
 
     retryText.setCharacterSize(10);
     retryText.setFont(font);
@@ -42,8 +41,7 @@ PAA_START_CPP(game_over)
     scoreText.setOutlineThickness(1);
     scoreText.setOutlineColor(sf::Color::White);
     scoreText.setFillColor(sf::Color::Blue);
-    auto scoreTextRect = scoreText.getGlobalBounds();
-    scoreText.setPosition(RTYPE_HUD_WIDTH - (int)(scoreTextRect.width/2), 300);
+    scoreText.setPosition(RTYPE_MENU_CENTERED_X(scoreText), 300);
 }
 
 PAA_END_CPP(game_over)
@@ -113,8 +111,7 @@ PAA_UPDATE_CPP(game_over)
     } else {
         retryText.setString("Waiting for the host...");
     }
-    auto retryTextRect = retryText.getGlobalBounds();
-    retryText.setPosition(RTYPE_HUD_WIDTH - (int)(retryTextRect.width/2), 350);
+    retryText.setPosition(RTYPE_MENU_CENTERED_X(retryText), 350);
     
     if (g_game.in_transition()) {
         g_game.transition.update();

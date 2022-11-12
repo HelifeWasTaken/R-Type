@@ -9,15 +9,13 @@ static PAA_SCENE_DECL(connect_room) * self = nullptr;
 
 static void set_action_text(const std::string& msg) {
     self->actionText.setString(msg);
-    auto rect = self->actionText.getGlobalBounds();
-    self->actionText.setPosition(RTYPE_HUD_WIDTH - (int)(rect.width/2), 500);
+    self->actionText.setPosition(RTYPE_MENU_CENTERED_X(self->actionText), 500);
 }
 
 static void show_status_message(const std::string& msg) {
     self->statusText.setString(msg);
     self->isStatusShown = true;
-    auto rect = self->statusText.getGlobalBounds();
-    self->statusText.setPosition(RTYPE_HUD_WIDTH - (int)(rect.width/2), 250);
+    self->statusText.setPosition(RTYPE_MENU_CENTERED_X(self->statusText), 250);
 }
 
 static void check_connect_room_reply(shared_message_t& msg)
@@ -80,8 +78,7 @@ PAA_START_CPP(connect_room)
     inputBoxTitle.setOutlineThickness(2);
     inputBoxTitle.setOutlineColor(sf::Color::White);
     inputBoxTitle.setFillColor(sf::Color::Red);
-    auto inputBoxTitleTextRect = inputBoxTitle.getGlobalBounds();
-    inputBoxTitle.setPosition(RTYPE_HUD_WIDTH - (int)(inputBoxTitleTextRect.width/2), 200);
+    inputBoxTitle.setPosition(RTYPE_MENU_CENTERED_X(inputBoxTitle), 200);
 
     inputBoxContent.setCharacterSize(40);
     inputBoxContent.setString("_");
@@ -133,8 +130,7 @@ PAA_UPDATE_CPP(connect_room)
         inputBoxManager.update();
 
         inputBoxContent.setString(inputBoxManager.getValue());
-        auto inputBoxContentTextRect = inputBoxContent.getGlobalBounds();
-        inputBoxContent.setPosition(RTYPE_HUD_WIDTH - (int)(inputBoxContentTextRect.width/2), 230);
+        inputBoxContent.setPosition(RTYPE_MENU_CENTERED_X(inputBoxContent), 230);
 
         if (PAA_INPUT.isKeyPressed(paa::Keyboard::Escape)) {
             g_game.service.stop();

@@ -117,15 +117,15 @@ namespace game {
             shooter_go_towards(top_shooter_pos, dir_y_top, UP_SHOOTER_MIN_Y);
             shooter_go_towards(bot_shooter_pos, dir_y_bot, DOWN_SHOOTER_MIN_Y);
 
-            auto id = g_game.get_random_player();
+            /*auto id = g_game.get_random_player();
 
             if (id != -1) {
                 try {
-                    auto& player = PAA_GET_COMPONENT(g_game.players_entities[id], paa::Position);
+                    auto& player = PAA_GET_COMPONENT(id, paa::Position);
                     _up_shooter_comp->aim(paa::Vector2f(player.x, player.y));
                     _down_shooter_comp->aim(paa::Vector2f(player.x, player.y));
                 } catch (...) {}
-            }
+            }*/
             _up_shooter_comp->shoot("missile_bullet");
             _down_shooter_comp->shoot("missile_bullet");
         }

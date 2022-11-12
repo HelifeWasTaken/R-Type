@@ -57,6 +57,16 @@ namespace game {
         }
     }
 
+    void Mattis::on_collision(const paa::CollisionBox& other)
+    {
+        AEnemy::on_collision(other);
+        auto& health = PAA_GET_COMPONENT(_e, paa::Health);
+
+        if (health.hp <= 0) {
+            PAA_ECS.kill_entity(_mouth);
+        }
+    }
+
     void Mattis::update()
     {
         const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime();

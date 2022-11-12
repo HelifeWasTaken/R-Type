@@ -127,6 +127,7 @@ namespace game {
         ~Mattis() = default;
 
         void update() override;
+        void on_collision(const paa::CollisionBox& other) override;
 
     private:
         void shoot_sequence(

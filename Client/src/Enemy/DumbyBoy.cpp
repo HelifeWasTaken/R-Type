@@ -13,7 +13,7 @@ namespace game {
         _shooterList.push_back(shooter);
         _shoot_cycle = 1.5f
             + static_cast<float>(paa::Random::rand())
-                * static_cast<float>(3 - 1.5f) / 3.0f;
+                * static_cast<float>(3.0f - 1.5f) / RAND_MAX;
     }
 
     void DumbyBoy::on_collision(const paa::CollisionBox& other)

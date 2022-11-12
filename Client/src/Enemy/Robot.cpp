@@ -148,9 +148,15 @@ namespace game {
     void RobotBossEye::on_collision(const paa::CollisionBox& other)
     {
         paa::Health& health = PAA_GET_COMPONENT(_e, paa::Health);
+        auto& sprite = PAA_GET_COMPONENT(_e, paa::Sprite);
+        auto& boy_sprite = PAA_GET_COMPONENT(_body, paa::Sprite);
 
         if (_state == State::VULNERABLE || _state == State::TRANSITION) {
             AEnemy::on_collision(other);
+            if (other.get_id() == rtype::game::CollisionType::PLAYER_BULLET) {
+                sprite->setColor(paa::Color::Red);
+                boy_sprite->setColor(paa::Color::Red);
+            }
         }
     }
 
@@ -175,6 +181,7 @@ namespace game {
 
     void RobotBossEye::update()
     {
+        float const& deltaTime = PAA_DELTA_TIMER.getDeltaTime();
         constexpr int OFFSET_MAX = 50;
         const float min = g_game.scroll + RTYPE_PLAYFIELD_WIDTH - OFFSET_MAX;
         auto& cpos = get_position();
@@ -184,7 +191,17 @@ namespace game {
         }
 
         auto& s = PAA_GET_COMPONENT(_e, paa::Sprite);
+        auto& b_s = PAA_GET_COMPONENT(_body, paa::Sprite);
 
+        if (s->getColor() == paa::Color::Red) {
+            _red_timer += deltaTime;
+            if (_red_timer >= .1f) {
+                _red_timer = 0.0f;
+                b_s->setColor(paa::Color::White);
+                s->setColor(paa::Color::White);
+            }
+
+        }
         switch (_state) {
         case State::VULNERABLE:
             if (_vulnerable_timer.isFinished()) {

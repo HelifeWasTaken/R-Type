@@ -8,7 +8,7 @@ def random_points(offset_x, offset_y, width, height, nb):
     max_x = min_x + width
     max_y = min_y + height
     for i in range(nb):
-        print(random.uniform(min_x, max_x), random.uniform(min_y, max_y))
+        print("[", random.uniform(min_x, max_x), ",", random.uniform(min_y, max_y), "],")
 
-random_points(860, 0, 384, 256, 10)
+random_points(3550, 50, 384, 200, 10)
 

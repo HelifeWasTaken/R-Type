@@ -71,6 +71,7 @@ PAA_START_CPP(connect_room)
     isStatusShown = false;
 
     inputBoxManager.setMaxLength(6);
+    inputBoxManager.setValue("");
 
     inputBoxTitle.setCharacterSize(20);
     inputBoxTitle.setString("Enter room code");

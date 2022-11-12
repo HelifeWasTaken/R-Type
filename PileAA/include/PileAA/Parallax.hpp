@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ResourceManager.hpp"
+#include "DynamicEntity.hpp"
 
 namespace paa
 {
@@ -12,17 +13,21 @@ namespace paa
 
         std::vector<paa::DynamicEntity> _layers;
 
+        bool _noDestroy;
+
     public:
+
         Parallax(const paa::Vector2f& speed,
                 const paa::Vector2f& offsets,
                 const std::vector<std::string>& textures,
-                const paa::Vector2f& scale=paa::Vector2f(1, 1))
+                const paa::Vector2f& scale=paa::Vector2f(1, 1),
+                bool noDestroy = false)
             : _speed(speed)
             , _offset(offsets)
+            , _noDestroy(noDestroy)
         {
             for (const auto& texture : textures) {
-                _layers.emplace_back(PAA_NEW_ENTITY());
-                _layers.back().attachSprite(texture)->setScale(scale);
+                _layers.emplace_back(PAA_NEW_ENTITY()).attachSprite(texture)->setScale(scale);
                 PAA_RESOURCE_MANAGER.get<paa::Texture>(texture).setRepeated(true);
             }
         }
@@ -33,24 +38,33 @@ namespace paa
             paa::Vector2f current_offset(0, 0);
 
             for (auto& layer : _layers) {
-                const paa::Vector2f speed(speed.x * dt + current_offset.x, speed.y * dt + current_offset.y);
+                const paa::Vector2f speed(_speed.x * dt + current_offset.x, _speed.y * dt + current_offset.y);
                 auto& s = layer.getComponent<paa::Sprite>();
 
                 sf::IntRect r = s->getTextureRect();
                 r.left += speed.x;
-                r.top += speed.y;
+                if (layer.getId() != _layers[0].getId())
+                    r.top += speed.y;
                 s->setTextureRect(r);
 
                 current_offset.x += _offset.x * dt;
-                current_offset.y += _offset.y * dt;
+                if (layer.getId() != _layers[0].getId())
+                    current_offset.y += _offset.y * dt;
+            }
+        }
+
+        void destroy() {
+            for (auto& layer : _layers) {
+                if (layer.isAlive())
+                    layer.kill();
             }
         }
 
         ~Parallax()
         {
-            for (auto& layer : _layers) {
-                layer.kill();
-            }
+            if (_noDestroy)
+                return;
+            destroy();
         }
     };
 }

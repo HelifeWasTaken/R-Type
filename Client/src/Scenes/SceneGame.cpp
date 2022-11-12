@@ -4,6 +4,7 @@
 #include "Player.hpp"
 #include "utils.hpp"
 #include "PileAA/MusicPlayer.hpp"
+#include "MenuParallax.hpp"
 
 using namespace rtype::net;
 
@@ -59,6 +60,7 @@ static void scroll_map(rtype::game::Map& map)
 
 static void reinitialize_game()
 {
+    rtype::MenuParallax::clear();
     PAA_ECS.clear();
 
     g_game.score = 0;

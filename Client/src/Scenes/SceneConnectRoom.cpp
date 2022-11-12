@@ -1,6 +1,7 @@
 #include "ClientScenes.hpp"
 #include "RServer/Messages/Messages.hpp"
 #include <boost/algorithm/string/case_conv.hpp>
+#include "MenuParallax.hpp"
 
 using namespace rtype::net;
 
@@ -109,6 +110,7 @@ PAA_END_CPP(connect_room) { gui.clear(); }
 PAA_UPDATE_CPP(connect_room)
 {
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
+    rtype::MenuParallax::update();
 
     bool wasWaitingForReply = isWaitingForReply;
     manage_server_events(isWaitingForReply);

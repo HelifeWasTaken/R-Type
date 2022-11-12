@@ -88,7 +88,7 @@ namespace game {
         paa::DynamicEntity e = PAA_NEW_ENTITY();
         paa::DynamicEntity head = PAA_NEW_ENTITY();
         paa::Position head_position = paa::Position(
-            x + (159/*Boss sprite width*/ / 2), y + (190/*Boss sprite height*/ / 2));
+            x + (159.0f/*Boss sprite width*/ / 2), y + (190.0f/*Boss sprite height*/ / 2));
         auto& s = e.attachSprite("skeleton_boss")
                       ->setPosition(x, y)
                       .useAnimation("skeleton_boss_animation");
@@ -108,6 +108,22 @@ namespace game {
         e.insertComponent(std::move(skeleton));
         head.insertComponent(std::move(skeletonHead));
         return head.getEntity();
+    }
+
+    PAA_ENTITY EnemyFactory::make_mattis_boss(double const& x, double const& y)
+    {
+        paa::DynamicEntity body = PAA_NEW_ENTITY();
+
+        auto& body_s = body.attachSprite("mattis_boss_face")
+            ->setPosition(x, y)
+            .useAnimation("mattis_boss_head_basic");
+        body.attachHealth(paa::Health(100));
+        body.attachPosition(paa::Position(x, y));
+        body.attachCollision(CollisionFactory::makeEnemyCollision(
+            paa::recTo<int>(body_s.getGlobalBounds()), body.getEntity()));
+        Enemy body_top = EnemyFactory::make_enemy<Mattis>(body.getEntity());
+        body.insertComponent(std::move(body_top));
+        return body.getEntity();
     }
 
     PAA_ENTITY EnemyFactory::make_robot_boss(double const &x,

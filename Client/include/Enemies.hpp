@@ -12,6 +12,7 @@ namespace game {
         MASTODONTE_ENEMY,
         DUMBY_BOY_ENEMY,
         SKELETON_BOSS,
+        MATTIS_BOSS,
         CENTIPEDE_BOSS,
         CENTIPEDE_BODY_BOSS,
         ROBOT_BOSS_EYE,
@@ -119,6 +120,68 @@ namespace game {
         void on_collision(const paa::CollisionBox& other) override;
         void delay_shoot();
         void update() override;
+    };
+
+    #define MOUTH_OFFSET_Y 10.0f
+
+    class Mattis : public AEnemy {
+    public:
+        Mattis(const PAA_ENTITY& e);
+        ~Mattis() = default;
+
+        void update() override;
+        void on_collision(const paa::CollisionBox& other) override;
+
+    private:
+        void shoot_sequence(
+                const float& deltaTime, const paa::Position& pos);
+
+        void load_path();
+
+        void update_sprite(const float& deltaTime,
+                const paa::Sprite& sprite);
+
+    private:
+        const int _eye_offset[2][2] = {
+            {15, 70},
+            {45, 73}
+        };
+        std::vector<paa::Vector2f> _path;
+        std::size_t _path_index = 0;
+        float const _shoot_duration = 2.0f;
+        float _current_shoot_duration = 0.0f;
+        float _red_timer = 0.0f;
+        PAA_ENTITY _mouth;
+    };
+
+    class MattisMouth : public AEnemy {
+    public:
+        MattisMouth(
+                const PAA_ENTITY& e, const PAA_ENTITY& body);
+        ~MattisMouth() = default;
+
+        void update() override;
+
+    private:
+        void open_mouth(paa::Position& mouth_pos,
+                const float& deltaTime);
+        void check_mouth_offset(paa::Position& mouth_pos,
+                const float& deltaTime);
+        void handle_shoot(const float& deltaTime,
+                paa::Position const& pos);
+
+    private:
+        std::size_t _shoot_index = 0;
+        float _y_offset = 0.0f;
+        paa::Position _last_mouth_pos;
+        const float _attack_cd = 4.0f;
+        float _last_attack = 0.0f;
+        const float _shooting_speed = .12f;
+        float _last_shoot = 1.0f;
+        const paa::DynamicEntity _body;
+        bool _as_attacked = false;
+        bool _start_attack = false;
+        bool _close_mouth = false;
     };
 
     #define RTYPE_CENTIPEDE_BODY_COUNT 10
@@ -258,6 +321,9 @@ namespace game {
         static PAA_ENTITY make_skeleton_boss(
             double const& x, double const& y
         );
+
+        static PAA_ENTITY make_mattis_boss(
+                double const& x, double const& y);
 
         static PAA_ENTITY make_centipede_boss(
             double const& x, double const& y

@@ -1,0 +1,32 @@
+{
+    "Map/SizeTest": {
+        "height": 4300,
+        "width": 2
+    },
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "file.lastUsedOpenFilter": "All Files (*)",
+    "fileStates": {
+        "space.json": {
+            "scale": 0.75,
+            "selectedLayer": 5,
+            "viewCenter": {
+                "x": 3618,
+                "y": 150.66666666666669
+            }
+        }
+    },
+    "last.exportedFilePath": "/home/alexis/Desktop/tek3/B-CPP-500-RUN-5-1-rtype-mattis.dalleau/assets/maps/Space",
+    "map.height": 1,
+    "map.lastUsedExportFilter": "All Files (*)",
+    "map.lastUsedFormat": "json",
+    "map.tileHeight": 189,
+    "map.tileWidth": 3975,
+    "map.width": 1,
+    "openFiles": [
+    ],
+    "project": "space.json.tiled-project",
+    "recentFiles": [
+    ]
+}

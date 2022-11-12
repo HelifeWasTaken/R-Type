@@ -31,6 +31,7 @@ static const char *const MAPS[] = {
     "../assets/maps/MiningField/MiningField.json",
     "../assets/maps/RecyclingFactory/RecyclingFactory.json",
     /*
+    "../assets/maps/Space/space.json",
     "../assets/maps/Ruins/Ruins.json",
     */
     nullptr

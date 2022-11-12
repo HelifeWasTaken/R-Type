@@ -116,7 +116,7 @@ namespace game {
         auto& body_s = body.attachSprite("mattis_boss_face")
             ->setPosition(x, y)
             .useAnimation("mattis_boss_head_basic");
-        body.attachHealth(paa::Health(10));
+        body.attachHealth(paa::Health(100));
         body.attachPosition(paa::Position(x, y));
         body.attachCollision(CollisionFactory::makeEnemyCollision(
             paa::recTo<int>(body_s.getGlobalBounds()), body.getEntity()));

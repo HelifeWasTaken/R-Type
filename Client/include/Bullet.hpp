@@ -15,7 +15,7 @@ class CollisionBox;
 
 #define BASIC_BULLET_SPEED 800
 #define SKELETON_BULLET_SPEED 750
-#define MATTIS_BULLET_SPEED 300
+#define MATTIS_BULLET_SPEED 200
 
 namespace rtype {
 namespace game {

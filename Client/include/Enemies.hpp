@@ -135,6 +135,8 @@ namespace game {
 
         void load_path();
 
+        void update_sprite(const float& deltaTime,
+                const paa::Sprite& sprite);
 
     private:
         const int _eye_offset[2][2] = {
@@ -145,6 +147,7 @@ namespace game {
         std::size_t _path_index = 0;
         float const _shoot_duration = 2.0f;
         float _current_shoot_duration = 0.0f;
+        float _red_timer = 0.0f;
         PAA_ENTITY _mouth;
     };
 

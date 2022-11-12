@@ -59,11 +59,34 @@ namespace game {
 
     void Mattis::on_collision(const paa::CollisionBox& other)
     {
+
         AEnemy::on_collision(other);
         auto& health = PAA_GET_COMPONENT(_e, paa::Health);
+        auto& sprite = PAA_GET_COMPONENT(_e, paa::Sprite);
+        auto& mouth_s = PAA_GET_COMPONENT(_mouth, paa::Sprite);
 
+        if (other.get_id() == rtype::game::CollisionType::PLAYER_BULLET) {
+            sprite->setColor(paa::Color::Red);
+            if (health.hp >= 10)
+                mouth_s->setColor(paa::Color::Red);
+            else
+                mouth_s->setColor(paa::Color::Transparent);
+        }
         if (health.hp <= 0) {
             PAA_ECS.kill_entity(_mouth);
+        }
+    }
+
+    void Mattis::update_sprite(const float& deltaTime, const paa::Sprite& sprite)
+    {
+        auto& mouth_s = PAA_GET_COMPONENT(_mouth, paa::Sprite);
+        _red_timer += deltaTime;
+
+        if (_red_timer >= .1f) {
+           sprite->setColor(paa::Color::White);
+           if (mouth_s->getColor() != paa::Color::Transparent)
+               mouth_s->setColor(paa::Color::White);
+           _red_timer = 0.0f;
         }
     }
 
@@ -73,13 +96,16 @@ namespace game {
         auto& current_pos = PAA_GET_COMPONENT(_e, paa::Position);
         paa::Vector2f dir = paa::Vector2f(_path[_path_index].x - current_pos.x,
                 _path[_path_index].y - current_pos.y);
+        auto& sprite = PAA_GET_COMPONENT(_e, paa::Sprite);
 
+        if (sprite->getColor() == paa::Color::Red)
+            update_sprite(deltaTime, sprite);
         dir.x = (int)dir.x > 0 ? 1.0f : (int)dir.x < 0 ? -1.0f : 0;
         dir.y = (int)dir.y > 0 ? 1.0f : (int)dir.y < 0 ? -1.0f : 0;
         current_pos.x += (int)dir.x * 50.0f * deltaTime;
         current_pos.y += (int)dir.y * 50.0f * deltaTime;
         if (dir.x == 0 && dir.y == 0)
-            _path_index += _path_index < _path.size() ? 1 : -_path_index;
+            _path_index += _path_index < _path.size() - 1? 1 : -_path_index;
         shoot_sequence(deltaTime, current_pos);
     }
 
@@ -94,7 +120,7 @@ namespace game {
             auto shooter = make_shooter<BasicShooter>(_e, 100);
             shooter->aim(startingAngle);
             _shooterList.push_back(shooter);
-            startingAngle += 14.0f;
+            startingAngle += 25.0f;
         }
     }
 
@@ -148,10 +174,15 @@ namespace game {
 
     void MattisMouth::update()
     {
+        auto& sprite = PAA_GET_COMPONENT(_e, paa::Sprite);
         auto& posRef = PAA_GET_COMPONENT(_e, paa::Position);
         auto& parentPosRef = _body.getComponent<paa::Position>();
         const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime();
 
+        if (sprite->getColor() == paa::Color::Transparent) {
+            shoot = true;
+            return;
+        }
         if (!_as_attacked)
             _last_attack += deltaTime;
         posRef.x = parentPosRef.x;

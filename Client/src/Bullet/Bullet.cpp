@@ -72,7 +72,7 @@ namespace game {
 
     MattisBullet::MattisBullet(
         const PAA_ENTITY& e, const double& aim, bool from_player) :
-        ABullet(e, BulletType::MATTIS_BULLET, 1500, aim, 1, from_player),
+        ABullet(e, BulletType::MATTIS_BULLET, 3000, aim, 1, from_player),
         _dir(paa::Math::angle_to_direction(aim))
     {
     }

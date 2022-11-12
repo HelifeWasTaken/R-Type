@@ -21,9 +21,33 @@ fi
 
 cd $targetdir
 
+echo "Cleaning old build"
+rm -rf RType r-type_unix.tar.gz
+
 echo "Done! Copying into RType subfolder."
 
 cp -Rv $projectdir/build/target RType
+
+if [[ $1 == "--release" ]]; then
+    strip RType/Client/binary/r-type_client
+    strip RType/Server/binary/r-type_server
+
+    echo "Minifying JSON files..."
+    for file in $(find ./RType/ -type f -name "*.json" -o -name "*.conf"); do
+        echo "Minifying $file"
+        cat "$file" | jq --compact-output > "$file-compressed"
+        cat "$file-compressed" > "$file"
+        rm -f "$file-compressed"
+    done
+
+    echo "Compressing audio..."
+    for file in $(find ./RType/ -type f -name "*.ogg"); do
+        echo "Compressing $file"
+        ffmpeg -i "$file" -c:a libvorbis -ab 32k -ar 22050 "$file-compressed.ogg"
+        mv "$file-compressed.ogg" "$file"
+    done
+fi
+
 echo ""
 
 echo "Generating the scripts..."

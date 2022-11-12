@@ -159,15 +159,13 @@ PAA_START_CPP(game_win)
 
     endText.setCharacterSize(20);
     endText.setFont(font);
-    endText.setPosition(RTYPE_HUD_WIDTH - 100, RTYPE_HUD_TOP + 20);
     endText.setOutlineThickness(2);
     endText.setOutlineColor(sf::Color::White);
     endText.setFillColor(sf::Color::Blue);
     endText.setString(
         "THANKS TO YOUR BRAVE\n\n\n\nFIGHTING. THE COSMOS\n\n\n\nRESTORED PEACE\n\n\n\nTHE BYDE EMPIRE WAS\n\n\n\nANNIHILATED TO NEVER\n\n\n\nSCARE "
         "PEOPLE AGAIN.\n\n\n\nYOUR NAME WILL REMAIN\n\n\n\nIN THE UNIVERSE FOREVER.\n\n\n\nTHANK YOU FOR PLAYING\n\n\n\nTHE GAME TO THE END.");
-    auto endTextRect = endText.getGlobalBounds();
-    endText.setPosition(RTYPE_HUD_WIDTH - (int)(endTextRect.width / 2) + 40, 690);
+    endText.setPosition(RTYPE_MENU_CENTERED_X(endText) + 40, 690);
 }
 
 PAA_END_CPP(game_win)

@@ -112,8 +112,7 @@ PAA_START_CPP(client_connect)
     logoEntity = PAA_NEW_ENTITY();
     logoEntity.attachSprite("logo");
     auto& s = logoEntity.getComponent<paa::Sprite>();
-    auto logoRect = s->getGlobalBounds();
-    s->setPosition(RTYPE_HUD_WIDTH - (int)(logoRect.width / 2), 100);
+    s->setPosition(RTYPE_MENU_CENTERED_X(*s), 100);
 
     // Always restart on this
     async_connect("first");
@@ -131,8 +130,7 @@ PAA_START_CPP(client_connect)
     ipInputBoxTitle.setOutlineThickness(2);
     ipInputBoxTitle.setOutlineColor(sf::Color::White);
     ipInputBoxTitle.setFillColor(sf::Color::Blue);
-    auto inputBoxTitleTextRect = ipInputBoxTitle.getGlobalBounds();
-    ipInputBoxTitle.setPosition(RTYPE_HUD_WIDTH - (int)(inputBoxTitleTextRect.width/2), 300);
+    ipInputBoxTitle.setPosition(RTYPE_MENU_CENTERED_X(ipInputBoxTitle), 300);
 
     ipInputBoxContent.setCharacterSize(22);
     ipInputBoxContent.setString("_");
@@ -150,8 +148,7 @@ PAA_START_CPP(client_connect)
     connectionPendingText.setOutlineThickness(2);
     connectionPendingText.setOutlineColor(sf::Color::White);
     connectionPendingText.setFillColor(sf::Color::Blue);
-    auto connectionPendingTextRect = connectionPendingText.getGlobalBounds();
-    connectionPendingText.setPosition(RTYPE_HUD_WIDTH - (int)(connectionPendingTextRect.width/2), 350);
+    connectionPendingText.setPosition(RTYPE_MENU_CENTERED_X(connectionPendingText), 350);
 
     auto& joinButton = buttons[0];
     joinButton.setCharacterSize(22);
@@ -160,8 +157,7 @@ PAA_START_CPP(client_connect)
     joinButton.setOutlineThickness(2);
     joinButton.setOutlineColor(sf::Color::White);
     joinButton.setFillColor(sf::Color::Red);
-    auto joinButtonRect = joinButton.getGlobalBounds();
-    joinButton.setPosition(RTYPE_HUD_WIDTH - (int)(joinButtonRect.width/2), 300);
+    joinButton.setPosition(RTYPE_MENU_CENTERED_X(joinButton), 300);
     actions[0] = [this]() {
         if (g_game.service.connected()) {
             PAA_SET_SCENE(connect_room);
@@ -177,8 +173,7 @@ PAA_START_CPP(client_connect)
     hostButton.setOutlineThickness(2);
     hostButton.setOutlineColor(sf::Color::White);
     hostButton.setFillColor(sf::Color::Red);
-    auto hostButtonRect = hostButton.getGlobalBounds();
-    hostButton.setPosition(RTYPE_HUD_WIDTH - (int)(hostButtonRect.width/2), 350);
+    hostButton.setPosition(RTYPE_MENU_CENTERED_X(hostButton), 350);
     actions[1] = [this]() {
         if (g_game.service.connected()) {
             PAA_SET_SCENE(create_room);
@@ -194,8 +189,7 @@ PAA_START_CPP(client_connect)
     settingsButton.setOutlineThickness(2);
     settingsButton.setOutlineColor(sf::Color::White);
     settingsButton.setFillColor(sf::Color::Red);
-    auto settingsButtonRect = settingsButton.getGlobalBounds();
-    settingsButton.setPosition(RTYPE_HUD_WIDTH - (int)(settingsButtonRect.width/2), 400);
+    settingsButton.setPosition(RTYPE_MENU_CENTERED_X(settingsButton), 400);
     actions[2] = [this]() {
         isTypingIP = true;
     };
@@ -206,7 +200,6 @@ PAA_START_CPP(client_connect)
     cursor.setOutlineThickness(2);
     cursor.setOutlineColor(sf::Color::White);
     cursor.setFillColor(sf::Color::Red);
-    cursor.setPosition(RTYPE_HUD_WIDTH - 160, 255);
 }
 
 PAA_END_CPP(client_connect)
@@ -264,8 +257,7 @@ PAA_UPDATE_CPP(client_connect)
         }
 
         ipInputBoxContent.setString(ipInputBoxManager.getValue());
-        auto ipInputBoxContentTextRect = ipInputBoxContent.getGlobalBounds();
-        ipInputBoxContent.setPosition(RTYPE_HUD_WIDTH - (int)(ipInputBoxContentTextRect.width/2), 370);
+        ipInputBoxContent.setPosition(RTYPE_MENU_CENTERED_X(ipInputBoxContent), 370);
         PAA_SCREEN.draw(ipInputBoxTitle);
         PAA_SCREEN.draw(ipInputBoxContent);
         return;
@@ -288,7 +280,7 @@ PAA_UPDATE_CPP(client_connect)
         buttons[i].setFillColor(paa::Color::Blue);
     }
     buttons[cursorPos].setFillColor(paa::Color::Red);
-    cursor.setPosition(RTYPE_HUD_WIDTH - 180, buttons[cursorPos].getPosition().y + 5);
+    cursor.setPosition(RTYPE_MENU_CENTERED_X(buttons[cursorPos]) - 30, buttons[cursorPos].getPosition().y + 8);
 
     for (int i = 0; i < buttons.size(); i++)
         PAA_SCREEN.draw(buttons[i]);

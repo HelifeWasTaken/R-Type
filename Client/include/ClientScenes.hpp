@@ -131,6 +131,11 @@ struct Game {
         transition.start(long_transition);
     }
 
+    void launch_transition_halfway()
+    {
+        transition.start_halfway();
+    }
+
     bool transition_is_halfway() const
     {
         return transition.phase_two();
@@ -216,3 +221,4 @@ public:
 #include "Scenes/SceneGameOver.hpp"
 #include "Scenes/SceneGameWin.hpp"
 #include "Scenes/SceneRoomWait.hpp"
+#include "Scenes/SceneStart.hpp"

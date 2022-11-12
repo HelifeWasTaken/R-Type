@@ -113,6 +113,7 @@ PAA_MAIN("../Resources.conf", {
     PAA_REGISTER_SCENE(game_over);
     PAA_REGISTER_SCENE(game_win);
     PAA_REGISTER_SCENE(waiting_room);
+    PAA_REGISTER_SCENE(scene_start);
 
     PAA_REGISTER_COMPONENTS(rtype::game::Enemy, rtype::game::Bullet,
         rtype::game::BulletExplosion,
@@ -126,5 +127,5 @@ PAA_MAIN("../Resources.conf", {
     g_game.reset_game_view();
 
 
-    PAA_SET_SCENE(client_connect);
+    PAA_SET_SCENE(scene_start);
 });

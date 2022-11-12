@@ -68,4 +68,11 @@ public:
         _timer.setTarget(_duration / 2);
         _phase_two = false;
     }
+
+    void start_halfway() {
+        start(false);
+        _duration = RTYPE_SHORT_TRANSITION_DURATION;
+        _timer.setTarget(RTYPE_SHORT_TRANSITION_DURATION / 2);
+        _phase_two = true;
+    }
 };

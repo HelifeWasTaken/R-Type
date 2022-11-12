@@ -112,7 +112,7 @@ PAA_END_CPP(game_scene)
         if (g_game.players_entities[i]) {
             g_game.players_entities[i] = PAA_ENTITY();
             if (!g_game.everyone_is_dead()) {
-            g_game.connected_players[i] = false;
+                g_game.connected_players[i] = false;
             }
             g_game.players_alive[i] = false;
             spdlog::debug("Player {} reset", i);
@@ -155,6 +155,7 @@ static void update_player_death(shared_message_t& msg)
 
     PAA_ECS.kill_entity(g_game.players_entities[e.getElement()]);
     g_game.players_alive[e.getElement()] = false;
+    spdlog::debug("Player {} is dead", e.getElement());
 }
 
 static void update_sync_scroll(shared_message_t& msg)

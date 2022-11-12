@@ -1,7 +1,11 @@
 #include "Enemies.hpp"
+#include <fstream>
 
 namespace rtype {
 namespace game {
+
+    static inline bool shoot = false;
+
     Mattis::Mattis(const PAA_ENTITY& e) : AEnemy(e, MATTIS_BOSS)
     {
         paa::DynamicEntity mouth = PAA_NEW_ENTITY();
@@ -17,21 +21,56 @@ namespace game {
         Enemy entity = EnemyFactory::make_enemy<MattisMouth>(mouth.getEntity(), _e);
         mouth.insertComponent(std::move(entity));
         _mouth = mouth;
+        for (std::size_t i = 0; i < 2; i++) {
+            auto shooter = make_shooter<BasicShooter>(_e, 0);
+            shooter->aim(-180);
+            _shooterList.push_back(shooter);
+        }
+        load_path();
+    }
+
+    void Mattis::load_path()
+    {
+        std::ifstream file("../assets/maps/mattis_path.json");
+        nlohmann::json j;
+
+        file >> j;
+
+        for (auto& p : j["path"]) {
+            _path.push_back({p[0].get<float>(), p[1].get<float>()});
+        }
+    }
+
+    void Mattis::shoot_sequence(const float& deltaTime, const paa::Position& pos)
+    {
+        if (shoot) {
+            for (std::size_t i = 0; i < _shooterList.size(); i++) {
+                auto fixed_pos = paa::Position(pos.x + _eye_offset[i][0],
+                        pos.y + _eye_offset[i][1]);
+                _shooterList[i]->shoot_from_pos("basic_bullet", fixed_pos);
+            }
+            _current_shoot_duration += deltaTime;
+            if (_current_shoot_duration >= _shoot_duration) {
+                shoot = false;
+                _current_shoot_duration = 0.0f;
+            }
+        }
     }
 
     void Mattis::update()
     {
         const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime();
         auto& current_pos = PAA_GET_COMPONENT(_e, paa::Position);
-        paa::Vector2f dir = paa::Vector2f(_path[_path_index][0] - current_pos.x,
-                _path[_path_index][1] - current_pos.y);
+        paa::Vector2f dir = paa::Vector2f(_path[_path_index].x - current_pos.x,
+                _path[_path_index].y - current_pos.y);
 
         dir.x = (int)dir.x > 0 ? 1.0f : (int)dir.x < 0 ? -1.0f : 0;
         dir.y = (int)dir.y > 0 ? 1.0f : (int)dir.y < 0 ? -1.0f : 0;
         current_pos.x += (int)dir.x * 50.0f * deltaTime;
         current_pos.y += (int)dir.y * 50.0f * deltaTime;
         if (dir.x == 0 && dir.y == 0)
-            _path_index += _path_index < 9 ? 1 : -_path_index;
+            _path_index += _path_index < _path.size() ? 1 : -_path_index;
+        shoot_sequence(deltaTime, current_pos);
     }
 
     MattisMouth::MattisMouth(const PAA_ENTITY& e,
@@ -41,7 +80,7 @@ namespace game {
                             _last_mouth_pos(0, 0)
     {
         float startingAngle = -230.0f;
-        for (std::size_t i = 0; i < 10; i++) {
+        for (std::size_t i = 0; i < 8; i++) {
             auto shooter = make_shooter<BasicShooter>(_e, 100);
             shooter->aim(startingAngle);
             _shooterList.push_back(shooter);
@@ -60,6 +99,7 @@ namespace game {
             _last_shoot = 0.0f;
         }
         if (_shoot_index >= _shooterList.size()) {
+            shoot = true;
             _shoot_index = 0;
             _last_attack = 0.0f;
             _as_attacked = false;
@@ -78,7 +118,6 @@ namespace game {
                 handle_shoot(deltaTime, mouth_pos);
             }
         }
-
         if (_close_mouth)
             _y_offset -= 25.0f * deltaTime;
         if (_y_offset <= 0.0f) {

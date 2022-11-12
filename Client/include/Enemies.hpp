@@ -127,20 +127,23 @@ namespace game {
         ~Mattis() = default;
 
         void update() override;
+
     private:
-        const float _path[10][2] = {
-           { 891.00f, 117.00f },
-           { 1110.00f, 77.00f },
-           { 1059.00f, 10.00f },
-           { 860.00f, 26.00f },
-           { 1005.00f, 29.00f},
-           { 1082.00f, 45.00f },
-           { 1039.00f, 189.00f },
-           { 1152.00f, 241.00f},
-           { 987.00f, 110.00f },
-           { 982.00f, 140.00f}
+        void shoot_sequence(
+                const float& deltaTime, const paa::Position& pos);
+
+        void load_path();
+
+
+    private:
+        const int _eye_offset[2][2] = {
+            {15, 70},
+            {45, 73}
         };
+        std::vector<paa::Vector2f> _path;
         std::size_t _path_index = 0;
+        float const _shoot_duration = 2.0f;
+        float _current_shoot_duration = 0.0f;
         PAA_ENTITY _mouth;
     };
 

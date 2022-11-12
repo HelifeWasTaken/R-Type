@@ -2,9 +2,10 @@
 
 PAA_START_CPP(scene_start)
 {
+    paa::GMusicPlayer::play("../assets/pileaa.ogg");
     g_game.launch_transition_halfway();
 
-    timer.setTarget(2000);
+    timer.setTarget(5100);
     timer.restart();
 
     logoEntity = PAA_NEW_ENTITY();

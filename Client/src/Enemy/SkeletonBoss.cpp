@@ -18,6 +18,7 @@ namespace game {
                                                                 _boss_body(body),
                                                                 _head_sprite(head_sprite)
     {
+        isDeathTriggered = false;
         for (std::size_t i = 0; i < 12; i++) {
             auto shooter = make_shooter<ConeShooter>(_e);
             _shooterList.push_back(shooter);
@@ -27,13 +28,6 @@ namespace game {
     void SkeletonBossHead::on_collision(const paa::CollisionBox& other)
     {
         AEnemy::on_collision(other);
-        paa::Health head_health = PAA_GET_COMPONENT(_e, paa::Health);
-        paa::Health& body_health = PAA_GET_COMPONENT(_boss_body, paa::Health);
-
-        if (head_health.hp <= 0 && _start) {
-            PAA_ECS.kill_entity(_boss_body);
-            paa::GMusicPlayer::play(MUSIC_COMBAT_IS_OVER, false);
-        }
     }
 
     void SkeletonBossHead::delay_shoot()
@@ -61,6 +55,13 @@ namespace game {
             _head_sprite->useAnimation("skeleton_boss_head_start_animation", false);
             _start = true;
             _timer = 0.0f;
+        }
+        paa::Health head_health = PAA_GET_COMPONENT(_e, paa::Health);
+        paa::Health& body_health = PAA_GET_COMPONENT(_boss_body, paa::Health);
+        if (!isDeathTriggered && head_health.hp <= 0 && _start) {
+            isDeathTriggered = true;
+            PAA_ECS.kill_entity(_boss_body);
+            paa::GMusicPlayer::play(MUSIC_COMBAT_IS_OVER, false);
         }
         if (_start) {
             _last_shoot += deltaTime;

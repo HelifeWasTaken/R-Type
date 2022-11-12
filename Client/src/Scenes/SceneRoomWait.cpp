@@ -1,6 +1,7 @@
 #include "ClientScenes.hpp"
 #include <boost/algorithm/string/case_conv.hpp>
 #include "PileAA/MusicPlayer.hpp"
+#include "MenuParallax.hpp"
 
 using namespace rtype::net;
 
@@ -132,6 +133,7 @@ PAA_END_CPP(waiting_room) { gui.clear(); }
 PAA_UPDATE_CPP(waiting_room)
 {
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
+    rtype::MenuParallax::update();
     manage_server_events();
 
     if (g_game.is_host) {

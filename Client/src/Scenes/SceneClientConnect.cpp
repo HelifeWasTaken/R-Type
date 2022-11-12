@@ -1,6 +1,7 @@
 #include "Scenes/SceneClientConnect.hpp"
 
 #include "PileAA/GUI.hpp"
+#include "MenuParallax.hpp"
 
 using namespace rtype::net;
 
@@ -92,7 +93,7 @@ PAA_START_CPP(client_connect)
 {
     self = this;
 
-    paa::GMusicPlayer::play("../assets/menu.ogg", true);
+    paa::GMusicPlayer::playIfNotPlayed("../assets/menu.ogg", true);
 
     isThreadJoined = false;
     connectThread = nullptr;
@@ -102,6 +103,9 @@ PAA_START_CPP(client_connect)
 
     // Make sure the ECS clear
     PAA_ECS.clear();
+
+    // create the parallax
+    rtype::MenuParallax::recreate();
 
     // Always restart on this
     async_connect("first");
@@ -197,10 +201,15 @@ PAA_START_CPP(client_connect)
     cursor.setPosition(RTYPE_HUD_WIDTH - 160, 255);
 }
 
-PAA_END_CPP(client_connect) { gui.clear(); }
+PAA_END_CPP(client_connect)
+{
+    gui.clear();
+}
 
 PAA_UPDATE_CPP(client_connect)
 {
+    rtype::MenuParallax::update();
+
     if (isConnectionPending || isTryingToReconnect || !timer.isFinished()) {
         if (isConnectionPending)
             timer.restart();
@@ -254,11 +263,13 @@ PAA_UPDATE_CPP(client_connect)
     }
 
     if (PAA_INPUT.isKeyPressed(paa::Keyboard::Up)) {
+        clickSound.play();
         cursorPos--;
         if (cursorPos < 0)
             cursorPos = buttons.size() - 1;
     }
     if (PAA_INPUT.isKeyPressed(paa::Keyboard::Down)) {
+        clickSound.play();
         cursorPos++;
         if (cursorPos >= buttons.size())
             cursorPos = 0;
@@ -275,6 +286,7 @@ PAA_UPDATE_CPP(client_connect)
     PAA_SCREEN.draw(cursor);
 
     if (PAA_INPUT.isKeyPressed(paa::Keyboard::Enter)) {
+        clickSound.play();
         actions[cursorPos]();
     }
 

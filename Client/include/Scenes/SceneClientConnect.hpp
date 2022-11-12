@@ -3,6 +3,7 @@
 #include "ClientScenes.hpp"
 #include <boost/atomic.hpp>
 #include "PileAA/InputBox.hpp"
+#include "PileAA/Parallax.hpp"
 #include <functional>
 
 PAA_SCENE(client_connect)
@@ -22,6 +23,9 @@ PAA_SCENE(client_connect)
     paa::Timer connectionPendingTimer;
     paa::Timer connectionTimeoutTimer;
     paa::Text connectionPendingText;
+
+    paa::Sound clickSound =
+            paa::Sound(PAA_RESOURCE_MANAGER.get<paa::SoundBuffer>("menu_click"));
 
     bool isTypingIP;
     paa::Text ipInputBoxTitle;

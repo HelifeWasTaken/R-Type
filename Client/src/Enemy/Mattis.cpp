@@ -22,7 +22,7 @@ namespace game {
         mouth.insertComponent(std::move(entity));
         _mouth = mouth;
         for (std::size_t i = 0; i < 2; i++) {
-            auto shooter = make_shooter<BasicShooter>(_e, 0);
+            auto shooter = make_shooter<BasicShooter>(_e, 50);
             shooter->aim(-180);
             _shooterList.push_back(shooter);
         }
@@ -47,7 +47,7 @@ namespace game {
             for (std::size_t i = 0; i < _shooterList.size(); i++) {
                 auto fixed_pos = paa::Position(pos.x + _eye_offset[i][0],
                         pos.y + _eye_offset[i][1]);
-                _shooterList[i]->shoot_from_pos("basic_bullet", fixed_pos);
+                _shooterList[i]->shoot_from_pos("laser_beam", fixed_pos);
             }
             _current_shoot_duration += deltaTime;
             if (_current_shoot_duration >= _shoot_duration) {

@@ -220,12 +220,15 @@ public:
 #include <PileAA/external/nlohmann/json.hpp>
 #include <fstream>
 #include <filesystem>
+#include <RServer/AsciiTitle.hpp>
 
 int main(int argc, char **argv)
 {
     #if CMAKE_BUILD_TYPE == Release
         // spdlog::set_level(spdlog::level::level_enum::critical);
     #endif
+
+    AsciiTitle::print("R-Type Server");
 
     std::filesystem::current_path(std::filesystem::path(argv[0]).parent_path());
 

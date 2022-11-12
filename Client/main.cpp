@@ -7,6 +7,7 @@
 #include "Map.hpp"
 #include "Player.hpp"
 
+#include "RServer/AsciiTitle.hpp"
 #include "RServer/Messages/Messages.hpp"
 
 Game g_game;
@@ -102,6 +103,8 @@ PAA_SCENE(test) {
 PAA_MAIN("../Resources.conf", {
     // PAA_REGISTER_SCENE(test);
     // PAA_SET_SCENE(test);
+
+    AsciiTitle::print("Powered by PileAA");
 
     PAA_REGISTER_SCENE(create_room);
     PAA_REGISTER_SCENE(client_connect);

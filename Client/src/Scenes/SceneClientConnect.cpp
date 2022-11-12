@@ -100,6 +100,8 @@ PAA_START_CPP(client_connect)
     isTypingIP = false;
     cursorPos = 0;
 
+    g_game.is_host = false;
+
     // Make sure the ECS clear
     PAA_ECS.clear();
 

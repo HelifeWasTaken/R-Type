@@ -37,7 +37,7 @@ PAA_START_CPP(game_over)
     retryText.setFillColor(sf::Color::Blue);
 
     scoreText.setCharacterSize(12);
-    scoreText.setString("Score - " +  std::to_string(g_game.score) + " pts");
+    scoreText.setString("Your score - " +  std::to_string(g_game.score) + " pts");
     scoreText.setFont(font);
     scoreText.setOutlineThickness(1);
     scoreText.setOutlineColor(sf::Color::White);
@@ -119,7 +119,7 @@ PAA_UPDATE_CPP(game_over)
     if (g_game.in_transition()) {
         g_game.transition.update();
         if (exitGameOver && g_game.transition_is_halfway()) {
-            if (g_game.is_host) {
+            if (g_game.is_host && g_game.service.is_service_on()) {
                 g_game.service.tcp().send(SignalMarker(message_code::LAUNCH_GAME));
             }
         }

@@ -146,7 +146,6 @@ PAA_START_CPP(game_win)
 {
     map_index = 0;
     localPlayerTargetId = 0;
-    g_game.service.stop();
     paa::GMusicPlayer::play("../assets/game_win.ogg", false);
 
     reinitialize_game();
@@ -173,6 +172,7 @@ PAA_START_CPP(game_win)
 
 PAA_END_CPP(game_win)
 {
+    g_game.service.stop();
     for (int i = 0; i < RTYPE_PLAYER_COUNT; i++) {
         if (g_game.players_entities[i]) {
             g_game.players_entities[i] = PAA_ENTITY();
@@ -183,18 +183,6 @@ PAA_END_CPP(game_win)
     PAA_ECS.clear();
     backgroundShips.clear();
     map = nullptr;
-}
-
-static void update_player_position(shared_message_t& msg)
-{
-    const auto sp = parse_message<UpdateMessage>(msg);
-    const rtype::game::SerializablePlayer p(sp->data());
-    paa::DynamicEntity e = g_game.players_entities[sp->sid()];
-    try {
-        e.getComponent<rtype::game::Player>()->update_info(p);
-    } catch (...) {
-        spdlog::warn("You tried to update a dead or disconnected player");
-    }
 }
 
 static void handle_transition(paa::Timer& cinematicEndTimer, std::unique_ptr<rtype::game::Map>& map)
@@ -218,6 +206,42 @@ static void handle_end_text(paa::Text& endText, paa::DeltaTimer& deltaTimer)
     paa::Vector2f pos = endText.getPosition();
     pos.y -= 38 * deltaTimer.getDeltaTime();
     endText.setPosition(pos);
+}
+
+static void update_player_room_client_disconnect(shared_message_t& msg)
+{
+    const auto sp = parse_message<UserDisconnectFromRoom>(msg);
+
+    spdlog::warn("User {} disconnected from the room, new host is {}",
+                sp->get_disconnected_user_id(), sp->get_new_host_id());
+
+    g_game.connected_players[sp->get_disconnected_user_id()] = false;
+    g_game.players_alive[sp->get_disconnected_user_id()] = false;
+    g_game.players_entities[sp->get_disconnected_user_id()] = PAA_ENTITY();
+
+    if (sp->get_new_host_id() == g_game.id) {
+        spdlog::warn("You are the new host");
+        g_game.is_host = true;
+    }
+}
+
+static void update_server_event()
+{
+    auto& tcp = g_game.service.tcp();
+    auto& udp = g_game.service.udp();
+
+    shared_message_t msg;
+    while (tcp.poll(msg) || udp.poll(msg)) {
+        switch (msg->code()) {
+        case message_code::ROOM_CLIENT_DISCONNECT:
+            update_player_room_client_disconnect(msg);
+            break;
+        default:
+            spdlog::info(
+                "Client game_win: Received message of type {}", msg->type());
+            break;
+        }
+    }
 }
 
 PAA_UPDATE_CPP(game_win)
@@ -250,6 +274,8 @@ PAA_UPDATE_CPP(game_win)
             localPlayerTargetId++;
         }
     }
+
+    update_server_event();
 }
 
 PAA_EVENTS_CPP(game_win) { }

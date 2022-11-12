@@ -40,7 +40,8 @@ static void manage_server_events()
 
 PAA_START_CPP(create_room)
 {
-    g_game.service.tcp().send(SignalMarker(message_code::CREATE_ROOM));
+    if (g_game.service.is_service_on())
+        g_game.service.tcp().send(SignalMarker(message_code::CREATE_ROOM));
 }
 
 PAA_END_CPP(create_room) { }

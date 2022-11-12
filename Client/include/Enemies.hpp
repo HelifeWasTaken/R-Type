@@ -111,6 +111,7 @@ namespace game {
         bool _start = false;
         std::size_t _shoot_index = 0;
         const float _shoot_cycle = 2.0f;
+        bool isDeathTriggered;
 
     public:
         SkeletonBossHead(const PAA_ENTITY& e, const PAA_ENTITY& body,

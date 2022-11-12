@@ -104,7 +104,7 @@ PAA_START_CPP(client_connect)
     // Always restart on this
     async_connect("first");
 
-    timer.setTarget(500);
+    timer.setTarget(1000);
 
     // use HUD View in case the player was in game
     g_game.use_hud_view();
@@ -199,8 +199,10 @@ PAA_END_CPP(client_connect) { gui.clear(); }
 
 PAA_UPDATE_CPP(client_connect)
 {
-    if (isConnectionPending || isTryingToReconnect) {
-        if (connectThread != nullptr && !isThreadJoined && connectionTimeoutTimer.isFinished()) {
+    if (isConnectionPending || isTryingToReconnect || !timer.isFinished()) {
+        if (isConnectionPending)
+            timer.restart();
+        if (timer.isFinished() && connectThread != nullptr && !isThreadJoined && connectionTimeoutTimer.isFinished()) {
             connectThread->interrupt();
             connectThread.reset();
             g_game.service.stop();

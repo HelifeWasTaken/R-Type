@@ -31,7 +31,7 @@ namespace game {
 
     void Mattis::load_path()
     {
-        std::ifstream file("../assets/maps/mattis_path.json");
+        std::ifstream file("../assets/maps/Space/mattis_path.json");
         nlohmann::json j;
 
         file >> j;

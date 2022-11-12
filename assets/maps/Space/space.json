@@ -287,6 +287,12 @@
                 },
             
                 {
+                 "name":"end_map",
+                 "type":"string",
+                 "value":"end, 4000"
+                },
+            
+                {
                  "name":"wave1",
                  "type":"string",
                  "value":"activate_wave, 350"

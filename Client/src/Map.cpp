@@ -191,6 +191,10 @@ namespace game {
                     _changes = true;
                 } else if (effect->type == "launch_music") {
                     activate_play_music_event(*effect);
+                } else if (effect->type == "show_gui") {
+                    g_game.show_gui = true;
+                } else if (effect->type == "hide_gui") {
+                    g_game.show_gui = false;
                 } else if (effect->type.starts_with("scroll_speed=")) {
                     g_game.scroll_speed = std::atoi(effect->type.c_str() + 13);
                 }

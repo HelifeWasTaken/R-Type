@@ -142,6 +142,7 @@ struct Game {
     float scroll_speed = DEFAULT_SCROLL_SPEED;
     float scroll = 0;
     bool lock_scroll = false;
+    bool show_gui = true;
 };
 
 extern Game g_game;

@@ -63,6 +63,7 @@ static void reinitialize_game()
     rtype::MenuParallax::clear();
     PAA_ECS.clear();
 
+    g_game.show_gui = true;
     g_game.score = 0;
     g_game.scroll = 0;
     g_game.old_scroll = 0;
@@ -263,8 +264,10 @@ PAA_UPDATE_CPP(game_scene)
         scoreText.setString(g_game.generate_hud_text_for_score());
     }
 
-    PAA_SCREEN.draw(lifeText);
-    PAA_SCREEN.draw(scoreText);
+    if (g_game.show_gui) {
+        PAA_SCREEN.draw(lifeText);
+        PAA_SCREEN.draw(scoreText);
+    }
     g_game.transition.draw();
 
     g_game.use_game_view();

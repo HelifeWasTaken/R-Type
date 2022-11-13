@@ -104,6 +104,7 @@ namespace game {
     class SkeletonBossHead : public AEnemy {
     private:
         const PAA_ENTITY _boss_body;
+        float _red_timer = 0.0f;
         const paa::Sprite _head_sprite;
         float _timer = 0.0f;
         float _last_shoot = 0.0f;
@@ -119,8 +120,10 @@ namespace game {
         ~SkeletonBossHead() = default;
 
         void on_collision(const paa::CollisionBox& other) override;
-        void delay_shoot();
         void update() override;
+
+    private:
+        void delay_shoot();
     };
 
     #define MOUTH_OFFSET_Y 10.0f
@@ -195,6 +198,7 @@ namespace game {
         PAA_ENTITY _parent;
         int _depth;
 
+        float _red_timer = 0.0f;
         bool _alive = true;
         float _angle = 0.0f;
 
@@ -276,6 +280,7 @@ namespace game {
     private:
         paa::DynamicEntity _body;
 
+        float _red_timer = 0.0f;
         static constexpr float VULNERABLE_TIME = 2000.f;
         static constexpr float INVULNERABLE_TIME = 500.f;
 

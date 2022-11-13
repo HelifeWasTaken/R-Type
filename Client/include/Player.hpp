@@ -99,6 +99,8 @@ namespace game {
 
         SerializablePlayer _info;
 
+        bool _wallDeath;
+        paa::Timer _wallDeathTimer;
         paa::Timer _syncWithTcpTimer;
         paa::Timer _syncTimer;
         paa::Timer _hurtTimer;
@@ -126,6 +128,7 @@ namespace game {
             paa::Sound(PAA_RESOURCE_MANAGER.get<paa::SoundBuffer>("player_hurt"));
 
     public:
+        static constexpr int WALL_DEATH_TIME = 500;
         static constexpr int MAX_HEALTH = 6;
         static constexpr int SYNC_RATE = 250;
         static constexpr int SYNC_WITH_TCP_RATE = 2000;

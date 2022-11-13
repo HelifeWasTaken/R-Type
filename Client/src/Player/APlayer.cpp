@@ -12,7 +12,9 @@ namespace game {
         , _spriteRef(spriteRef)
         , _controllerRef(controllerRef)
         , _is_local(is_local)
+        , _wallDeath(false)
     {
+        _wallDeathTimer.setTarget(WALL_DEATH_TIME);
         _syncTimer.setTarget(SYNC_RATE);
         _syncWithTcpTimer.setTarget(SYNC_WITH_TCP_RATE);
         _frameTimer.setTarget(FRAME_RATE);
@@ -208,8 +210,12 @@ namespace game {
             if (_is_local) {
                 paa::Health& healthRef = PAA_GET_COMPONENT(_entity, paa::Health);
                 if (other_id == CollisionType::STATIC_WALL) {
-                    g_game.score -= 10 * healthRef.hp;
-                    healthRef.hp = 0;
+                    if (!_wallDeath) {
+                        _wallDeathTimer.restart();
+                    } else if(_wallDeathTimer.isFinished()) {
+                        g_game.score -= 10 * healthRef.hp;
+                        healthRef.hp = 0;
+                    }
                 } else {
                     healthRef.hp -= 1;
                     g_game.score -= 10;

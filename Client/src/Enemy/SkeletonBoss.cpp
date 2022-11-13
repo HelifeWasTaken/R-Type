@@ -28,6 +28,11 @@ namespace game {
     void SkeletonBossHead::on_collision(const paa::CollisionBox& other)
     {
         AEnemy::on_collision(other);
+        auto& body_sprite = PAA_GET_COMPONENT(_boss_body, paa::Sprite);
+        auto& head_sprite = PAA_GET_COMPONENT(_e, paa::Sprite);
+
+        head_sprite->setColor(paa::Color::Red);
+        body_sprite->setColor(paa::Color::Red);
     }
 
     void SkeletonBossHead::delay_shoot()
@@ -49,6 +54,8 @@ namespace game {
     void SkeletonBossHead::update()
     {
         const float deltaTime = PAA_DELTA_TIMER.getDeltaTime();
+        auto& head_sprite = PAA_GET_COMPONENT(_e, paa::Sprite);
+
         _timer += deltaTime;
 
         if (!_start) {
@@ -71,6 +78,15 @@ namespace game {
                 _timer = 0.0f;
             }
             delay_shoot();
+        }
+        if (head_sprite->getColor() == paa::Color::Red) {
+            _red_timer += deltaTime;
+            if (_red_timer >= .1f) {
+                auto& body = PAA_GET_COMPONENT(_boss_body, paa::Sprite);
+                head_sprite->setColor(paa::Color::White);
+                body->setColor(paa::Color::White);
+                _red_timer = 0.0f;
+            }
         }
     }
 }

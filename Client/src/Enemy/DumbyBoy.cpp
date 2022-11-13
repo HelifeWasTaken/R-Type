@@ -13,7 +13,7 @@ namespace game {
         _shooterList.push_back(shooter);
         _shoot_cycle = 1.5f
             + static_cast<float>(paa::Random::rand())
-                * static_cast<float>(3 - 1.5f) / 3.0f;
+                * static_cast<float>(3.0f - 1.5f) / RAND_MAX;
     }
 
     void DumbyBoy::on_collision(const paa::CollisionBox& other)
@@ -22,7 +22,7 @@ namespace game {
         AEnemy::on_collision(other);
         if (other.get_id() == CollisionType::STATIC_WALL) {
             _y_velocity *= -1;
-            _y_velocity += _y_velocity < 0 ? -5 : 5;
+            fixed.y += _y_velocity < 0 ? -10 : 10;
         }
     }
 

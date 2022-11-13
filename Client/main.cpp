@@ -126,6 +126,5 @@ PAA_MAIN("../Resources.conf", {
     g_game.hud_view = PAA_SCREEN.getView();
     g_game.reset_game_view();
 
-
     PAA_SET_SCENE(scene_start);
 });

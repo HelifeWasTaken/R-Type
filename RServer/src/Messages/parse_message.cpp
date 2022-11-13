@@ -30,7 +30,6 @@ namespace net {
             { message_code::LAUNCH_GAME, message_type::SIGNAL_MARKER },
 
             // YesNo messages
-            { message_code::LAUNCH_GAME_REP, message_type::YES_NO_MESSAGES },
 
             // Special messages
             { message_code::CONN_INIT_REP, message_type::CONNECTION_INIT_REPLY },
@@ -43,6 +42,7 @@ namespace net {
             { message_code::CREATE_ROOM_REPLY, message_type::CREATE_ROOM_REPLY },
             { message_code::ROOM_CLIENT_DISCONNECT, message_type::ROOM_CLIENT_DISCONNECT },
             { message_code::ROOM_CLIENT_CONNECT, message_type::ROOM_CLIENT_CONNECT },
+            { message_code::LAUNCH_GAME_REP, message_type::LAUNCH_GAME_REP},
 
             // Sync messages
             { message_code::SYNC_PLAYER, message_type::SYNC_MESSAGE },
@@ -107,6 +107,8 @@ namespace net {
             case message_type::ROOM_CLIENT_DISCONNECT:
                 return Message::deserialize<UserDisconnectFromRoom>(
                     buffer, size);
+            case message_type::LAUNCH_GAME_REP:
+                return Message::deserialize<GameLauncher>(buffer, size);
             default:
                 spdlog::error("Unknown message type of code/type: {}/{}",
                     (int)code, (int)type);

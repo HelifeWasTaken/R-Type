@@ -638,6 +638,11 @@
                  "value":"end,4300"
                 }, 
                 {
+                 "name":"hide_hud",
+                 "type":"string",
+                 "value":"hide_gui,900"
+                }, 
+                {
                  "name":"map_global_speed_scroll",
                  "type":"string",
                  "value":"scroll_speed=2,0"
@@ -646,6 +651,11 @@
                  "name":"scroll_speed_ruins",
                  "type":"string",
                  "value":"scroll_speed=1,850"
+                }, 
+                {
+                 "name":"show_hud",
+                 "type":"string",
+                 "value":"show_gui,1400"
                 }, 
                 {
                  "name":"wave1",
@@ -680,7 +690,7 @@
                 {
                  "name":"wave5_lock",
                  "type":"string",
-                 "value":"lock_scroll,1600"
+                 "value":"lock_scroll,1500"
                 }, 
                 {
                  "name":"wave6",

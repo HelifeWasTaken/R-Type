@@ -249,11 +249,6 @@ PAA_UPDATE_CPP(game_scene)
         g_game.launch_transition();
     }
 
-    if (PAA_INPUT.isKeyPressed(paa::Keyboard::F11)) {
-        PAA_APP.setFullscreen(!PAA_APP.isFullscreen());
-        g_game.reset_game_view();
-        g_game.use_hud_view();
-    }
     handle_transition(map_index, map);
 
     //spdlog::info("Scroll: {}", g_game.scroll);

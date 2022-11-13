@@ -246,12 +246,6 @@ PAA_UPDATE_CPP(game_win)
 {
     handle_transition(cinematicEndTimer, map);
 
-    if (PAA_INPUT.isKeyPressed(paa::Keyboard::F11)) {
-        PAA_APP.setFullscreen(!PAA_APP.isFullscreen());
-        g_game.reset_game_view();
-        g_game.use_hud_view();
-    }
-    
     deltaTimer.update();
     handle_end_text(endText, deltaTimer);
     update_shaceships_batch(backgroundShips);

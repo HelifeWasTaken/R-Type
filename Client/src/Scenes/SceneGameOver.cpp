@@ -107,12 +107,6 @@ static void update_server_event()
 PAA_UPDATE_CPP(game_over)
 {
 
-    if (PAA_INPUT.isKeyPressed(paa::Keyboard::F11)) {
-        PAA_APP.setFullscreen(!PAA_APP.isFullscreen());
-        g_game.reset_game_view();
-        g_game.use_hud_view();
-    }
-
     g_game.use_hud_view();
 
     if (g_game.is_host) {

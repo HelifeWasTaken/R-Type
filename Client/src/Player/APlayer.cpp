@@ -60,15 +60,6 @@ namespace game {
                 : offsety > minoffsety ? -100
                                       : 0);
 
-        if (std::abs(offsetx) > 1.2f * minoffsetx && std::abs(offsety) > 1.2f * minoffsety) {
-            if (std::abs(offsetx) < 15 * minoffsetx && std::abs(offsety) < 15 * minoffsety) {
-                _controllerRef->simulateAxisMovement(paa::Joystick::Axis::X, 0);
-                _controllerRef->simulateAxisMovement(paa::Joystick::Axis::Y, 0);
-                positionRef.x = info.get_pos().x;
-                positionRef.y = info.get_pos().y;
-            }
-        }
-
         info.get_shoot()
             ? _controllerRef->simulateButtonHeld(RTYPE_SHOOT_BUTTON)
             : _controllerRef->simulateButtonIdle(RTYPE_SHOOT_BUTTON);

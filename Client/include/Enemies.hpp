@@ -156,6 +156,7 @@ namespace game {
         float _current_shoot_duration = 0.0f;
         float _red_timer = 0.0f;
         PAA_ENTITY _mouth;
+        paa::Sound _laser = paa::Sound(PAA_RESOURCE_MANAGER.get<paa::SoundBuffer>("laser_sound"));
     };
 
     class MattisMouth : public AEnemy {
@@ -175,6 +176,8 @@ namespace game {
                 paa::Position const& pos);
 
     private:
+        paa::Sound _ghast =
+            paa::Sound(PAA_RESOURCE_MANAGER.get<paa::SoundBuffer>("ghast_sound"));
         std::size_t _shoot_index = 0;
         float _y_offset = 0.0f;
         paa::Position _last_mouth_pos;

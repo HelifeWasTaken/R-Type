@@ -90,7 +90,7 @@ namespace game {
         // and if the timer is ready
         //
         
-        if (_is_local && g_game.service.is_service_on()) {
+        if (_is_local && g_game.service.tcp_is_connected()) {
             SerializablePlayer info(_entity.getEntity());
             if (_syncTimer.isFinished() || !info.data_is_same(_info) || _syncWithTcpTimer.isFinished()) {
                 if (_syncWithTcpTimer.isFinished()) {

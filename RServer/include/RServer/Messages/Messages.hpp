@@ -95,7 +95,6 @@ namespace net {
         LAUNCH_GAME,
 
         // YesNo messages
-        LAUNCH_GAME_REP,
 
         // special messages
         CONN_INIT_REP,
@@ -108,6 +107,7 @@ namespace net {
         CONNECT_ROOM_REQ_REP,
         ROOM_CLIENT_CONNECT,
         ROOM_CLIENT_DISCONNECT,
+        LAUNCH_GAME_REP,
 
         // Sync messages
         SYNC_PLAYER,
@@ -133,7 +133,6 @@ namespace net {
 
         // YesNo messages
         YES_NO_MESSAGES,
-        LAUNCH_GAME_REP = YES_NO_MESSAGES,
 
         // special messages
         CONNECTION_INIT_REPLY,
@@ -151,6 +150,7 @@ namespace net {
         CONNECT_ROOM_REQ_REP,
         ROOM_CLIENT_CONNECT,
         ROOM_CLIENT_DISCONNECT,
+        LAUNCH_GAME_REP,
 
         // Sync messages
         SYNC_MESSAGE,
@@ -499,6 +499,24 @@ namespace net {
     private:
         PlayerID _dc_user_id = 0;
         PlayerID _new_host_id = 0;
+    };
+
+    class GameLauncher : public Message {
+    public:
+        GameLauncher() = default;
+        GameLauncher(int32_t seed, bool yes);
+        ~GameLauncher() override = default;
+
+        void from(const Byte* data, const BufferSizeType size) override;
+        std::vector<Byte> serialize() const override;
+        BufferSizeType size() const override;
+
+        bool yes() const;
+        int32_t seed() const;
+
+    private:
+        Byte _yes = false;
+        int32_t _seed = 0;
     };
 
 }

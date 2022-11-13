@@ -44,11 +44,12 @@ static void manage_room_client_disconnect(shared_message_t msg)
 
 static void manage_launch_game(shared_message_t msg)
 {
-    auto rep = parse_message<YesNoMarker>(msg.get());
+    auto rep = parse_message<GameLauncher>(msg.get());
     if (!rep) {
         spdlog::error("Client: Failed to parse LaunchGame message");
         return;
     } else if (rep->yes()) {
+        paa::Random::srand(rep->seed());
         spdlog::info("Client: Launching game");
         paa::GMusicPlayer::play("../assets/launch_game.ogg", false);
         PAA_SET_SCENE(game_scene);
@@ -86,7 +87,7 @@ PAA_START_CPP(waiting_room)
     self = this;
 
     isWaitingForServer = false;
-    
+
     std::memset(
         g_game.connected_players.data(), 0, g_game.connected_players.size());
     g_game.connected_players[g_game.id] = true;
@@ -103,7 +104,7 @@ PAA_START_CPP(waiting_room)
     gui.addObject(paa::GuiFactory::new_gui_text("Token: " + g_game.room_token));
     gui.addObject(paa::GuiFactory::new_button(
         "Disconnect", []() { PAA_SET_SCENE(client_connect); }));
-    
+
     roomCode.setCharacterSize(40);
     roomCode.setString(boost::to_upper_copy(std::string(g_game.room_token.begin() + 1, g_game.room_token.end())));
     roomCode.setFont(font);
@@ -157,7 +158,7 @@ PAA_UPDATE_CPP(waiting_room)
     for (int i = 0; i < RTYPE_PLAYER_COUNT; i++)
         if (g_game.connected_players[i])
             playersNb++;
-    
+
     playersCount.setString(std::to_string(playersNb) + " players connected");
     playersCount.setPosition(RTYPE_MENU_CENTERED_X(playersCount), 300);
 

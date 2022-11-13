@@ -93,11 +93,13 @@ public:
         auto it = _client_to_room_id.find(client);
         if (it != _client_to_room_id.end()
             && _rooms.at(it->second)->launchGame()) {
-            _rooms.at(it->second)->main_broadcast(rtype::net::YesNoMarker(
-                rtype::net::message_code::LAUNCH_GAME_REP, true));
+            _rooms.at(it->second)->main_broadcast(
+                rtype::net::GameLauncher(std::time(nullptr), true)
+            );
         } else {
-            _server.get_client(client)->send_main(rtype::net::YesNoMarker(
-                rtype::net::message_code::LAUNCH_GAME_REP, false));
+            _server.get_client(client)->send_main(
+                rtype::net::GameLauncher(-1, false)
+            );
         }
     }
 };

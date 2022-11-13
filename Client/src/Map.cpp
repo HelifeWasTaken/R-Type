@@ -25,12 +25,25 @@ namespace game {
 
     void Wave::activateWave()
     {
+        static const float ratios[] = { 1., 1.25, 1.75, 2 };
+        int connected_players = -1;
+
+        for (int i = 0; i < 4; i++) {
+            connected_players += g_game.is_player_connected(i);
+        }
+
         for (const auto& wave : _waves) {
             paa::DynamicEntity e
                 = rtype::game::EnemyFactory::make_enemy_by_type(
                     wave->enemy_type, wave->x, wave->y);
             g_game.enemies_to_entities[e.attachId(wave->enemy_id).id]
                 = e.getEntity();
+            if (connected_players == -1)
+                continue;
+            if (e.hasComponent<paa::Health>()) {
+                auto& hp = e.getComponent<paa::Health>().hp;
+                int to_add = static_cast<float>(hp) * ratios[connected_players];
+            }
         }
     }
 
@@ -237,9 +250,6 @@ namespace game {
     void WaveManager::activateWave(const std::string& name)
     {
         spdlog::info("Activating wave {}", name);
-        for (auto& names : _wave) {
-            spdlog::info("Wave: {}", names.first);
-        }
         _wave[name]->activateWave();
         _wave.erase(name);
     }

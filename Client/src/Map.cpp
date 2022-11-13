@@ -25,7 +25,7 @@ namespace game {
 
     void Wave::activateWave()
     {
-        static const float ratios[] = { 1., 1.25, 1.75, 2 };
+        static const float ratios[] = { 1.5f, 1.75f, 2.f, 2.5f };
         int connected_players = -1;
 
         for (int i = 0; i < 4; i++) {

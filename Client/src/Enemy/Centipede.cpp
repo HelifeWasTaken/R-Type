@@ -90,7 +90,10 @@ namespace game {
     {
         AEnemy::on_collision(other);
         auto& hp = get_health().hp;
+        auto& s = PAA_GET_COMPONENT(_e, paa::Sprite);
 
+        if (other.get_id() == rtype::game::CollisionType::PLAYER_BULLET)
+            s->setColor(paa::Color::Red);
         if (hp <= 1) {
             hp = 1;
             if (_depth > 0)
@@ -133,12 +136,19 @@ namespace game {
     void CentipedeBody::update()
     {
         auto& cpos = get_position();
-
+        const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime();
         //cpos.x -= g_game.scroll;
-
+        auto& s = PAA_GET_COMPONENT(_e, paa::Sprite);
         auto target_angle = paa::Math::direction_to_angle(cpos, _target.first);
         const double angle_speed = 0.05;
 
+        if (s->getColor() == paa::Color::Red) {
+            _red_timer += deltaTime;
+            if (_red_timer >= .1f) {
+                _red_timer = 0.0f;
+                s->setColor(paa::Color::White);
+            }
+        }
         if (_timer.isFinished()) {
             _lastPosition = {cpos, _angle};
             cpos = _target.first;

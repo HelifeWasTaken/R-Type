@@ -92,7 +92,7 @@ namespace game {
 
     void Mattis::update()
     {
-        const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime();
+        const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime() * 2;
         auto& current_pos = PAA_GET_COMPONENT(_e, paa::Position);
         paa::Vector2f dir = paa::Vector2f(_path[_path_index].x - current_pos.x,
                 _path[_path_index].y - current_pos.y);
@@ -177,7 +177,7 @@ namespace game {
         auto& sprite = PAA_GET_COMPONENT(_e, paa::Sprite);
         auto& posRef = PAA_GET_COMPONENT(_e, paa::Position);
         auto& parentPosRef = _body.getComponent<paa::Position>();
-        const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime();
+        const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime() * 2;
 
         if (sprite->getColor() == paa::Color::Transparent) {
             shoot = true;

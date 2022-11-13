@@ -1681,6 +1681,11 @@
                  "value":"hide_gui,1850"
                 }, 
                 {
+                 "name":"reset_health",
+                 "type":"string",
+                 "value":"reset_health,2100"
+                }, 
+                {
                  "name":"show_hud",
                  "type":"string",
                  "value":"show_gui,2100"
@@ -1693,7 +1698,7 @@
                 {
                  "name":"wave1",
                  "type":"string",
-                 "value":"activate_wave,50"
+                 "value":"activate_wave,0"
                 }, 
                 {
                  "name":"wave1_lock",
@@ -1703,17 +1708,17 @@
                 {
                  "name":"wave2",
                  "type":"string",
-                 "value":"activate_wave,650"
+                 "value":"activate_wave,580"
                 }, 
                 {
                  "name":"wave3",
                  "type":"string",
-                 "value":"activate_wave,1042"
+                 "value":"activate_wave,970"
                 }, 
                 {
                  "name":"wave4",
                  "type":"string",
-                 "value":"activate_wave,1480"
+                 "value":"activate_wave,1380"
                 }, 
                 {
                  "name":"waveBoss",
@@ -1784,6 +1789,17 @@
                  "width":9.28793,
                  "x":1387.4761100469,
                  "y":132.281353939962
+                }, 
+                {
+                 "class":"basic_enemy",
+                 "height":11.6099,
+                 "id":403,
+                 "name":"basic2",
+                 "rotation":0,
+                 "visible":true,
+                 "width":9.28793,
+                 "x":1656.856035,
+                 "y":101.19505
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1828,6 +1844,50 @@
                  "width":0,
                  "x":1959.5937298712,
                  "y":91.6010738609377
+                }, 
+                {
+                 "class":"basic_enemy",
+                 "height":11.6099,
+                 "id":404,
+                 "name":"basic2",
+                 "rotation":0,
+                 "visible":true,
+                 "width":9.28793,
+                 "x":1983.356035,
+                 "y":124.19505
+                }, 
+                {
+                 "class":"basic_enemy",
+                 "height":11.6099,
+                 "id":405,
+                 "name":"basic2",
+                 "rotation":0,
+                 "visible":true,
+                 "width":9.28793,
+                 "x":1925.856035,
+                 "y":91.19505
+                }, 
+                {
+                 "class":"basic_enemy",
+                 "height":11.6099,
+                 "id":406,
+                 "name":"basic2",
+                 "rotation":0,
+                 "visible":true,
+                 "width":9.28793,
+                 "x":1959.856035,
+                 "y":30.69505
+                }, 
+                {
+                 "class":"basic_enemy",
+                 "height":11.6099,
+                 "id":407,
+                 "name":"basic2",
+                 "rotation":0,
+                 "visible":true,
+                 "width":9.28793,
+                 "x":1963.856035,
+                 "y":171.69505
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -1914,8 +1974,19 @@
                  "rotation":0,
                  "visible":true,
                  "width":30.656,
-                 "x":310.375564727955,
-                 "y":159.658734709193
+                 "x":331.375564727955,
+                 "y":158.658734709193
+                }, 
+                {
+                 "class":"basic_enemy",
+                 "height":11.6099,
+                 "id":408,
+                 "name":"basic2",
+                 "rotation":0,
+                 "visible":true,
+                 "width":9.28793,
+                 "x":458.46648854328,
+                 "y":98.691481585927
                 }],
          "offsetx":-0.610453543280471,
          "offsety":1.50356841407297,
@@ -1981,7 +2052,7 @@
          "y":0
         }],
  "nextlayerid":15,
- "nextobjectid":403,
+ "nextobjectid":409,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.9.2",

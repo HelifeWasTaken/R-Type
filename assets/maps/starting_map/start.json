@@ -30,6 +30,11 @@
                  "value":"end short,4300"
                 }, 
                 {
+                 "name":"no_gui_at_start",
+                 "type":"string",
+                 "value":"hide_gui,0"
+                }, 
+                {
                  "name":"scroll",
                  "type":"string",
                  "value":"scroll_speed=2,0"

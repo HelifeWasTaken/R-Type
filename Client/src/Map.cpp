@@ -9,6 +9,7 @@
 
 #include "ClientScenes.hpp"
 #include "Enemies.hpp"
+#include "Player.hpp"
 #include <filesystem>
 #include <fstream>
 
@@ -169,6 +170,15 @@ namespace game {
         g_game.lock_scroll = true;
     }
 
+    static void set_health(int health)
+    {
+        for (int i = 0; i < RTYPE_PLAYER_COUNT; i++) {
+            if (g_game.connected_players[i] && g_game.players_alive[i]) {
+                PAA_GET_COMPONENT(g_game.players_entities[i], paa::Health).hp = health;
+            }
+        }
+    }
+
     void Map::update()
     {
         if (g_game.everyone_is_dead()) {
@@ -186,11 +196,18 @@ namespace game {
                 } else if (effect->type == "lock_scroll") {
                     lock_scroll_event();
                 } else if (effect->type.starts_with("end")) {
-
                     g_game.launch_transition(effect->type.find("short") == std::string::npos);
                     _changes = true;
                 } else if (effect->type == "launch_music") {
                     activate_play_music_event(*effect);
+                } else if (effect->type == "show_gui") {
+                    g_game.show_gui = true;
+                } else if (effect->type == "hide_gui") {
+                    g_game.show_gui = false;
+                } else if (effect->type == "reset_health") {
+                    set_health(APlayer::MAX_HEALTH);
+                } else if (effect->type.starts_with("set_health=")) {
+                    set_health(std::atoi(effect->type.c_str() + 11));
                 } else if (effect->type.starts_with("scroll_speed=")) {
                     g_game.scroll_speed = std::atoi(effect->type.c_str() + 13);
                 }

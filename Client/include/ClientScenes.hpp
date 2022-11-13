@@ -131,6 +131,11 @@ struct Game {
         transition.start(long_transition);
     }
 
+    void launch_transition_halfway()
+    {
+        transition.start_halfway();
+    }
+
     bool transition_is_halfway() const
     {
         return transition.phase_two();
@@ -142,6 +147,7 @@ struct Game {
     float scroll_speed = DEFAULT_SCROLL_SPEED;
     float scroll = 0;
     bool lock_scroll = false;
+    bool show_gui = true;
 };
 
 extern Game g_game;
@@ -216,3 +222,4 @@ public:
 #include "Scenes/SceneGameOver.hpp"
 #include "Scenes/SceneGameWin.hpp"
 #include "Scenes/SceneRoomWait.hpp"
+#include "Scenes/SceneStart.hpp"

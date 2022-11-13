@@ -14,6 +14,7 @@ namespace game {
         , _is_local(is_local)
     {
         _syncTimer.setTarget(SYNC_RATE);
+        _syncWithTcpTimer.setTarget(SYNC_WITH_TCP_RATE);
         _frameTimer.setTarget(FRAME_RATE);
         _hurtTimer.setTarget(HURT_TIME);
         _speed_x = SPEED_X;
@@ -89,9 +90,15 @@ namespace game {
         
         if (_is_local && g_game.service.is_service_on()) {
             SerializablePlayer info(_entity.getEntity());
-            if (_syncTimer.isFinished() || !info.data_is_same(_info)) {
-                g_game.service.udp().send(net::UpdateMessage(
-                    _id.id, info, net::message_code::UPDATE_PLAYER));
+            if (_syncTimer.isFinished() || !info.data_is_same(_info) || _syncWithTcpTimer.isFinished()) {
+                if (_syncWithTcpTimer.isFinished()) {
+                    g_game.service.tcp().send(net::UpdateMessage(
+                        _id.id, info, net::message_code::UPDATE_PLAYER));
+                    _syncWithTcpTimer.restart();
+                } else {
+                    g_game.service.udp().send(net::UpdateMessage(
+                        _id.id, info, net::message_code::UPDATE_PLAYER));
+                }
                 _info = info;
                 _syncTimer.restart();
             }

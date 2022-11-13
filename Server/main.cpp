@@ -92,6 +92,9 @@ private:
             RTYPE_SERVER_MAIN_SHOULD_NOT_HANDLE_THIS_CODE(rtype::net::message_code::FEED_INIT_REP),
             RTYPE_SERVER_MAIN_GOT_THIS_MESSAGE_INFO(rtype::net::message_code::TEXT_MESSAGE),
 
+            RTYPE_SERVER_MAIN_DEFAULT_BROADCAST_MESSAGE(rtype::net::message_code::SYNC_PLAYER),
+            RTYPE_SERVER_MAIN_DEFAULT_BROADCAST_MESSAGE(rtype::net::message_code::UPDATE_PLAYER),
+
             RTYPE_SERVER_MAIN_HANDLE_THIS_MESSAGE(rtype::net::message_code::REQUEST_CONNECT_ROOM,
                 {
                     auto msg = parse_message<rtype::net::RequestConnectRoom>(message);

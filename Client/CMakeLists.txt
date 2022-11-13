@@ -26,6 +26,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR})
 if(MSVC)
     target_compile_options(${PROJECT_NAME} PUBLIC "/ZI")
     target_link_options(${PROJECT_NAME} PUBLIC "/INCREMENTAL")
+    target_link_options(${PROJECT_NAME} PRIVATE "/SUBSYSTEM:WINDOWS")
+    target_link_options(${PROJECT_NAME} PRIVATE "/ENTRY:mainCRTStartup")
 endif()
 
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD

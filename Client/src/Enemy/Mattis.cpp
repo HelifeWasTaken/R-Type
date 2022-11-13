@@ -95,21 +95,25 @@ namespace game {
 
     void Mattis::update()
     {
-        const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime() * 2;
-        auto& current_pos = PAA_GET_COMPONENT(_e, paa::Position);
-        paa::Vector2f dir = paa::Vector2f(_path[_path_index].x - current_pos.x,
-                _path[_path_index].y - current_pos.y);
-        auto& sprite = PAA_GET_COMPONENT(_e, paa::Sprite);
+        try {
+            const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime() * 2;
+            auto& current_pos = PAA_GET_COMPONENT(_e, paa::Position);
+            paa::Vector2f dir = paa::Vector2f(_path[_path_index].x - current_pos.x,
+                    _path[_path_index].y - current_pos.y);
+            auto& sprite = PAA_GET_COMPONENT(_e, paa::Sprite);
 
-        if (sprite->getColor() == paa::Color::Red)
-            update_sprite(deltaTime, sprite);
-        dir.x = (int)dir.x > 0 ? 1.0f : (int)dir.x < 0 ? -1.0f : 0;
-        dir.y = (int)dir.y > 0 ? 1.0f : (int)dir.y < 0 ? -1.0f : 0;
-        current_pos.x += (int)dir.x * 50.0f * deltaTime;
-        current_pos.y += (int)dir.y * 50.0f * deltaTime;
-        if (dir.x == 0 && dir.y == 0)
-            _path_index += _path_index < _path.size() - 1? 1 : -_path_index;
-        shoot_sequence(deltaTime, current_pos);
+            if (sprite->getColor() == paa::Color::Red)
+                update_sprite(deltaTime, sprite);
+            dir.x = (int)dir.x > 0 ? 1.0f : (int)dir.x < 0 ? -1.0f : 0;
+            dir.y = (int)dir.y > 0 ? 1.0f : (int)dir.y < 0 ? -1.0f : 0;
+            current_pos.x += (int)dir.x * 50.0f * deltaTime;
+            current_pos.y += (int)dir.y * 50.0f * deltaTime;
+            if (dir.x == 0 && dir.y == 0)
+                _path_index += _path_index < _path.size() - 1? 1 : -_path_index;
+            shoot_sequence(deltaTime, current_pos);
+        } catch(...) {
+
+        }
     }
 
     MattisMouth::MattisMouth(const PAA_ENTITY& e,
@@ -130,21 +134,25 @@ namespace game {
     void MattisMouth::handle_shoot(float const& deltaTime,
             paa::Position const& pos)
     {
-        _last_shoot += deltaTime;
-        const paa::Position right_position(pos.x + 28, pos.y + 100);
-        if (_last_shoot >= _shooting_speed) {
-            _shooterList[_shoot_index++]
-                ->shoot_from_pos("mattis_bullet", right_position);
-            _ghast.play();
-            _last_shoot = 0.0f;
-        }
-        if (_shoot_index >= _shooterList.size()) {
-            shoot = true;
-            _shoot_index = 0;
-            _last_attack = 0.0f;
-            _as_attacked = false;
-            _close_mouth = true;
-            _start_attack = false;
+        try {
+            _last_shoot += deltaTime;
+            const paa::Position right_position(pos.x + 28, pos.y + 100);
+            if (_last_shoot >= _shooting_speed) {
+                _shooterList[_shoot_index++]
+                    ->shoot_from_pos("mattis_bullet", right_position);
+                _ghast.play();
+                _last_shoot = 0.0f;
+            }
+            if (_shoot_index >= _shooterList.size()) {
+                shoot = true;
+                _shoot_index = 0;
+                _last_attack = 0.0f;
+                _as_attacked = false;
+                _close_mouth = true;
+                _start_attack = false;
+            }
+        } catch(...) {
+
         }
     }
 
@@ -178,20 +186,23 @@ namespace game {
 
     void MattisMouth::update()
     {
-        auto& sprite = PAA_GET_COMPONENT(_e, paa::Sprite);
-        auto& posRef = PAA_GET_COMPONENT(_e, paa::Position);
-        auto& parentPosRef = _body.getComponent<paa::Position>();
-        const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime() * 2;
+        try {
+            auto& sprite = PAA_GET_COMPONENT(_e, paa::Sprite);
+            auto& posRef = PAA_GET_COMPONENT(_e, paa::Position);
+            auto& parentPosRef = _body.getComponent<paa::Position>();
+            const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime() * 2;
 
-        if (sprite->getColor() == paa::Color::Transparent) {
-            shoot = true;
-            return;
+            if (sprite->getColor() == paa::Color::Transparent) {
+                shoot = true;
+                return;
+            }
+            if (!_as_attacked)
+                _last_attack += deltaTime;
+            posRef.x = parentPosRef.x;
+            posRef.y = parentPosRef.y + _y_offset;
+            open_mouth(posRef, deltaTime);
+        } catch(...) {
         }
-        if (!_as_attacked)
-            _last_attack += deltaTime;
-        posRef.x = parentPosRef.x;
-        posRef.y = parentPosRef.y + _y_offset;
-        open_mouth(posRef, deltaTime);
     }
 }
 }

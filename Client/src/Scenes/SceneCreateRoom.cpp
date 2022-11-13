@@ -51,5 +51,11 @@ PAA_UPDATE_CPP(create_room)
 {
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
     rtype::MenuParallax::update();
+
+    if (PAA_INPUT.isKeyPressed(paa::Keyboard::F11)) {
+        PAA_APP.setFullscreen(!PAA_APP.isFullscreen());
+        g_game.reset_game_view();
+        g_game.use_hud_view();
+    }
     manage_server_events();
 }

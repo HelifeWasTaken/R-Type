@@ -33,6 +33,7 @@ struct Game {
 
     void reset_game_view()
     {
+        hud_view.setSize(800, 600);
         game_view = hud_view;
         game_view.setSize(ARCADE_SCREEN_SIZE_X, ARCADE_SCREEN_SIZE_Y);
         game_view.setCenter(ARCADE_SCREEN_VIEW_X, ARCADE_SCREEN_VIEW_Y);

@@ -135,6 +135,12 @@ PAA_UPDATE_CPP(waiting_room)
     rtype::MenuParallax::update();
     manage_server_events();
 
+    if (PAA_INPUT.isKeyPressed(paa::Keyboard::F11)) {
+        PAA_APP.setFullscreen(!PAA_APP.isFullscreen());
+        g_game.reset_game_view();
+        g_game.use_hud_view();
+    }
+
     if (g_game.is_host) {
         if (isWaitingForServer) {
             set_action_text("Requested the server to launch the game..");

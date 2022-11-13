@@ -178,15 +178,20 @@ static inline void load_configuration_file_animations(nlohmann::json& json)
     spdlog::info("PileAA: Animations loaded");
 }
 
-static inline void load_configuration_file_window(nlohmann::json& json)
+static inline void load_configuration_file_window(nlohmann::json& json, bool fullscreen = false)
 {
     spdlog::info("PileAA: Loading window from configuration file");
     auto& screen = Screen::get();
+    App::fullscreen = fullscreen;
 
     if (json.find("window") == json.end()) {
         spdlog::info("PileAA: No window configuration found using default "
                      "(800,600) 120fps");
-        screen.create(VideoMode(800, 600), "PileAA", sf::Style::Close);
+        if (fullscreen) {
+            screen.create(VideoMode::getFullscreenModes()[0], "PileAA", sf::Style::Fullscreen);
+        } else {
+            screen.create(VideoMode(800, 600), "PileAA", sf::Style::Close);
+        }
         screen.setFramerateLimit(120);
         return;
     }
@@ -196,7 +201,11 @@ static inline void load_configuration_file_window(nlohmann::json& json)
         const auto& height = window["height"].get<int>();
         const auto& title = window["title"].get<std::string>();
         const auto& fps = window["fps"].get<int>();
-        screen.create(VideoMode(width, height), title, sf::Style::Close);
+        if (fullscreen) {
+            screen.create(sf::VideoMode::getFullscreenModes()[0], title, sf::Style::Fullscreen);
+        } else {
+            screen.create(VideoMode(width, height), title, sf::Style::Close);
+        }
         screen.setFramerateLimit(fps);
         spdlog::info("PileAA: Window created: {} {}x{} at {}fps", title, width,
             height, fps);
@@ -216,11 +225,10 @@ static inline void load_configuration_file(const std::string& filename)
         throw ResourceManagerError(
             "load_configuration_file - Failed to open " + filename);
     try {
-        nlohmann::json json;
-        file >> json;
-        load_configuration_file_resources(json["resources"]);
-        load_configuration_file_animations(json["animations"]);
-        load_configuration_file_window(json);
+        file >> App::gameConfig;
+        load_configuration_file_resources(App::gameConfig["resources"]);
+        load_configuration_file_animations(App::gameConfig["animations"]);
+        load_configuration_file_window(App::gameConfig);
     } catch (const nlohmann::json::exception& e) {
         throw ResourceManagerError(
             "load_configuration_file - Invalid json file: "
@@ -307,6 +315,17 @@ void stop_paa_system()
 
     GMusicPlayer::release();
     spdlog::info("PileAA: GMusicPlayer released");
+}
+
+bool App::isFullscreen()
+{
+    return App::fullscreen;
+}
+
+void App::setFullscreen(bool fullscreen)
+{
+    Screen::get().close();
+    load_configuration_file_window(App::gameConfig, fullscreen);
 }
 
 }

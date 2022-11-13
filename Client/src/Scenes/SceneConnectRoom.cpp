@@ -109,6 +109,12 @@ PAA_UPDATE_CPP(connect_room)
     GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
     rtype::MenuParallax::update();
 
+    if (PAA_INPUT.isKeyPressed(paa::Keyboard::F11)) {
+        PAA_APP.setFullscreen(!PAA_APP.isFullscreen());
+        g_game.reset_game_view();
+        g_game.use_hud_view();
+    }
+
     bool wasWaitingForReply = isWaitingForReply;
     manage_server_events(isWaitingForReply);
     

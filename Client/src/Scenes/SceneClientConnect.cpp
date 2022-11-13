@@ -212,6 +212,12 @@ PAA_UPDATE_CPP(client_connect)
 {
     rtype::MenuParallax::update();
 
+    if (PAA_INPUT.isKeyPressed(paa::Keyboard::F11)) {
+        PAA_APP.setFullscreen(!PAA_APP.isFullscreen());
+        g_game.reset_game_view();
+        g_game.use_hud_view();
+    }
+
     if (isConnectionPending || isTryingToReconnect || !timer.isFinished()) {
         if (isConnectionPending)
             timer.restart();

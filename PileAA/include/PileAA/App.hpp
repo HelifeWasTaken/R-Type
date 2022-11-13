@@ -3,6 +3,8 @@
 #include "external/HelifeWasTaken/Silva"
 #include "external/HelifeWasTaken/SilvaState"
 
+#include "PileAA/external/nlohmann/json.hpp"
+
 #include "AnimatedSprite.hpp"
 #include "AnimationRegister.hpp"
 #include "BaseComponents.hpp"
@@ -50,6 +52,9 @@ private:
     App() = default;
 
 public:
+    static inline nlohmann::json gameConfig;
+    static inline bool fullscreen = false;
+
     ~App() = default;
 
     /**
@@ -86,6 +91,13 @@ public:
      * @brief Stops the app
      */
     void stop();
+
+    /**
+     * @brief Set window fullscreen mode
+    */
+    void setFullscreen(bool fullscreen);
+
+    bool isFullscreen();
 };
 
 class GameState : public hl::silva::State {

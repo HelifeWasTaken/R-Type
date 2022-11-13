@@ -50,12 +50,14 @@ PAA_END_CPP(game_over)
 
 static void manage_launch_game(shared_message_t msg)
 {
-    auto rep = parse_message<YesNoMarker>(msg.get());
+    auto rep = parse_message<GameLauncher>(msg.get());
     if (!rep) {
         spdlog::error("Client: Failed to parse LaunchGame message");
         return;
     } else if (rep->yes()) {
+        paa::Random::srand(rep->seed());
         spdlog::info("Client: Launching game");
+        paa::GMusicPlayer::play("../assets/launch_game.ogg", false);
         PAA_SET_SCENE(game_scene);
     } else {
         spdlog::info("Client: Receive no when tried to launch game");

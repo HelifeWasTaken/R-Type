@@ -638,9 +638,24 @@
                  "value":"end,4300"
                 }, 
                 {
+                 "name":"hide_hud",
+                 "type":"string",
+                 "value":"hide_gui,900"
+                }, 
+                {
                  "name":"map_global_speed_scroll",
                  "type":"string",
                  "value":"scroll_speed=2,0"
+                }, 
+                {
+                 "name":"scroll_speed_ruins",
+                 "type":"string",
+                 "value":"scroll_speed=1,850"
+                }, 
+                {
+                 "name":"show_hud",
+                 "type":"string",
+                 "value":"show_gui,1400"
                 }, 
                 {
                  "name":"wave1",
@@ -675,7 +690,7 @@
                 {
                  "name":"wave5_lock",
                  "type":"string",
-                 "value":"lock_scroll,1700"
+                 "value":"lock_scroll,1500"
                 }, 
                 {
                  "name":"wave6",
@@ -686,6 +701,11 @@
                  "name":"wave6_lock",
                  "type":"string",
                  "value":"lock_scroll,2850"
+                }, 
+                {
+                 "name":"wave7",
+                 "type":"string",
+                 "value":"activate_wave,3200"
                 }],
          "type":"objectgroup",
          "visible":true,
@@ -740,6 +760,28 @@
                  "width":14.4371,
                  "x":3059.87879253414,
                  "y":146.704321193657
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        }, 
+        {
+         "draworder":"topdown",
+         "id":18,
+         "name":"wave7",
+         "objects":[
+                {
+                 "class":"mastodonte_enemy",
+                 "height":11.9797,
+                 "id":263,
+                 "name":"mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":14.4371,
+                 "x":3503.94565861827,
+                 "y":94.9411873238856
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -979,8 +1021,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":18,
- "nextobjectid":262,
+ "nextlayerid":19,
+ "nextobjectid":264,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.9.2",

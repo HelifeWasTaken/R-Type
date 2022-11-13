@@ -48,6 +48,7 @@ namespace game {
                 auto fixed_pos = paa::Position(pos.x + _eye_offset[i][0],
                         pos.y + _eye_offset[i][1]);
                 _shooterList[i]->shoot_from_pos("laser_beam", fixed_pos);
+                _laser.play();
             }
             _current_shoot_duration += deltaTime;
             if (_current_shoot_duration >= _shoot_duration) {
@@ -92,7 +93,7 @@ namespace game {
 
     void Mattis::update()
     {
-        const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime();
+        const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime() * 2;
         auto& current_pos = PAA_GET_COMPONENT(_e, paa::Position);
         paa::Vector2f dir = paa::Vector2f(_path[_path_index].x - current_pos.x,
                 _path[_path_index].y - current_pos.y);
@@ -132,6 +133,7 @@ namespace game {
         if (_last_shoot >= _shooting_speed) {
             _shooterList[_shoot_index++]
                 ->shoot_from_pos("mattis_bullet", right_position);
+            _ghast.play();
             _last_shoot = 0.0f;
         }
         if (_shoot_index >= _shooterList.size()) {
@@ -177,7 +179,7 @@ namespace game {
         auto& sprite = PAA_GET_COMPONENT(_e, paa::Sprite);
         auto& posRef = PAA_GET_COMPONENT(_e, paa::Position);
         auto& parentPosRef = _body.getComponent<paa::Position>();
-        const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime();
+        const float& deltaTime = PAA_DELTA_TIMER.getDeltaTime() * 2;
 
         if (sprite->getColor() == paa::Color::Transparent) {
             shoot = true;

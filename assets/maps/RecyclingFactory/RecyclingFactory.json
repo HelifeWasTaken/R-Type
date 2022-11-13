@@ -757,6 +757,16 @@
                  "value":"end,2700"
                 }, 
                 {
+                 "name":"hide_hud",
+                 "type":"string",
+                 "value":"hide_hud,0"
+                }, 
+                {
+                 "name":"show_hud",
+                 "type":"string",
+                 "value":"show_hud,600"
+                }, 
+                {
                  "name":"toto",
                  "type":"string",
                  "value":"scroll_speed:2,60"

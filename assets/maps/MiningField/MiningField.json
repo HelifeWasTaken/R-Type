@@ -1676,6 +1676,16 @@
                  "value":"end,5000"
                 }, 
                 {
+                 "name":"hud_hide",
+                 "type":"string",
+                 "value":"hide_gui,1850"
+                }, 
+                {
+                 "name":"show_hud",
+                 "type":"string",
+                 "value":"show_gui,2100"
+                }, 
+                {
                  "name":"speed_up_boss",
                  "type":"string",
                  "value":"scroll_speed=3,2100"
@@ -1794,8 +1804,8 @@
                  "rotation":0,
                  "visible":true,
                  "width":30.656,
-                 "x":1873.03077862595,
-                 "y":97.6734290076336
+                 "x":1832.00203096652,
+                 "y":95.7459039498078
                 }, 
                 {
                  "class":"dumby_boy_enemy",
@@ -1816,8 +1826,8 @@
                  "rotation":0,
                  "visible":true,
                  "width":0,
-                 "x":2015.76731727069,
-                 "y":96.2822061442285
+                 "x":1959.5937298712,
+                 "y":91.6010738609377
                 }],
          "opacity":1,
          "type":"objectgroup",

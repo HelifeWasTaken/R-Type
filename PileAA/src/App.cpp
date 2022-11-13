@@ -54,6 +54,11 @@ bool App::run()
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
+            if (event.type == sf::Event::Resized) {
+                sf::View view = window.getView();
+                view.setSize(event.size.width, event.size.height);
+                window.setView(view);
+            }
             if (event.type == sf::Event::KeyPressed
                 && event.key.code == sf::Keyboard::Key::R
                 && event.key.control) {
@@ -186,7 +191,7 @@ static inline void load_configuration_file_window(nlohmann::json& json)
     if (json.find("window") == json.end()) {
         spdlog::info("PileAA: No window configuration found using default "
                      "(800,600) 120fps");
-        screen.create(VideoMode(800, 600), "PileAA", sf::Style::Close);
+        screen.create(VideoMode(800, 600), "PileAA", sf::Style::Default);
         screen.setFramerateLimit(120);
         return;
     }
@@ -196,7 +201,7 @@ static inline void load_configuration_file_window(nlohmann::json& json)
         const auto& height = window["height"].get<int>();
         const auto& title = window["title"].get<std::string>();
         const auto& fps = window["fps"].get<int>();
-        screen.create(VideoMode(width, height), title, sf::Style::Close);
+        screen.create(VideoMode(width, height), title, sf::Style::Default);
         screen.setFramerateLimit(fps);
         spdlog::info("PileAA: Window created: {} {}x{} at {}fps", title, width,
             height, fps);

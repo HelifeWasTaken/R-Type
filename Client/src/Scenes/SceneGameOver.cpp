@@ -106,6 +106,10 @@ static void update_server_event()
 
 PAA_UPDATE_CPP(game_over)
 {
+    if (PAA_INPUT.isKeyReleased(paa::Keyboard::Key::Escape)) {
+        g_game.service.stop();
+    }
+    GO_TO_SCENE_IF_CLIENT_DISCONNECTED(g_game.service, client_connect);
 
     g_game.use_hud_view();
 

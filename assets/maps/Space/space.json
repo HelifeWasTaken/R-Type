@@ -26,8 +26,8 @@
                  "rotation":0,
                  "visible":true,
                  "width":24,
-                 "x":800,
-                 "y":27
+                 "x":848.833333333333,
+                 "y":13.1666666666667
                 },
             
                 {
@@ -38,8 +38,8 @@
                  "rotation":0,
                  "visible":true,
                  "width":24,
-                 "x":800,
-                 "y":67
+                 "x":793.25,
+                 "y":38.25
                 },
             
                 {
@@ -50,8 +50,8 @@
                  "rotation":0,
                  "visible":true,
                  "width":24,
-                 "x":800,
-                 "y":101
+                 "x":744,
+                 "y":88
                 },
             
                 {
@@ -62,8 +62,8 @@
                  "rotation":0,
                  "visible":true,
                  "width":24,
-                 "x":800,
-                 "y":131
+                 "x":791,
+                 "y":136.75
                 },
             
                 {
@@ -74,12 +74,132 @@
                  "rotation":0,
                  "visible":true,
                  "width":24,
-                 "x":800,
-                 "y":161
+                 "x":846.5,
+                 "y":157.25
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":22,
+                 "id":231,
+                 "name":"Mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":24,
+                 "x":957.833333333333,
+                 "y":69.3333333333333
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":22,
+                 "id":235,
+                 "name":"Mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":24,
+                 "x":1087.66666666667,
+                 "y":14.3333333333333
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":22,
+                 "id":236,
+                 "name":"Mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":24,
+                 "x":1093,
+                 "y":141.166666666667
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":22,
+                 "id":254,
+                 "name":"Mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":24,
+                 "x":981,
+                 "y":137.5
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":22,
+                 "id":255,
+                 "name":"Mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":24,
+                 "x":955.5,
+                 "y":15
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":22,
+                 "id":256,
+                 "name":"Mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":24,
+                 "x":1154.5,
+                 "y":71.5
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":22,
+                 "id":257,
+                 "name":"Mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":24,
+                 "x":1032,
+                 "y":74.5
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":22,
+                 "id":263,
+                 "name":"Mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":24,
+                 "x":909.5,
+                 "y":134.5
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":22,
+                 "id":264,
+                 "name":"Mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":24,
+                 "x":1166.5,
+                 "y":128
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":22,
+                 "id":265,
+                 "name":"Mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":24,
+                 "x":1160,
+                 "y":16
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         },
@@ -109,8 +229,8 @@
                  "rotation":0,
                  "visible":true,
                  "width":24,
-                 "x":1800,
-                 "y":101
+                 "x":1800.33333333333,
+                 "y":85.6666666666667
                 },
             
                 {
@@ -121,36 +241,48 @@
                  "rotation":0,
                  "visible":true,
                  "width":24,
-                 "x":1800,
-                 "y":161
+                 "x":1800.33333333333,
+                 "y":149
                 },
             
                 {
                  "class":"basic_enemy",
-                 "height":25.3333333333333,
+                 "height":9.09,
                  "id":45,
                  "name":"basic_enemy",
                  "rotation":0,
                  "visible":true,
-                 "width":26.6666666666667,
-                 "x":1869.33333333333,
-                 "y":52
+                 "width":21.21,
+                 "x":1867.08333333333,
+                 "y":62
                 },
             
                 {
                  "class":"key_enemy",
-                 "height":22.6666666666667,
+                 "height":12,
                  "id":46,
                  "name":"key_enemy",
                  "rotation":0,
                  "visible":true,
-                 "width":20,
-                 "x":1877.33333333333,
-                 "y":20
+                 "width":12,
+                 "x":1901.08333333333,
+                 "y":89.5
+                },
+            
+                {
+                 "class":"basic_enemy",
+                 "height":9.09,
+                 "id":224,
+                 "name":"basic_enemy",
+                 "rotation":0,
+                 "visible":true,
+                 "width":21.21,
+                 "x":1962.06166666667,
+                 "y":90.1216666666667
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         },
@@ -168,8 +300,8 @@
                  "rotation":0,
                  "visible":true,
                  "width":27.2727272727273,
-                 "x":1280,
-                 "y":21.2121212121212
+                 "x":1238.33333333333,
+                 "y":115.045454545455
                 },
             
                 {
@@ -180,60 +312,108 @@
                  "rotation":0,
                  "visible":true,
                  "width":27.2727,
-                 "x":1280,
-                 "y":63.6363757575757
+                 "x":1236,
+                 "y":30.3863757575757
                 },
             
                 {
-                 "class":"basic_enemy",
+                 "class":"mastodonte_enemy",
                  "height":24.2424,
-                 "id":23,
-                 "name":"basic_enemy",
+                 "id":226,
+                 "name":"mastodonte",
                  "rotation":0,
                  "visible":true,
                  "width":27.2727,
-                 "x":1280,
-                 "y":109.090921212121
+                 "x":1388.19698333333,
+                 "y":6.54546666666666
                 },
             
                 {
-                 "class":"basic_enemy",
+                 "class":"mastodonte_enemy",
                  "height":24.2424,
-                 "id":25,
-                 "name":"basic_enemy",
+                 "id":230,
+                 "name":"mastodonte",
                  "rotation":0,
                  "visible":true,
                  "width":27.2727,
-                 "x":1280,
-                 "y":136.363648484848
+                 "x":1308.36365,
+                 "y":71.7121333333333
                 },
             
                 {
-                 "class":"key_enemy",
+                 "class":"mastodonte_enemy",
                  "height":24.2424,
-                 "id":26,
-                 "name":"key_enemy",
+                 "id":237,
+                 "name":"mastodonte",
                  "rotation":0,
                  "visible":true,
                  "width":27.2727,
-                 "x":1280,
-                 "y":163.636375757576
+                 "x":1518.19698333333,
+                 "y":8.04546666666666
                 },
             
                 {
-                 "class":"key_enemy",
+                 "class":"mastodonte_enemy",
                  "height":24.2424,
-                 "id":28,
-                 "name":"key_enemy",
+                 "id":238,
+                 "name":"mastodonte",
                  "rotation":0,
                  "visible":true,
                  "width":27.2727,
-                 "x":1280,
-                 "y":12.1212242424242
+                 "x":1520.69698333333,
+                 "y":134.545466666667
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":24.2424,
+                 "id":258,
+                 "name":"mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":27.2727,
+                 "x":1363.36365,
+                 "y":144.3788
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":24.2424,
+                 "id":259,
+                 "name":"mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":27.2727,
+                 "x":1437.86365,
+                 "y":62.8788
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":24.2424,
+                 "id":260,
+                 "name":"mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":27.2727,
+                 "x":1454.86365,
+                 "y":146.3788
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":24.2424,
+                 "id":261,
+                 "name":"mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":27.2727,
+                 "x":1518.86365,
+                 "y":66.8788
                 }],
          "opacity":1,
          "type":"objectgroup",
-         "visible":true,
+         "visible":false,
          "x":0,
          "y":0
         },
@@ -242,18 +422,7 @@
          "draworder":"topdown",
          "id":4,
          "name":"EffectZones",
-         "objects":[
-                {
-                 "class":"",
-                 "height":0,
-                 "id":176,
-                 "name":"",
-                 "rotation":0,
-                 "visible":true,
-                 "width":2.66666666666697,
-                 "x":3377.33333333333,
-                 "y":298.666666666667
-                }],
+         "objects":[],
          "opacity":1,
          "properties":[
                 {
@@ -269,21 +438,33 @@
                 },
             
                 {
+                 "name":"boss_gui",
+                 "type":"string",
+                 "value":"show_gui,3500"
+                },
+            
+                {
+                 "name":"boss_heal",
+                 "type":"string",
+                 "value":"reset_health,3500"
+                },
+            
+                {
                  "name":"boss_lock",
                  "type":"string",
                  "value":"lock_scroll, 3550"
                 },
             
                 {
-                 "name":"boss_wave",
+                 "name":"boss_safe_before",
                  "type":"string",
-                 "value":"activate_wave, 3100"
+                 "value":"hide_gui,3400"
                 },
             
                 {
-                 "name":"boss_wave_lock",
+                 "name":"boss_wave",
                  "type":"string",
-                 "value":"lock_scroll, 3150"
+                 "value":"activate_wave, 3050"
                 },
             
                 {
@@ -293,27 +474,51 @@
                 },
             
                 {
+                 "name":"start_fight",
+                 "type":"string",
+                 "value":"scroll_speed=1,1400"
+                },
+            
+                {
+                 "name":"start_fight_gui",
+                 "type":"string",
+                 "value":"show_gui,1400"
+                },
+            
+                {
+                 "name":"start_fight_heal",
+                 "type":"string",
+                 "value":"reset_health,1400"
+                },
+            
+                {
+                 "name":"start_health",
+                 "type":"string",
+                 "value":"set_health=3,0"
+                },
+            
+                {
+                 "name":"start_speed",
+                 "type":"string",
+                 "value":"scroll_speed=3,0"
+                },
+            
+                {
+                 "name":"start_speed_nogui",
+                 "type":"string",
+                 "value":"hide_gui,0"
+                },
+            
+                {
                  "name":"wave1",
                  "type":"string",
                  "value":"activate_wave, 350"
                 },
             
                 {
-                 "name":"wave1_lock",
-                 "type":"string",
-                 "value":"lock_scroll, 400"
-                },
-            
-                {
                  "name":"wave2",
                  "type":"string",
                  "value":"activate_wave, 800"
-                },
-            
-                {
-                 "name":"wave2_lock",
-                 "type":"string",
-                 "value":"lock_scroll, 950"
                 },
             
                 {
@@ -338,6 +543,12 @@
                  "name":"wave4_lock",
                  "type":"string",
                  "value":"lock_scroll, 1950"
+                },
+            
+                {
+                 "name":"wave5",
+                 "type":"string",
+                 "value":"activate_wave,2250"
                 }],
          "type":"objectgroup",
          "visible":true,
@@ -353,13 +564,13 @@
          "objects":[
                 {
                  "class":"key_enemy",
-                 "height":14.6667,
+                 "height":12,
                  "id":213,
                  "name":"key_enemy",
                  "rotation":0,
                  "visible":true,
-                 "width":17.3333,
-                 "x":3434.66333333333,
+                 "width":12,
+                 "x":3466.66333333333,
                  "y":31.00005
                 },
             
@@ -371,8 +582,8 @@
                  "rotation":0,
                  "visible":true,
                  "width":12,
-                 "x":3494.66333333333,
-                 "y":48.33345
+                 "x":3520.91333333333,
+                 "y":53.08345
                 },
             
                 {
@@ -383,8 +594,8 @@
                  "rotation":0,
                  "visible":true,
                  "width":12,
-                 "x":3429.99333333333,
-                 "y":66.33345
+                 "x":3589.24333333333,
+                 "y":67.08345
                 },
             
                 {
@@ -395,68 +606,80 @@
                  "rotation":0,
                  "visible":true,
                  "width":12,
-                 "x":3485.99333333333,
-                 "y":79.66685
+                 "x":3558.49333333333,
+                 "y":85.41685
                 },
             
                 {
                  "class":"mastodonte_enemy",
-                 "height":12,
+                 "height":22,
                  "id":217,
                  "name":"mastodonte",
                  "rotation":0,
                  "visible":true,
-                 "width":12,
-                 "x":3441.99333333333,
-                 "y":93.00005
+                 "width":24,
+                 "x":3472.74333333333,
+                 "y":85.50005
                 },
             
                 {
                  "class":"basic_enemy",
-                 "height":12,
+                 "height":9.09,
                  "id":218,
                  "name":"basic_enemy",
                  "rotation":0,
                  "visible":true,
-                 "width":12,
-                 "x":3499.33333333333,
-                 "y":110.33295
+                 "width":21.21,
+                 "x":3557.33333333333,
+                 "y":145.58295
                 },
             
                 {
                  "class":"mastodonte_enemy",
-                 "height":12,
+                 "height":22,
                  "id":219,
                  "name":"mastodonte",
                  "rotation":0,
                  "visible":true,
-                 "width":12,
-                 "x":3440.66333333333,
-                 "y":126.33295
+                 "width":24,
+                 "x":3472.66333333333,
+                 "y":119.83295
                 },
             
                 {
                  "class":"basic_enemy",
-                 "height":12,
+                 "height":9.09,
                  "id":220,
                  "name":"basic_enemy",
                  "rotation":0,
                  "visible":true,
-                 "width":12,
-                 "x":3471.33333333333,
-                 "y":156.99995
+                 "width":21.21,
+                 "x":3527.83333333333,
+                 "y":120.49995
                 },
             
                 {
                  "class":"basic_enemy",
-                 "height":12,
+                 "height":9.09,
                  "id":221,
                  "name":"basic_enemy",
                  "rotation":0,
                  "visible":true,
-                 "width":12,
-                 "x":3419.33333333333,
-                 "y":144.99995
+                 "width":21.21,
+                 "x":3467.58333333333,
+                 "y":157.24995
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":22,
+                 "id":225,
+                 "name":"mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":24,
+                 "x":3472.25,
+                 "y":53.25
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -528,6 +751,125 @@
                  "width":21.2121,
                  "x":2300,
                  "y":156.060605606061
+                },
+            
+                {
+                 "class":"basic_enemy",
+                 "height":9.09091,
+                 "id":242,
+                 "name":"basic enemy",
+                 "rotation":0,
+                 "visible":true,
+                 "width":21.2121,
+                 "x":2409.89395,
+                 "y":86.454545
+                }],
+         "opacity":1,
+         "type":"objectgroup",
+         "visible":true,
+         "x":0,
+         "y":0
+        },
+    
+        {
+         "draworder":"topdown",
+         "id":11,
+         "name":"wave5",
+         "objects":[
+                {
+                 "class":"key_enemy",
+                 "height":12,
+                 "id":266,
+                 "name":"key_enemy",
+                 "rotation":0,
+                 "visible":true,
+                 "width":12,
+                 "x":2691.25,
+                 "y":24.75
+                },
+            
+                {
+                 "class":"key_enemy",
+                 "height":12,
+                 "id":267,
+                 "name":"key_enemy",
+                 "rotation":0,
+                 "visible":true,
+                 "width":12,
+                 "x":2649.75,
+                 "y":103.25
+                },
+            
+                {
+                 "class":"key_enemy",
+                 "height":12,
+                 "id":268,
+                 "name":"key_enemy",
+                 "rotation":0,
+                 "visible":true,
+                 "width":12,
+                 "x":2805.25,
+                 "y":144.25
+                },
+            
+                {
+                 "class":"key_enemy",
+                 "height":12,
+                 "id":269,
+                 "name":"key_enemy",
+                 "rotation":0,
+                 "visible":true,
+                 "width":12,
+                 "x":2914.75,
+                 "y":37.75
+                },
+            
+                {
+                 "class":"basic_enemy",
+                 "height":9.09091,
+                 "id":270,
+                 "name":"basic enemy",
+                 "rotation":0,
+                 "visible":true,
+                 "width":21.2121,
+                 "x":2751.14,
+                 "y":81.2045
+                },
+            
+                {
+                 "class":"basic_enemy",
+                 "height":9.09091,
+                 "id":271,
+                 "name":"basic enemy",
+                 "rotation":0,
+                 "visible":true,
+                 "width":21.2121,
+                 "x":2858.64,
+                 "y":79.2045
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":22,
+                 "id":272,
+                 "name":"Mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":24,
+                 "x":2976.75,
+                 "y":119.75
+                },
+            
+                {
+                 "class":"mastodonte_enemy",
+                 "height":22,
+                 "id":273,
+                 "name":"Mastodonte",
+                 "rotation":0,
+                 "visible":true,
+                 "width":24,
+                 "x":3042.25,
+                 "y":50.25
                 }],
          "opacity":1,
          "type":"objectgroup",
@@ -558,8 +900,8 @@
          "x":0,
          "y":0
         }],
- "nextlayerid":11,
- "nextobjectid":224,
+ "nextlayerid":12,
+ "nextobjectid":274,
  "orientation":"orthogonal",
  "renderorder":"right-down",
  "tiledversion":"1.9.2",

@@ -327,6 +327,7 @@ namespace net {
     void udp_server::handle_receive_from(const boost::system::error_code& error,
         BufferSizeType bytes_transferred)
     {
+        spdlog::info("udp_server: Received {} bytes", bytes_transferred);
         if (!error && bytes_transferred > 0) {
             try {
                 auto msg = shared_message_info_t(

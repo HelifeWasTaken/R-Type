@@ -1,5 +1,32 @@
 {
+    "activeFile": "/home/alexis/Desktop/tek3/B-CPP-500-RUN-5-1-rtype-mattis.dalleau/assets/maps/MiningField/MiningField.json",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+        "/home/alexis/Desktop/tek3/B-CPP-500-RUN-5-1-rtype-mattis.dalleau/assets/maps/BydoEmpire/BydoMap.json": {
+            "scale": 0.5,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 2218,
+                "y": 90
+            }
+        },
+        "/home/alexis/Desktop/tek3/B-CPP-500-RUN-5-1-rtype-mattis.dalleau/assets/maps/MiningField/MiningField.json": {
+            "scale": 0.18382491076460641,
+            "selectedLayer": 2,
+            "viewCenter": {
+                "x": 3356.454777721002,
+                "y": 103.35922330097083
+            }
+        }
+    },
+    "openFiles": [
+        "/home/alexis/Desktop/tek3/B-CPP-500-RUN-5-1-rtype-mattis.dalleau/assets/maps/BydoEmpire/BydoMap.json",
+        "/home/alexis/Desktop/tek3/B-CPP-500-RUN-5-1-rtype-mattis.dalleau/assets/maps/MiningField/MiningField.json"
+    ],
+    "project": "space.json.tiled-project",
     "recentFiles": [
-        "/home/alexis/Desktop/tek3/B-CPP-500-RUN-5-1-rtype-mattis.dalleau/assets/maps/BydoEmpire/BydoMap.json"
+        "/home/alexis/Desktop/tek3/B-CPP-500-RUN-5-1-rtype-mattis.dalleau/assets/maps/BydoEmpire/BydoMap.json",
+        "/home/alexis/Desktop/tek3/B-CPP-500-RUN-5-1-rtype-mattis.dalleau/assets/maps/MiningField/MiningField.json"
     ]
 }

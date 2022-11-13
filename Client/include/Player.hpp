@@ -125,7 +125,7 @@ namespace game {
             paa::Sound(PAA_RESOURCE_MANAGER.get<paa::SoundBuffer>("player_hurt"));
 
     public:
-        static constexpr int MAX_HEALTH = 3000;
+        static constexpr int MAX_HEALTH = 6;
         static constexpr int SYNC_RATE = 250;
         static constexpr int Y_FRAMES = 4;
         static constexpr int SPEED_X = 200;

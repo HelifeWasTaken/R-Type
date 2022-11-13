@@ -22,7 +22,7 @@ namespace game {
         AEnemy::on_collision(other);
         if (other.get_id() == CollisionType::STATIC_WALL) {
             _y_velocity *= -1;
-            _y_velocity += _y_velocity < 0 ? -5 : 5;
+            fixed.y += _y_velocity < 0 ? -10 : 10;
         }
     }
 

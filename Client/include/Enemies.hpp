@@ -120,8 +120,10 @@ namespace game {
         ~SkeletonBossHead() = default;
 
         void on_collision(const paa::CollisionBox& other) override;
-        void delay_shoot();
         void update() override;
+
+    private:
+        void delay_shoot();
     };
 
     #define MOUTH_OFFSET_Y 10.0f

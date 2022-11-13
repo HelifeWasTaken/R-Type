@@ -665,7 +665,7 @@
                 {
                  "name":"wave2",
                  "type":"string",
-                 "value":"activate_wave,2000"
+                 "value":"activate_wave,2150"
                 }, 
                 {
                  "name":"wave3",
@@ -695,7 +695,7 @@
                 {
                  "name":"wave6",
                  "type":"string",
-                 "value":"activate_wave,2700"
+                 "value":"activate_wave,2750"
                 }, 
                 {
                  "name":"wave6_lock",

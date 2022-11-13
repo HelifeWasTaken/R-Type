@@ -18,6 +18,12 @@ PAA_END_CPP(scene_start) { }
 
 PAA_UPDATE_CPP(scene_start)
 {
+    if (PAA_INPUT.isKeyPressed(paa::Keyboard::F11)) {
+        PAA_APP.setFullscreen(!PAA_APP.isFullscreen());
+        g_game.reset_game_view();
+        g_game.use_hud_view();
+    }
+
     g_game.use_hud_view();
     if (g_game.in_transition()) {
         g_game.transition.update();

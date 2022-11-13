@@ -33,6 +33,12 @@ struct Game {
 
     void reset_game_view()
     {
+        auto size = PAA_SCREEN.getSize();
+
+        hud_view.setSize(800, 600);
+
+        hud_view.setViewPort(sf::FloatRect(0, 0, 800 / size.x, 600 / size.y));
+
         game_view = hud_view;
         game_view.setSize(ARCADE_SCREEN_SIZE_X, ARCADE_SCREEN_SIZE_Y);
         game_view.setCenter(ARCADE_SCREEN_VIEW_X, ARCADE_SCREEN_VIEW_Y);

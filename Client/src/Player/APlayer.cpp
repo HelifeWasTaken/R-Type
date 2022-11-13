@@ -211,6 +211,7 @@ namespace game {
                 paa::Health& healthRef = PAA_GET_COMPONENT(_entity, paa::Health);
                 if (other_id == CollisionType::STATIC_WALL) {
                     if (!_wallDeath) {
+                        _wallDeath = true;
                         _wallDeathTimer.restart();
                     } else if(_wallDeathTimer.isFinished()) {
                         g_game.score -= 10 * healthRef.hp;

@@ -60,23 +60,20 @@ namespace game {
 
     void Mattis::on_collision(const paa::CollisionBox& other)
     {
-        try {
-            auto& health = PAA_GET_COMPONENT(_e, paa::Health);
-            if (health.hp <= 0) {
-                PAA_ECS.kill_entity(_mouth);
-            }
-            AEnemy::on_collision(other);
-            auto& sprite = PAA_GET_COMPONENT(_e, paa::Sprite);
-            auto& mouth_s = PAA_GET_COMPONENT(_mouth, paa::Sprite);
+        auto& health = PAA_GET_COMPONENT(_e, paa::Health);
+        if (health.hp <= 0) {
+            PAA_ECS.kill_entity(_mouth);
+        }
+        AEnemy::on_collision(other);
+        auto& sprite = PAA_GET_COMPONENT(_e, paa::Sprite);
+        auto& mouth_s = PAA_GET_COMPONENT(_mouth, paa::Sprite);
 
-            if (other.get_id() == rtype::game::CollisionType::PLAYER_BULLET) {
-                sprite->setColor(paa::Color::Red);
-                if (health.hp >= 10)
-                    mouth_s->setColor(paa::Color::Red);
-                else
-                    mouth_s->setColor(paa::Color::Transparent);
-            }
-        } catch (...) {
+        if (other.get_id() == rtype::game::CollisionType::PLAYER_BULLET) {
+            sprite->setColor(paa::Color::Red);
+            if (health.hp >= 10)
+                mouth_s->setColor(paa::Color::Red);
+            else
+                mouth_s->setColor(paa::Color::Transparent);
         }
     }
 

@@ -335,7 +335,6 @@ namespace net {
                 _recv_queue->async_push(msg);
             } catch (const std::exception& e) {
                 spdlog::error("udp_server: Error while receiving message: {}", e.what());
-                return;
             }
         } else {
             if (error) {

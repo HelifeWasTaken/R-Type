@@ -113,7 +113,7 @@ static void spawn_spaceships_batch(bool doubleShipsAmount, std::vector<hl::silva
     int max_ships = rand() % (doubleShipsAmount ? 12 : 6);
     for (int i = 0; i < max_ships; i++) {
         paa::Controller c = new_simulated_controller();
-        auto playerEntity = rtype::game::PlayerFactory::addPlayer(rand() % 3, c, false, false);
+        auto playerEntity = rtype::game::PlayerFactory::addPlayer(rand() % RTYPE_PLAYER_COUNT, c, false, false);
         spdlog::info("Added spaceship {} on the field", playerEntity);
 
         auto player = PAA_GET_COMPONENT(playerEntity, rtype::game::Player);

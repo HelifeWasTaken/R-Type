@@ -99,6 +99,7 @@ namespace game {
 
         SerializablePlayer _info;
 
+        paa::Timer _syncWithTcpTimer;
         paa::Timer _syncTimer;
         paa::Timer _hurtTimer;
         paa::Timer _frameTimer;
@@ -127,6 +128,7 @@ namespace game {
     public:
         static constexpr int MAX_HEALTH = 6;
         static constexpr int SYNC_RATE = 250;
+        static constexpr int SYNC_WITH_TCP_RATE = 2000;
         static constexpr int Y_FRAMES = 4;
         static constexpr int SPEED_X = 200;
         static constexpr int SPEED_Y = 150;

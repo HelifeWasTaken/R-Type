@@ -225,13 +225,10 @@ namespace game {
                 load_centipede_path(_path, RTYPE_CENTIPEDE_PATH_TWO);
                 _phase_one = false;
                 auto c = get_centipede_body(_body_part);
-                spdlog::critical("Healing!");
                 if (!c) {
-                    spdlog::critical("Healing aled!");
                     return 0.f;
                 }
                 c->heal_self_and_child();
-                spdlog::critical("Healing healed!");
             }
             _path_index = 0;
         }
@@ -284,6 +281,7 @@ namespace game {
         auto c = get_centipede_body(_body_part);
 
         if (!c) {
+            attempt_trigger_death_event();
             return false;
         }
 

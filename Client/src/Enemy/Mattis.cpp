@@ -77,19 +77,26 @@ namespace game {
                     mouth_s->setColor(paa::Color::Transparent);
             }
         } catch (...) {
+            PAA_ECS.kill_entity(_e);
+            PAA_ECS.kill_entity(_mouth);
         }
     }
 
     void Mattis::update_sprite(const float& deltaTime, const paa::Sprite& sprite)
     {
-        auto& mouth_s = PAA_GET_COMPONENT(_mouth, paa::Sprite);
-        _red_timer += deltaTime;
+        try {
+            auto& mouth_s = PAA_GET_COMPONENT(_mouth, paa::Sprite);
+            _red_timer += deltaTime;
 
-        if (_red_timer >= .1f) {
-           sprite->setColor(paa::Color::White);
-           if (mouth_s->getColor() != paa::Color::Transparent)
-               mouth_s->setColor(paa::Color::White);
-           _red_timer = 0.0f;
+            if (_red_timer >= .1f) {
+               sprite->setColor(paa::Color::White);
+               if (mouth_s->getColor() != paa::Color::Transparent)
+                   mouth_s->setColor(paa::Color::White);
+               _red_timer = 0.0f;
+            }
+        } catch (...) {
+            PAA_ECS.kill_entity(_e);
+            PAA_ECS.kill_entity(_mouth);
         }
     }
 
@@ -112,7 +119,8 @@ namespace game {
                 _path_index += _path_index < _path.size() - 1? 1 : -_path_index;
             shoot_sequence(deltaTime, current_pos);
         } catch(...) {
-
+            PAA_ECS.kill_entity(_e);
+            PAA_ECS.kill_entity(_mouth);
         }
     }
 
@@ -152,7 +160,7 @@ namespace game {
                 _start_attack = false;
             }
         } catch(...) {
-
+            PAA_ECS.kill_entity(_e);
         }
     }
 
@@ -202,6 +210,7 @@ namespace game {
             posRef.y = parentPosRef.y + _y_offset;
             open_mouth(posRef, deltaTime);
         } catch(...) {
+            PAA_ECS.kill_entity(_e);
         }
     }
 }

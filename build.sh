@@ -47,8 +47,8 @@ if [[ $1 == "--release" ]]; then
     echo "Compressing audio..."
     for file in $(find ./RType/ -type f -name "*.ogg"); do
         echo "Compressing $file"
-        #ffmpeg -i "$file" -c:a libvorbis -ab 32k -ar 22050 "$file-compressed.ogg"
-        #mv "$file-compressed.ogg" "$file"
+        ffmpeg -i "$file" -c:a libvorbis -ab 32k -ar 22050 "$file-compressed.ogg"
+        mv "$file-compressed.ogg" "$file"
     done
 fi
 

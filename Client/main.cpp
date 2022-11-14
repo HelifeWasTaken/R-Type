@@ -80,27 +80,8 @@ static void register_player_system()
     });
 }
 
-/*
-#include "PileAA/Parallax.hpp"
-
-PAA_SCENE(test) {
-    paa::Parallax parallax = paa::Parallax(
-        paa::Vector2f(200, 30),
-        paa::Vector2f(100, 80),
-        { "parallax_menu_1", "parallax_menu_2", "parallax_menu_3" },
-        paa::Vector2f(4, 4));
-
-    PAA_START {}
-
-    PAA_UPDATE {
-        parallax.update();
-    }
-
-    PAA_END {}
-};
-*/
-
 PAA_MAIN("../Resources.conf", {
+
     // PAA_REGISTER_SCENE(test);
     // PAA_SET_SCENE(test);
 

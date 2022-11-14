@@ -156,11 +156,15 @@ template <typename F>
 int paa_unsafe_main(
     int argc, char** argv, const std::string& configuration_file, const F& app)
 {
+    bool result = false;
+
     std::filesystem::current_path(std::filesystem::path(argv[0]).parent_path());
-    setup_paa_system(configuration_file);
-    app();
-    PAA_APP.run();
-    stop_paa_system();
+    do {
+        setup_paa_system(configuration_file);
+        app();
+        result = PAA_APP.run();
+        stop_paa_system();
+    } while (result);
     return 0;
 }
 

@@ -1,0 +1,2609 @@
+@startuml
+
+
+
+
+
+/' Objects '/
+
+class AsciiTitle {
+	+{static} print(const std::string& headline) : void
+}
+
+
+class BlackScreenTransition {
+	+BlackScreenTransition()
+	-_phase_two : bool
+	+finished() : bool {query}
+	+phase_two() : bool {query}
+	-_duration : float
+	-_timer : paa::Timer
+	-_rect : sf::RectangleShape
+	+draw() : void {query}
+	+start(bool long_transition) : void
+	+start_halfway() : void
+	+update() : void
+}
+
+
+class DestroyableElementSerializer <template<typename T>> {
+	+DestroyableElementSerializer()
+	+DestroyableElementSerializer(const T& element)
+	-_element : T
+	+getElement() : T&
+	+serialize() : std::vector<rtype::net::Byte> {query}
+	+from(const rtype::net::Byte* data, const rtype::net::BufferSizeType size) : void
+}
+
+
+class Room {
+	+Room(rtype::net::server& server, rtype::net::ClientID client)
+	+~Room()
+	+clientIsInRoom(rtype::net::ClientID client) : bool {query}
+	+hasStarted() : bool {query}
+	+isEmpty() : bool {query}
+	+isFull() : bool {query}
+	+launchGame() : bool
+	+stop() : bool
+	-_started : rtype::net::Bool
+	-_hostID : rtype::net::PlayerID
+	+addPlayer(rtype::net::ClientID client) : rtype::net::PlayerID
+	+getHostID() : rtype::net::PlayerID {query}
+	+get_client_player_id(const rtype::net::ClientID& id) : rtype::net::PlayerID {query}
+	-_server : rtype::net::server&
+	+get_clients() : std::unordered_map<rtype::net::ClientID , rtype::net::PlayerID>& {query}
+	-_client_to_index : std::unordered_map<rtype::net::ClientID, rtype::net::PlayerID>
+	+feed_broadcast(const rtype::net::IMessage& message, rtype::net::ClientID except) : void
+	+main_broadcast(const rtype::net::IMessage& message, rtype::net::ClientID except) : void
+	+removePlayer(rtype::net::ClientID client) : void
+	+setHostID(rtype::net::PlayerID id) : void
+}
+
+
+class RoomManager {
+	+RoomManager(rtype::net::server& server)
+	+~RoomManager()
+	+getRoom(rtype::net::ClientID client) : Room*
+	+roomExists(const std::string& roomID) : bool {query}
+	-_server : rtype::net::server&
+	-_client_to_room_id : std::unordered_map<rtype::net::ClientID, std::string>
+	-_rooms : std::unordered_map<std::string, std::unique_ptr<Room>>
+	+addPlayerToRoom(const std::string& roomID, rtype::net::ClientID client) : void
+	+launchGame(rtype::net::ClientID client) : void
+	+newRoom(rtype::net::ClientID client) : void
+	+removePlayerIfInRoom(rtype::net::ClientID client) : void
+}
+
+
+class SerializedEnemyDeath {
+	+SerializedEnemyDeath()
+	+SerializedEnemyDeath(const paa::u16& element)
+}
+
+
+class SerializedPlayerDeath {
+	+SerializedPlayerDeath()
+	+SerializedPlayerDeath(const rtype::net::ClientID& element)
+}
+
+
+class SerializedScroll {
+	+SerializedScroll()
+	+SerializedScroll(const paa::i32& element)
+}
+
+
+class Game {
+	+transition : BlackScreenTransition
+	+get_random_player() : PAA_ENTITY {query}
+	+service : RTYPE_CLIENT
+	+everyone_is_dead() : bool {query}
+	+in_transition() : bool {query}
+	+is_player_alive_by_entity(const PAA_ENTITY& entity) : bool {query}
+	+is_player_alive_by_id(const rtype::net::ClientID& id) : bool {query}
+	+is_player_connected(const rtype::net::ClientID& id) : bool {query}
+	+lock_scroll : bool
+	+show_gui : bool
+	+transition_is_halfway() : bool {query}
+	+old_scroll : float
+	+scroll : float
+	+scroll_speed : float
+	+score : int
+	+is_host : rtype::net::Bool
+	+id : rtype::net::ClientID
+	+game_view : sf::View
+	+hud_view : sf::View
+	+players_entities : std::array<PAA_ENTITY, RTYPE_PLAYER_COUNT>
+	+generate_hud_text_for_players_life() : std::string {query}
+	+generate_hud_text_for_score() : std::string {query}
+	+room_token : std::string
+	+server_address : std::string
+	+enemies_to_entities : std::unordered_map<int, PAA_ENTITY>
+	+launch_transition(bool long_transition) : void
+	+launch_transition_halfway() : void
+	+reset_game_view() : void
+	+use_game_view() : void
+	+use_hud_view() : void
+}
+
+
+namespace rtype {
+	class MenuParallax {
+		+{static} get() : paa::Parallax&
+		+{static} recreate() : paa::Parallax&
+		-{static} _menuInstance : static inline std::shared_ptr<paa::Parallax>
+		+{static} clear() : void
+		+{static} update() : void
+	}
+
+	namespace net {
+		class AClient {
+			+AClient()
+			+~AClient()
+			-_queue : async_queue<shared_message_t>
+			+poll(shared_ptr<IMessage> message) : bool
+			+stopped() : bool {query}
+			#_stopped : std::atomic_bool
+			#add_event(shared_ptr<IMessage> message) : void
+		}
+
+		class ConnectionInitReply {
+			+ConnectionInitReply()
+			+ConnectionInitReply(PlayerID playerId, TokenType token)
+			+~ConnectionInitReply()
+			+size() : BufferSizeType {query}
+			-_playerId : PlayerID
+			+playerId() : PlayerID {query}
+			-_token : TokenType
+			+token() : TokenType {query}
+			+serialize() : std::vector<Byte> {query}
+			+from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		class CreateRoomReply {
+			+CreateRoomReply()
+			+CreateRoomReply(const std::string& token)
+			+~CreateRoomReply()
+			+size() : BufferSizeType {query}
+			-_token : std::string
+			+token() : std::string& {query}
+			+serialize() : std::vector<Byte> {query}
+			+from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		class FeedInitReply {
+			+FeedInitReply()
+			+FeedInitReply(TokenType token)
+			+~FeedInitReply()
+			+size() : BufferSizeType {query}
+			-_token : TokenType
+			+token() : TokenType {query}
+			+serialize() : std::vector<Byte> {query}
+			+from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		class FeedInitRequest {
+			+FeedInitRequest()
+			+FeedInitRequest(ClientID playerId, TokenType token)
+			+~FeedInitRequest()
+			+size() : BufferSizeType {query}
+			-_playerId : ClientID
+			+playerId() : ClientID {query}
+			-_token : TokenType
+			+token() : TokenType {query}
+			+serialize() : std::vector<Byte> {query}
+			+from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		class GameLauncher {
+			+GameLauncher()
+			+GameLauncher(int32_t seed, bool yes)
+			+~GameLauncher()
+			+size() : BufferSizeType {query}
+			-_yes : Byte
+			+yes() : bool {query}
+			-_seed : int32_t
+			+seed() : int32_t {query}
+			+serialize() : std::vector<Byte> {query}
+			+from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		abstract class IMessage {
+			+IMessage()
+			+~IMessage()
+			+{abstract} size() : BufferSizeType {query}
+			+{abstract} code() : int {query}
+			+{abstract} type() : int {query}
+			+{abstract} serialize() : std::vector<Byte> {query}
+			+{abstract} from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		abstract class Message {
+			+Message(message_code code)
+			+Message()
+			+~Message()
+			+{static} deserialize(const Byte* data, const BufferSizeType size) : boost::shared_ptr<T>
+			+{static} deserialize(const std::vector<Byte>& buff) : boost::shared_ptr<T>
+			+code() : int {query}
+			+type() : int {query}
+			#_message_code : message_code
+		}
+
+		class RequestConnectRoom {
+			+RequestConnectRoom()
+			+RequestConnectRoom(const std::string& roomID)
+			+~RequestConnectRoom()
+			+size() : BufferSizeType {query}
+			-_roomID : std::string
+			+roomID() : std::string& {query}
+			+serialize() : std::vector<Byte> {query}
+			+from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		class RequestConnectRoomReply {
+			+RequestConnectRoomReply()
+			+RequestConnectRoomReply(PlayerID playerID)
+			+~RequestConnectRoomReply()
+			+size() : BufferSizeType {query}
+			-_playerID : PlayerID
+			+playerID() : PlayerID {query}
+			+serialize() : std::vector<Byte> {query}
+			+from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		abstract class Serializable {
+			+Serializable()
+			+~Serializable()
+			+{static} deserialize(const Byte* data, const BufferSizeType size) : T
+			+{static} deserialize(const std::vector<Byte>& data) : T
+			+{abstract} serialize() : std::vector<Byte> {query}
+			+{abstract} from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		class SignalMarker {
+			+SignalMarker()
+			+SignalMarker(const message_code& code)
+			+~SignalMarker()
+			+size() : BufferSizeType {query}
+			+serialize() : std::vector<Byte> {query}
+			+from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		class SyncMessage {
+			+SyncMessage()
+			+SyncMessage(PlayerID sid, const Serializable& serializable, const message_code& code)
+			+~SyncMessage()
+			+size() : BufferSizeType {query}
+			-_sid : PlayerID
+			+sid() : PlayerID {query}
+			-_data : std::vector<Byte>
+			+serialize() : std::vector<Byte> {query}
+			+data() : std::vector<Byte>& {query}
+			+from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		class TCPClient {
+			+TCPClient(boost::asio::io_context& io_context, const char* host, const char* port)
+			-_id : ClientID
+			+id() : ClientID {query}
+			-_token : TokenType
+			+token() : TokenType {query}
+			+is_connected() : bool {query}
+			-_resolver : boost::asio::ip::tcp::resolver
+			-_endpoint_iterator : boost::asio::ip::tcp::resolver::iterator
+			-_query : boost::asio::ip::tcp::resolver::query
+			-_socket : boost::asio::ip::tcp::socket
+			-_buf_recv : boost::shared_ptr<tcp_buffer_t>
+			-_is_connected : std::atomic_bool
+			-_add_event(shared_message_t message) : void
+			-receive() : void
+			+send(boost::shared_ptr<tcp_buffer_t> message, BufferSizeType size) : void
+			+send(const tcp_buffer_t& message, BufferSizeType size) : void
+			+send(const IMessage& message) : void
+		}
+
+		class TextMessage {
+			+TextMessage()
+			+TextMessage(const std::string& text)
+			+~TextMessage()
+			+size() : BufferSizeType {query}
+			-_text : std::string
+			+text() : std::string& {query}
+			+serialize() : std::vector<Byte> {query}
+			+from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		class UDPClient {
+			+UDPClient(boost::asio::io_context& io_context, const char* host, const char* port)
+			-_id : ClientID
+			-_token : TokenType
+			+token() : TokenType {query}
+			+is_connected() : bool {query}
+			-_receiver_endpoint : boost::asio::ip::udp::endpoint
+			-_sender_endpoint : boost::asio::ip::udp::endpoint
+			-_resolver : boost::asio::ip::udp::resolver
+			-_query : boost::asio::ip::udp::resolver::query
+			-_socket : boost::asio::ip::udp::socket
+			-_buf_recv : boost::shared_ptr<udp_buffer_t>
+			-_connected : std::atomic_bool
+			-_add_event(shared_message_t& message) : void
+			+feed_request(TokenType token, ClientID playerId) : void
+			-receive() : void
+			+send(rtype::net::udp_server::shared_message_info_t message, BufferSizeType size) : void
+			+send(const IMessage& message) : void
+		}
+
+		class UDPClient::HeaderMessage {
+			+HeaderMessage(udp_buffer_t& buffer)
+			+size() : BufferSizeType {query}
+			-_id : ClientID
+			+get_sender_id() : ClientID {query}
+			-_magic : MagicNumber
+			+is_valid() : bool {query}
+		}
+
+		class UDP_TCP_Client {
+			+UDP_TCP_Client(const char* host_tcp, const char* host_udp, const char* tcp_port, const char* udp_port)
+			+~UDP_TCP_Client()
+			-_tcp_client : TCPClient
+			+tcp() : TCPClient&
+			-_udp_client : UDPClient
+			+udp() : UDPClient&
+			+should_restart() : bool {query}
+			-_tcp_io_context : boost::asio::io_context
+			-_udp_io_context : boost::asio::io_context
+			-_context_io_tcp_thread : boost::shared_ptr<boost::thread>
+			-_context_io_udp_thread : boost::shared_ptr<boost::thread>
+			-_is_running : std::atomic_bool
+			-run() : void
+		}
+
+		class UpdateMessage {
+			+UpdateMessage()
+			+UpdateMessage(const PlayerID& sid, const Serializable& data, const message_code& code)
+			+~UpdateMessage()
+			+size() : BufferSizeType {query}
+			-_sid : PlayerID
+			+sid() : PlayerID {query}
+			-_data : std::vector<Byte>
+			+serialize() : std::vector<Byte> {query}
+			+data() : std::vector<Byte>& {query}
+			+from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		class UserConnectRoom {
+			+UserConnectRoom()
+			+UserConnectRoom(PlayerID playerID)
+			+~UserConnectRoom()
+			+size() : BufferSizeType {query}
+			-_playerID : Byte
+			+playerID() : PlayerID {query}
+			+serialize() : std::vector<Byte> {query}
+			+from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		class UserDisconnectFromRoom {
+			+UserDisconnectFromRoom()
+			+UserDisconnectFromRoom(PlayerID dc_user, PlayerID new_host)
+			+~UserDisconnectFromRoom()
+			+size() : BufferSizeType {query}
+			-_dc_user_id : PlayerID
+			-_new_host_id : PlayerID
+			+get_disconnected_user_id() : PlayerID {query}
+			+get_new_host_id() : PlayerID {query}
+			+serialize() : std::vector<Byte> {query}
+			+from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		class YesNoMarker {
+			+YesNoMarker()
+			+YesNoMarker(const message_code& code, const Bool& yes)
+			+~YesNoMarker()
+			+yes() : Bool {query}
+			+size() : BufferSizeType {query}
+			-_yes : Byte
+			+serialize() : std::vector<Byte> {query}
+			+from(const Byte* data, const BufferSizeType size) : void
+		}
+
+		class async_automated_sparse_array <template<typename T>> {
+			+HL_AUTO_COMPLETE_CANONICAL_FORM(async_automated_sparse_array)
+			-_unused_indexes : async_queue<size_t>
+			+async_get(size_t index) : boost::shared_ptr<T>
+			+async_set(boost::shared_ptr<T> value) : size_t
+			+async_size() : size_t
+			-_mut : std::mutex
+			-_array : std::vector<boost::shared_ptr<T>>
+			+async_remove(size_t index) : void
+		}
+
+		class async_queue <template<typename T>> {
+			+HL_AUTO_COMPLETE_CANONICAL_FORM(async_queue)
+			+async_empty() : bool
+			+async_pop(T& value) : bool
+			-_mutex : std::mutex
+			+async_emplace(Args&& ... args) : void
+			+async_push(const T& value) : void
+			+async_push(T&& value) : void
+		}
+
+		class remote_client {
+			+remote_client()
+			-_main_id : ClientID
+			+id() : ClientID {query}
+			+{static} create() : pointer
+			-_main_channel : tcp_server*
+			-_feed_endpoint : udp::endpoint
+			+get_feed_endpoint() : udp::endpoint {query}
+			-_feed_channel : udp_server*
+			+init_feed_channel(udp_server& feed_channel, udp::endpoint feed_endpoint) : void
+			+init_main_channel(tcp_server& main_channel, ClientID main_id) : void
+			+send_feed(rtype::net::udp_server::shared_message_info_t msg) : void
+			+send_feed(const std::string& s) : void
+			+send_feed(const void* data, BufferSizeType size) : void
+			+send_feed(const rtype::net::IMessage& message) : void
+			+send_feed(rtype::net::IMessage& message) : void
+			+send_main(rtype::net::tcp_connection::shared_message_info_t msg) : void
+			+send_main(const std::string& s) : void
+			+send_main(const void* data, BufferSizeType size) : void
+			+send_main(const rtype::net::IMessage& message) : void
+			+send_main(rtype::net::IMessage& message) : void
+		}
+
+		class server {
+			+server(PortType tcp_port, PortType udp_port, Bool authenticate)
+			+~server()
+			-_authenticate : Bool
+			-on_tcp_event_connexion(event event, tcp_event& tcp_event) : bool
+			-on_tcp_event_disconnexion(event event, tcp_event& tcp_event) : bool
+			-on_tcp_event_message(event event, tcp_event& tcp_event) : bool
+			-on_udp_event_message(event event, rtype::net::udp_server::shared_message_info_t& msg) : bool
+			-on_udp_feed_init(event event, rtype::net::udp_server::shared_message_info_t& msg) : bool
+			+poll(event event) : bool
+			-poll_tcp(event event, tcp_event& tcp_event) : bool
+			-poll_udp(event event, rtype::net::udp_server::shared_message_info_t& msg) : bool
+			-_io_context : boost::asio::io_context
+			+io_context() : boost::asio::io_context&
+			-_thread_io_context_runner : boost::shared_ptr<boost::thread>
+			-_tcp_server : boost::shared_ptr<tcp_server>
+			-_udp_server : boost::shared_ptr<udp_server>
+			+get_client(ClientID id) : remote_client::pointer
+			+get_client(rtype::net::tcp_connection::pointer conn) : remote_client::pointer
+			+get_client(const udp::endpoint& endpoint) : remote_client::pointer
+			-_is_running : std::atomic_bool
+			+clients() : std::unordered_map<ClientID , remote_client::pointer>&
+			-_clients : std::unordered_map<ClientID, remote_client::pointer>
+			+tcp() : tcp_server&
+			+udp() : udp_server&
+			-run() : void
+		}
+
+		abstract class server::base_message {
+			+~base_message()
+			+{abstract} to_msg() : boost::shared_ptr<IMessage>
+			+{abstract} code() : message_code {query}
+			+{abstract} sender() : remote_client::pointer {query}
+			+{abstract} to_string() : std::string {query}
+			+{abstract} to_vec() : std::vector<Byte> {query}
+		}
+
+		class server::feed_message {
+			+feed_message(rtype::net::remote_client::pointer sender, rtype::net::udp_server::shared_message_info_t msg)
+			+to_msg() : boost::shared_ptr<IMessage>
+			+code() : message_code {query}
+			-_sender : remote_client::pointer
+			+sender() : remote_client::pointer {query}
+			+to_string() : std::string {query}
+			+to_vec() : std::vector<Byte> {query}
+			-_msg : udp_server::shared_message_info_t
+		}
+
+		class server::main_message {
+			+main_message(rtype::net::remote_client::pointer sender, rtype::net::tcp_connection::shared_message_info_t msg)
+			+to_msg() : boost::shared_ptr<IMessage>
+			+code() : message_code {query}
+			-_sender : remote_client::pointer
+			+sender() : remote_client::pointer {query}
+			+to_string() : std::string {query}
+			+to_vec() : std::vector<Byte> {query}
+			-_msg : tcp_connection::shared_message_info_t
+		}
+
+		class tcp_connection {
+			-tcp_connection(boost::asio::io_context& io_context)
+			+~tcp_connection()
+			-_id : ClientID
+			+get_id() : ClientID {query}
+			+poll(shared_ptr<message_info> message) : bool
+			+should_exit() : bool {query}
+			-_send_message_list : boost::shared_ptr<async_automated_sparse_array<message_info>>
+			-_readed_messages_queue : boost::shared_ptr<async_queue<shared_message_info_t>>
+			-_should_exit : boost::shared_ptr<std::atomic_bool>
+			-_buffer_reader : boost::shared_ptr<tcp_buffer_t>
+			+{static} create(boost::asio::io_context& io_context) : pointer
+			+{static} new_message(const void* data, BufferSizeType size) : shared_message_info_t
+			+{static} new_message(const IMessage& msg) : shared_message_info_t
+			+{static} new_message(const std::string& s) : shared_message_info_t
+			-_socket : tcp::socket
+			+socket() : tcp::socket&
+			-handle_read() : void
+			+send(shared_ptr<message_info> message) : void
+			+set_id(ClientID id) : void
+			+start() : void
+		}
+
+		class tcp_event {
+			+tcp_event()
+			+tcp_event(tcp_event_connexion event)
+			+tcp_event(tcp_event_disconnexion event)
+			+tcp_event(tcp_event_message event)
+			+~tcp_event()
+			+get() : T& {query}
+			+get() : T&
+			+get_type() : int {query}
+			-_container : variant<void*, tcp_event_connexion, tcp_event_disconnexion, tcp_event_message>
+		}
+
+		class tcp_event_connexion {
+			+HL_AUTO_COMPLETE_CANONICAL_FORM(tcp_event_connexion)
+			+tcp_event_connexion(ClientID id)
+			-_id : ClientID
+			+get_id() : ClientID {query}
+		}
+
+		class tcp_event_disconnexion {
+			+HL_AUTO_COMPLETE_CANONICAL_FORM(tcp_event_disconnexion)
+			+tcp_event_disconnexion(ClientID id)
+			-_id : ClientID
+			+get_id() : ClientID {query}
+		}
+
+		class tcp_event_message {
+			+HL_AUTO_COMPLETE_CANONICAL_FORM(tcp_event_message)
+			+tcp_event_message(ClientID id, rtype::net::tcp_connection::shared_message_info_t message)
+			-_id : ClientID
+			+get_id() : ClientID {query}
+			-_message : tcp_connection::shared_message_info_t
+			+get_message() : tcp_connection::shared_message_info_t
+		}
+
+		class tcp_server {
+			+tcp_server(boost::asio::io_context& io_context, PortType port)
+			+~tcp_server()
+			-_connections : async_automated_sparse_array<tcp_connection>
+			-_events : async_queue<tcp_event>
+			+poll(tcp_event& event) : bool
+			-_io_context : boost::asio::io_context&
+			-_is_started : std::atomic<Bool>
+			-_tcp_connection_polling_thread : std::unique_ptr<boost::thread>
+			-_acceptor : tcp::acceptor
+			-handle_accept(rtype::net::tcp_connection::pointer new_connection, const boost::system::error_code& error) : void
+			-poll_tcp_connections() : void
+			+send(ClientID id, rtype::net::tcp_connection::shared_message_info_t message) : void
+			-start_accept() : void
+		}
+
+		class udp_server {
+			+udp_server(boost::asio::io_context& io_context, PortType port)
+			+poll(shared_ptr<message_info> info) : bool
+			-_messages : boost::shared_ptr<async_automated_sparse_array<message_info>>
+			-_recv_queue : boost::shared_ptr<async_queue<shared_message_info_t>>
+			-_recv_buffer : boost::shared_ptr<udp_buffer_t>
+			+{static} new_message(ClientID sender, const void* data, BufferSizeType size) : shared_message_info_t
+			+{static} new_message(ClientID sender, const IMessage& msg) : shared_message_info_t
+			+{static} new_message(ClientID sender, const std::string& s) : shared_message_info_t
+			-_sender_endpoint : udp::endpoint
+			-_socket : udp::socket
+			-handle_receive_from(const boost::system::error_code& error, BufferSizeType bytes_transferred) : void
+			+send_to(udp::endpoint target, shared_ptr<message_info> message) : void
+			-start_receive() : void
+		}
+
+		class udp_server::message_info {
+			+HL_AUTO_COMPLETE_CANONICAL_FORM(message_info)
+			+message_info(udp::endpoint sender, udp_buffer_t&& buffer, BufferSizeType size)
+			-_size : BufferSizeType
+			+size() : BufferSizeType
+			-_msg : Byte*
+			+msg() : Byte* {query}
+			-_sender_id : ClientID
+			+sender_id() : ClientID
+			-_magic : MagicNumber
+			-_sender : udp::endpoint
+			+sender() : udp::endpoint
+			+set_msg(Byte* msg) : void
+			+set_size(BufferSizeType size) : void
+		}
+
+		enum message_code {
+			CONNECT_ROOM_REQ_REP
+			CONN_INIT
+			CONN_INIT_REP
+			CREATE_ROOM
+			CREATE_ROOM_REPLY
+			DUMMY
+			FEED_INIT
+			FEED_INIT_REP
+			LAUNCH_GAME
+			LAUNCH_GAME_REP
+			REQUEST_CONNECT_ROOM
+			ROOM_CLIENT_CONNECT
+			ROOM_CLIENT_DISCONNECT
+			SYNC_PLAYER
+			SYNC_SRAND
+			TEXT_MESSAGE
+			UPDATE_ENEMY_DESTROYED
+			UPDATE_PLAYER
+			UPDATE_PLAYER_DESTROYED
+			UPDATE_SCROLL
+		}
+
+		enum message_type {
+			CONNECTION_INIT_REPLY
+			CONNECT_ROOM_REQ_REP
+			CONN_INIT
+			CONN_INIT_REP
+			CREATE_ROOM
+			CREATE_ROOM_REPLY
+			FEED_INIT
+			FEED_INIT_REP
+			FEED_INIT_REPLY
+			FEED_INIT_REQUEST
+			INVALID
+			LAUNCH_GAME
+			LAUNCH_GAME_REP
+			REQUEST_CONNECT_ROOM
+			ROOM_CLIENT_CONNECT
+			ROOM_CLIENT_DISCONNECT
+			SIGNAL_MARKER
+			SYNC_MESSAGE
+			SYNC_PLAYER
+			SYNC_SRAND
+			TEXT_MESSAGE
+			UPDATE_ENEMY_DESTROYED
+			UPDATE_MESSAGE
+			UPDATE_PLAYER
+			UPDATE_PLAYER_DESTROYED
+			UPDATE_SCROLL
+			YES_NO_MESSAGES
+		}
+
+		enum server::event_type {
+			Connect
+			Disconnect
+			FeedMessage
+			Invalid
+			MainMessage
+		}
+
+		enum tcp_event_type {
+			Connexion
+			Disconnexion
+			Invalid
+			Message
+		}
+
+		class Serializer {
+			+Serializer(const Byte* bytes, BufferSizeType size)
+			+Serializer()
+			+Serializer(const BufferSizeType size)
+			+add_bytes(const Byte* bytes, BufferSizeType size) : Serializer&
+			+add_bytes(const std::vector<Byte>& bytes) : Serializer&
+			+add_bytes(const std::string& str) : Serializer&
+			+operator<<(const T& value) : Serializer&
+			+operator>>(T& value) : Serializer&
+			+data : std::vector<Byte>
+		}
+
+		class base_message_info <template<typename BufferType, BufferSizeType StartOffset=0>> {
+			+HL_AUTO_COMPLETE_CANONICAL_FORM(base_message_info)
+			+base_message_info(BufferType&& buffer, BufferSizeType size)
+			+size : BufferSizeType
+			+buffer : BufferType
+			+to() : To
+			+to_msg() : boost::shared_ptr<IMessage>
+			+code() : message_code
+			+to_msg() : std::shared_ptr<T>
+			+to_string() : std::string
+			+to_vec() : std::vector<Byte>
+		}
+
+		class server::event {
+			+event()
+			+type : event_type
+			+client : remote_client::pointer
+			+message : std::unique_ptr<server::base_message>
+		}
+
+		class srand_sync {
+			+srand_sync()
+			+srand_sync(int32_t seed)
+			+srand_sync(const std::vector<uint8_t>& data)
+			+srand_sync(const uint8_t* data, const size_t size)
+			+seed : int32_t
+			+serialize() : std::vector<uint8_t> {query}
+			+from(const uint8_t* data, const size_t size) : void
+		}
+
+		class tcp_connection::message_info {
+			+HL_AUTO_COMPLETE_CANONICAL_FORM(message_info)
+			+message_info(tcp_buffer_t&& buffer, BufferSizeType size)
+		}
+
+		class vector2i {
+			+vector2i()
+			+vector2i(uint16_t x, uint16_t y)
+			+vector2i(const vector2i& other)
+			+vector2i(const std::vector<uint8_t>& data)
+			+vector2i(const uint8_t* data, const size_t size)
+			+operator!=(const vector2i& other) : bool {query}
+			+operator==(const vector2i& other) : bool {query}
+			+serialize() : std::vector<uint8_t> {query}
+			+x : uint16_t
+			+y : uint8_t
+			+operator=(const vector2i& other) : vector2i&
+			+from(const uint8_t* data, const size_t size) : void
+		}
+	}
+
+	namespace game {
+		abstract class ABullet {
+			+ABullet(const PAA_ENTITY& e, const BulletType type, const double life_time, const double aim_angle, const double damage, const bool from_player)
+			+~ABullet()
+			-_type : BulletType
+			#_from_player : bool
+			+is_alive() : bool {query}
+			#_e : const PAA_ENTITY
+			#_aim_angle : double
+			#_damage : double
+			+get_aim_angle() : double {query}
+			+get_damage() : double {query}
+			+get_type() : int {query}
+			+get_position() : paa::Position& {query}
+			-_timer : paa::Timer
+			+force_kill() : void {query}
+			+on_collision(const paa::CollisionBox& other) : void
+			+{abstract} update() : void
+		}
+
+		abstract class AEnemy {
+			+AEnemy(const PAA_ENTITY e, EnemyType type)
+			+~AEnemy()
+			#_type : EnemyType
+			#_shooterList : ShooterList
+			+dies_when_leave_screen() : bool {query}
+			+is_alive() : bool
+			#is_hurt : bool
+			#_e : const PAA_ENTITY
+			+get_type() : int {query}
+			+get_health() : paa::Health& {query}
+			+get_position() : paa::Position& {query}
+			+on_collision(const paa::CollisionBox& other) : void
+			+{abstract} update() : void
+		}
+
+		class APlayer {
+			+APlayer(const PAA_ENTITY& entity, const paa::Id& id, paa::Sprite& spriteRef, paa::Controller& controllerRef, bool is_local)
+			+~APlayer()
+			#_info : SerializablePlayer
+			#_shooterList : ShooterList
+			#_clamp_position : bool
+			#_is_colliding_with_wall : bool
+			#_is_hurt : bool
+			#_is_local : bool
+			#_wallDeath : bool
+			+is_dead() : bool {query}
+			+is_local() : bool {query}
+			#_id : const paa::Id
+			#_speed_x : int
+			#_speed_y : int
+			#_y_frame : int
+			+get_speed_x() : int
+			+get_speed_y() : int
+			#_lastMoveVector : obscur::Vector2<float>
+			#_moveVector : obscur::Vector2<float>
+			#_controllerRef : paa::Controller
+			#_entity : paa::DynamicEntity
+			#_hurt_sound : paa::Sound
+			#_spriteRef : paa::Sprite
+			#_frameTimer : paa::Timer
+			#_hurtTimer : paa::Timer
+			#_syncTimer : paa::Timer
+			#_syncWithTcpTimer : paa::Timer
+			#_wallDeathTimer : paa::Timer
+			#_yFrameUpdate : paa::Timer
+			#_lastCorrectPos : paa::Vec2
+			+{static} FRAME_RATE : static constexpr int
+			+{static} HURT_TIME : static constexpr int
+			+{static} MAX_HEALTH : static constexpr int
+			+{static} SPEED_X : static constexpr int
+			+{static} SPEED_Y : static constexpr int
+			+{static} SYNC_RATE : static constexpr int
+			+{static} SYNC_WITH_TCP_RATE : static constexpr int
+			+{static} WALL_DEATH_TIME : static constexpr int
+			+{static} Y_FRAMES : static constexpr int
+			+add_shooter(Shooter shooter) : void
+			+on_collision(const paa::CollisionBox& other) : void
+			+set_clamp_position(bool clamp_position) : void
+			+set_speed_x(int speed) : void
+			+set_speed_y(int speed) : void
+			+update() : void
+			+update_data() : void
+			+update_info(const SerializablePlayer& info) : void
+			+update_position() : void
+			+update_shoot() : void
+			+update_sprite_hurt() : void
+			+use_frame() : void
+		}
+
+		abstract class AShooter {
+			+AShooter(const PAA_ENTITY& e, double reloadTime)
+			+~AShooter()
+			+aim(const paa::Vector2f& to_aim) : AShooter&
+			+aim(float const& aim_angle, bool isRadian) : AShooter&
+			+angle_is_set() : bool
+			+can_shoot() : bool {query}
+			+can_shoot_and_restart() : bool
+			+is_attached_to_player() : bool {query}
+			#_aim_angle : double
+			+aim_angle() : double {query}
+			#_parentEntity : paa::DynamicEntity
+			#_timer : paa::Timer
+			+{abstract} shoot(std::string const& bullet_type) : void
+			+shoot_from_pos(std::string const& bullet_type, paa::Position const& position) : void
+		}
+
+		class BasicBullet {
+			+BasicBullet(const PAA_ENTITY& e, const double& aim_angle, bool from_player)
+			-_dir : paa::Vector2f
+			+update() : void
+		}
+
+		class BasicEnemy {
+			+BasicEnemy(const PAA_ENTITY& e)
+			+~BasicEnemy()
+			-_cycle : float
+			-_last_shoot : float
+			-_rand_ampl : float
+			-_shoot_cycle : float
+			+update() : void
+		}
+
+		class BasicShooter {
+			+BasicShooter(const PAA_ENTITY& e, double reloadTime)
+			+~BasicShooter()
+			-_sound : paa::Sound
+			+shoot(std::string const& bullet_type) : void
+		}
+
+		class BulletExplosion {
+			+BulletExplosion(const PAA_ENTITY& e)
+			+~BulletExplosion()
+			-_e : PAA_ENTITY
+			-_s : paa::Sprite
+			+update() : void
+		}
+
+		class BulletFactory {
+			+{static} make_bullet(Args&& ... args) : Bullet
+			-{static} function<void(float, paa::Position const &, const bool &) : std::unordered_map<std::string ,
+			+{static} make_basic_bullet(float aim_angle, paa::Position const& posRef, const bool& from_player) : void
+			+{static} make_bullet_by_type(const std::string& bullet_type, paa::Position const& ref, const bool& from_player, float aim) : void
+			+{static} make_laser_beam(float aim_angle, paa::Position const& posRef, const bool& from_player) : void
+			+{static} make_mattis_bullet(float aim_angle, paa::Position const& posRef, const bool& from_player) : void
+			+{static} make_missile_bullet(float aim_angle, paa::Position const& posRef, const bool& from_player) : void
+			+{static} make_skeleton_bullet(float aim_angle, paa::Position const& posRef, const bool& from_player) : void
+		}
+
+		class Centipede {
+			+Centipede(const PAA_ENTITY& e)
+			+~Centipede()
+			+get_back() : CentipedeBack
+			#_body_part : PAA_ENTITY
+			#_phase_one : bool
+			+is_alive() : bool
+			#_angle : float
+			#determine_time_to_next_point() : float
+			#_path_index : int
+			#s : paa::Sprite
+			#_timer : paa::Timer
+			#_lastPosition : pair<paa::Position, float>
+			#{static} _on_death_triggered : static inline bool
+			#_path : std::vector<paa::Vector2f>
+			#{static} attempt_trigger_death_event() : void
+			+on_collision(const paa::CollisionBox& other) : void
+			#{static} on_death() : void
+			+update() : void
+		}
+
+		class CentipedeBody {
+			+CentipedeBody(const PAA_ENTITY& self, const PAA_ENTITY& parent, int depth)
+			+get_back() : CentipedeBack
+			-_child : PAA_ENTITY
+			-_parent : PAA_ENTITY
+			+{static} build_centipede(const PAA_ENTITY& parent, int depth) : PAA_ENTITY
+			-_alive : bool
+			+centipede_part_functional() : bool
+			+is_alive() : bool
+			-_angle : float
+			-_red_timer : float
+			-_depth : int
+			-s : paa::Sprite
+			-_timer : paa::Timer
+			-_lastPosition : pair<paa::Position, float>
+			-_target : pair<paa::Position, float>
+			+heal_self_and_child() : void
+			+kill() : void
+			+on_collision(const paa::CollisionBox& other) : void
+			+update() : void
+		}
+
+		class CollisionFactory {
+			+{static} make(const paa::IntRect& rect, const paa::CollisionBox::callback_t& callback, const int64_t& id, const PAA_ENTITY& entity) : paa::SCollisionBox
+			+{static} makeBulletCollision(const paa::IntRect& rect, const PAA_ENTITY& e, const bool from_player) : paa::SCollisionBox
+			+{static} makeEnemyBulletCollision(const paa::IntRect& rect, const PAA_ENTITY& e) : paa::SCollisionBox
+			+{static} makeEnemyCollision(const paa::IntRect& rect, const PAA_ENTITY& e) : paa::SCollisionBox
+			+{static} makePlayerBulletCollision(const paa::IntRect& rect, const PAA_ENTITY& e) : paa::SCollisionBox
+			+{static} makePlayerCollision(const paa::IntRect& rect, const PAA_ENTITY& e) : paa::SCollisionBox
+			+{static} makePowerUpCollision(const paa::IntRect& rect, const PAA_ENTITY& e) : paa::SCollisionBox
+			+{static} makeStaticWallCollision(const paa::IntRect& rect, const PAA_ENTITY& e) : paa::SCollisionBox
+			+{static} makeTransparentWallCollision(const paa::IntRect& rect, const PAA_ENTITY& e) : paa::SCollisionBox
+			+{static} ENEMY_DAMAGE : static constexpr int
+			+{static} WALL_DAMAGE : static constexpr int
+		}
+
+		class ConeShooter {
+			+ConeShooter(const PAA_ENTITY& e, double reloadTime)
+			+~ConeShooter()
+			-_shooterList : std::vector<Shooter>
+			+shoot(std::string const& bullet_type) : void
+		}
+
+		class DumbyBoy {
+			+DumbyBoy(const PAA_ENTITY& e)
+			+~DumbyBoy()
+			-_last_shoot : float
+			-_shoot_cycle : float
+			-_y_velocity : float
+			-_to_focus : paa::DynamicEntity
+			+on_collision(const paa::CollisionBox& other) : void
+			+update() : void
+		}
+
+		class EffectZones {
+			+getEffects() : EffectZoneList&
+			-_effects : vector<std::unique_ptr<EffectZoneData>>
+			+addEffect(const unsigned int scroll_index, const std::string& type, const std::string& name) : void
+		}
+
+		class EnemyFactory {
+			+{static} make_enemy(Args&& ... args) : Enemy
+			+{static} make_basic_enemy(double const& x, double const& y) : PAA_ENTITY
+			+{static} make_centipede_boss(double const& x, double const& y) : PAA_ENTITY
+			+{static} make_dumby_boy_enemy(double const& x, double const& y) : PAA_ENTITY
+			+{static} make_enemy_by_type(const std::string& enemy_type, const float x, const float y) : PAA_ENTITY
+			+{static} make_key_enemy(double const& x, double const& y) : PAA_ENTITY
+			+{static} make_mastodonte_enemy(double const& x, double const& y) : PAA_ENTITY
+			+{static} make_mattis_boss(double const& x, double const& y) : PAA_ENTITY
+			+{static} make_robot_boss(double const& x, double const& y) : PAA_ENTITY
+			+{static} make_skeleton_boss(double const& x, double const& y) : PAA_ENTITY
+		}
+
+		class KeyEnemy {
+			+KeyEnemy(const PAA_ENTITY& e)
+			+~KeyEnemy()
+			-_cycle : float
+			-_last_shoot : float
+			-_rand_ampl : float
+			-_shoot_cycle : float
+			+update() : void
+		}
+
+		class LaserBeam {
+			+LaserBeam(const PAA_ENTITY& e, const double& aim_angle, bool from_player)
+			-_dir : paa::Vector2f
+			+update() : void
+		}
+
+		class Map {
+			+Map(const std::string& filepath)
+			-_zones : EffectZones
+			-_waves : WaveManager
+			-_changes : bool
+			+changes() : bool
+			-loadMap(const std::string& filepath) : void
+			+update() : void
+		}
+
+		class MastodonteEnemy {
+			+MastodonteEnemy(const PAA_ENTITY& e)
+			+~MastodonteEnemy()
+			+update() : void
+		}
+
+		class Mattis {
+			+Mattis(const PAA_ENTITY& e)
+			+~Mattis()
+			-_mouth : PAA_ENTITY
+			-_current_shoot_duration : float
+			-_red_timer : float
+			-_shoot_duration : float const
+			-_laser : paa::Sound
+			-_path_index : std::size_t
+			-_path : std::vector<paa::Vector2f>
+			-load_path() : void
+			+on_collision(const paa::CollisionBox& other) : void
+			-shoot_sequence(const float& deltaTime, const paa::Position& pos) : void
+			+update() : void
+			-update_sprite(const float& deltaTime, const paa::Sprite& sprite) : void
+		}
+
+		class MattisBullet {
+			+MattisBullet(const PAA_ENTITY& e, const double& aim_angle, bool from_player)
+			-_dir : paa::Vector2f
+			+update() : void
+		}
+
+		class MattisMouth {
+			+MattisMouth(const PAA_ENTITY& e, const PAA_ENTITY& body)
+			+~MattisMouth()
+			-_as_attacked : bool
+			-_close_mouth : bool
+			-_start_attack : bool
+			-_attack_cd : const float
+			-_shooting_speed : const float
+			-_body : const paa::DynamicEntity
+			-_last_attack : float
+			-_last_shoot : float
+			-_y_offset : float
+			-_last_mouth_pos : paa::Position
+			-_ghast : paa::Sound
+			-_shoot_index : std::size_t
+			-check_mouth_offset(paa::Position& mouth_pos, const float& deltaTime) : void
+			-handle_shoot(const float& deltaTime, paa::Position const& pos) : void
+			-open_mouth(paa::Position& mouth_pos, const float& deltaTime) : void
+			+update() : void
+		}
+
+		class MissileBullet {
+			+MissileBullet(const PAA_ENTITY& e, const double& aim_angle, bool from_player)
+			-_dir : paa::Vector2f
+			+update() : void
+		}
+
+		class PlayerFactory {
+			+{static} addPlayer(const net::PlayerID pid, paa::Controller& controller, bool checkScreenBounds, bool isOnline) : PAA_ENTITY
+		}
+
+		class RobotBossEye {
+			+RobotBossEye(const PAA_ENTITY& e)
+			+~RobotBossEye()
+			-_state : State
+			+is_alive() : bool
+			-_red_timer : float
+			-_body : paa::DynamicEntity
+			-_vulnerable_timer : paa::Timer
+			-{static} INVULNERABLE_TIME : static constexpr float
+			-{static} VULNERABLE_TIME : static constexpr float
+			+on_collision(const paa::CollisionBox& other) : void
+			+{static} register_robot_components() : void
+			+update() : void
+		}
+
+		class SerializablePlayer {
+			+SerializablePlayer()
+			+SerializablePlayer(const SerializablePlayer& other)
+			+SerializablePlayer(const std::vector<net::Byte>& data)
+			+SerializablePlayer(const PAA_ENTITY& entity)
+			+SerializablePlayer(const paa::Controller& controller, const paa::Position& position, const paa::Health& health, const paa::Id& id)
+			+set_bdata(const bool& value, uint8_t mask) : SerializablePlayer&
+			+set_hp(const paa::u8& hp) : SerializablePlayer&
+			+set_move_down(bool value) : SerializablePlayer&
+			+set_move_left(bool value) : SerializablePlayer&
+			+set_move_right(bool value) : SerializablePlayer&
+			+set_move_up(bool value) : SerializablePlayer&
+			+set_pos(const paa::Position& pos) : SerializablePlayer&
+			+set_shoot(bool value) : SerializablePlayer&
+			+data_is_same(const SerializablePlayer& other) : bool {query}
+			+is_same(const SerializablePlayer& other) : bool {query}
+			+operator!=(const SerializablePlayer& other) : bool {query}
+			+operator==(const SerializablePlayer& other) : bool {query}
+			+pos_is_same(const SerializablePlayer& other) : bool {query}
+			+get_data(uint8_t mask, uint8_t shift) : data_t {query}
+			+get_hp() : data_t {query}
+			+get_move_down() : data_t {query}
+			+get_move_left() : data_t {query}
+			+get_move_right() : data_t {query}
+			+get_move_up() : data_t {query}
+			+get_shoot() : data_t {query}
+			+get_pos() : net::vector2i {query}
+			+pos : net::vector2i
+			+serialize() : std::vector<net::Byte> {query}
+			+{static} HEALTH_MASK : uint8_t
+			+{static} HEALTH_SHIFT : uint8_t
+			+{static} MOVE_DOWN_MASK : uint8_t
+			+{static} MOVE_DOWN_SHIFT : uint8_t
+			+{static} MOVE_LEFT_MASK : uint8_t
+			+{static} MOVE_LEFT_SHIFT : uint8_t
+			+{static} MOVE_RIGHT_MASK : uint8_t
+			+{static} MOVE_RIGHT_SHIFT : uint8_t
+			+{static} MOVE_UP_MASK : uint8_t
+			+{static} MOVE_UP_SHIFT : uint8_t
+			+{static} SHOOT_MASK : uint8_t
+			+{static} SHOOT_SHIFT : uint8_t
+			+data : uint8_t
+			+from(const net::Byte* data, const net::BufferSizeType size) : void
+			+set_from_components(const paa::Controller& controller, const paa::Position& pos, const paa::Health& health, const paa::Id& id) : void
+			+set_from_entity(const PAA_ENTITY& e) : void
+		}
+
+		class SkeletonBoss {
+			+SkeletonBoss(const PAA_ENTITY& e)
+			+~SkeletonBoss()
+			+update() : void
+		}
+
+		class SkeletonBossHead {
+			+SkeletonBossHead(const PAA_ENTITY& e, const PAA_ENTITY& body, const paa::Sprite& head_s)
+			+~SkeletonBossHead()
+			-_start : bool
+			-isDeathTriggered : bool
+			-_boss_body : const PAA_ENTITY
+			-_shoot_cycle : const float
+			-_head_sprite : const paa::Sprite
+			-_last_shoot : float
+			-_red_timer : float
+			-_shoot_delay : float
+			-_timer : float
+			-_shoot_index : std::size_t
+			-delay_shoot() : void
+			+on_collision(const paa::CollisionBox& other) : void
+			+update() : void
+		}
+
+		class SkeletonBullet {
+			+SkeletonBullet(const PAA_ENTITY& e, const double& aim_angle, bool from_player)
+			-_dir : paa::Vector2f
+			+update() : void
+		}
+
+		class Wave {
+			+Wave()
+			-_waves : std::vector<std::unique_ptr<WaveData>>
+			+activateWave() : void
+			+addWaveData(const std::string& enemy_type, uint64_t enemy_id, float x, float y) : void
+		}
+
+		class WaveManager {
+			+WaveManager()
+			-_wave : std::unordered_map<std::string, std::unique_ptr<Wave>>
+			+activateWave(const std::string& name) : void
+			+addWave(const std::string& name, std::unique_ptr<Wave>&& wave) : void
+		}
+
+		enum BulletType {
+			BASIC_BULLET
+			LASER_BEAM
+			MATTIS_BULLET
+			MISSILE_BULLET
+			SKELETON_BULLET
+		}
+
+		enum CollisionType {
+			EFFECT_ZONE
+			ENEMY
+			ENEMY_BULLET
+			NONE
+			PLAYER
+			PLAYER_BULLET
+			POWER_UP
+			STATIC_WALL
+			TRANSPARENT_WALL
+		}
+
+		enum EnemyType {
+			BASIC_ENEMY
+			CENTIPEDE_BODY_BOSS
+			CENTIPEDE_BOSS
+			DUMBY_BOY_ENEMY
+			KEY_ENEMY
+			MASTODONTE_ENEMY
+			MATTIS_BOSS
+			ROBOT_BOSS_EYE
+			ROBOT_BOSS_SHOOTER
+			SKELETON_BOSS
+		}
+
+		enum RobotBossEye::State {
+			INVULNERABLE
+			TRANSITION
+			VULNERABLE
+		}
+
+		class ClientWrapper {
+			+ClientWrapper()
+			+~ClientWrapper()
+			+connected() : bool {query}
+			+is_service_on() : bool {query}
+			+restart_if_necessary() : bool
+			+run(const std::string& host, const rtype::net::PortType& tcp_port, const rtype::net::PortType& udp_port) : bool
+			+run(const std::string& configuration_file) : bool
+			+run() : bool
+			+tcp_is_connected() : bool {query}
+			+udp_is_connected() : bool {query}
+			+tcp_port : rtype::net::PortType
+			+udp_port : rtype::net::PortType
+			+tcp() : rtype::net::TCPClient&
+			+udp() : rtype::net::UDPClient&
+			+client : std::shared_ptr<rtype::net::UDP_TCP_Client>
+			+host : std::string
+			+stop() : void
+		}
+
+		class EffectZones::EffectZoneData {
+			+EffectZoneData(unsigned int scroll_index, const std::string& type, const std::string& name)
+			+name : std::string
+			+type : std::string
+			+scroll_index : unsigned int
+		}
+
+		class Wave::WaveData {
+			+WaveData(const std::string& enemy_type, uint64_t enemy_id, float x, float y)
+			+x : float
+			+y : float
+			+enemy_type : std::string
+			+enemy_id : uint64_t
+		}
+	}
+}
+
+
+namespace paa {
+	class AnimatedSprite {
+		+AnimatedSprite(const std::string& textureName)
+		+HL_SUB_ERROR_IMPL(Error, AABaseError)
+		+~AnimatedSprite()
+		+move(float x, float y) : AnimatedSprite&
+		+move(const paa::Vector2f& offset) : AnimatedSprite&
+		+setColor(const Color& color) : AnimatedSprite&
+		+setOrigin(float x, float y) : AnimatedSprite&
+		+setOrigin(const paa::Vector2f& origin) : AnimatedSprite&
+		+setPosition(float x, float y) : AnimatedSprite&
+		+setPosition(const paa::Vector2f& position) : AnimatedSprite&
+		+setRotation(float angle, bool is_radians) : AnimatedSprite&
+		+setScale(float x, float y) : AnimatedSprite&
+		+setScale(const paa::Vector2f& scale) : AnimatedSprite&
+		+useAnimation(const std::string& animationName, bool loop) : AnimatedSprite&
+		-_currentAnimation : Animation*
+		-_timer : Timer
+		-_loop : bool
+		-_uses_default : bool
+		+isLastFrame() : bool {query}
+		+{static} determineRects(const Vector2u& frameSize, const Texture& texture, const unsigned int& frames, const Vector2u& startPos, const Vector2u& spacing) : std::vector<IntRect>
+		-_reg : unordered_map<std::string, Animation>
+		-_animationIndex : unsigned int
+		-_setRect(const unsigned int& index) : void
+		+registerAnimation(const std::string& animationName, const Animation& animation) : void
+		+update() : void
+	}
+
+	class AnimationRegister {
+		+AnimationRegister()
+		+~AnimationRegister()
+		-_animations : std::unordered_map<std::string, std::unordered_map<std::string, Frames>>
+		+addAnimation(const std::string& spriteSheetName, const std::string& animationName, Frames frames) : void
+		+setAnimationToSpriteIfExist(const std::string& spriteSheetName, AnimatedSprite& sprite) : void
+	}
+
+	class App {
+		-App()
+		+HL_SUB_ERROR_IMPL(Error, AABaseError)
+		+~App()
+		+{static} get() : App&
+		+isFullscreen() : bool
+		+isRunning() : bool {query}
+		+run() : bool
+		-{static} _instance : static inline App*
+		+{static} fullscreen : static inline bool
+		+{static} gameConfig : static inline nlohmann::json
+		+{static} release() : void
+		+setFullscreen(bool fullscreen) : void
+		+stop() : void
+	}
+
+	class Backtrace <template<typename T>> {
+		+Backtrace(std::size_t max_backlog)
+		+has_backlog() : bool {query}
+		+pop(T& element) : bool
+		-_max_backlog : const std::size_t
+		-_index : std::size_t
+		-_backtrace : std::vector<T>
+		+clear() : void
+		+push(const T& element) : void
+	}
+
+	class BatchRenderer {
+		+BatchRenderer()
+		+~BatchRenderer()
+		-_drawables : std::vector<std::pair<Depth, std::vector<std::shared_ptr<Drawable>>>>
+		+add(std::shared_ptr<Drawable> drawable, Depth depth) : void
+		+render(RenderWindow& window) : void
+	}
+
+	class Button {
+		+Button(const std::string& name, std::function<void ( )> callback)
+		-function<void()
+		+~Button()
+		+type() : int {query}
+		-_name : std::string
+		+update() : void
+	}
+
+	class CollisionBox {
+		+CollisionBox(const paa::IntRect& r, function<void ( const CollisionBox& self, const CollisionBox& other )> callback, int64_t id, const PAA_ENTITY& e)
+		+get_entity() : PAA_ENTITY& {query}
+		+collides(const CollisionBox& box) : bool {query}
+		-_e : const PAA_ENTITY
+		-_id : const int64_t
+		-_callback : function<void ( const CollisionBox& self, const CollisionBox& other )>
+		+get_h() : int {query}
+		+get_w() : int {query}
+		+get_x() : int {query}
+		+get_y() : int {query}
+		+get_id() : int64_t& {query}
+		-_r : paa::IntRect
+		+get_rect() : paa::IntRect& {query}
+		+{static} INVALID_ID : static constexpr int64_t
+		+collision_callback(const CollisionBox& other) : void
+		+set_position(const paa::Vector2i& pos) : void
+		+set_size(const paa::Vector2i& size) : void
+	}
+
+	class DeltaTimer {
+		+DeltaTimer()
+		+~DeltaTimer()
+		+getDeltaTime() : TimeUnit {query}
+		-_deltaTime : f64
+		-_lastTime : f64
+		+update() : void
+	}
+
+	class DynamicEntity {
+		+DynamicEntity()
+		+DynamicEntity(Id id)
+		+DynamicEntity(Entity entity)
+		+DynamicEntity(const DynamicEntity& other)
+		+DynamicEntity(DynamicEntity&& other)
+		+operatorPAA_ENTITY()
+		+~DynamicEntity()
+		+getComponent() : Component&
+		+getComponent() : Component& {query}
+		+operator=(const DynamicEntity& other) : DynamicEntity&
+		+operator=(DynamicEntity&& other) : DynamicEntity&
+		+attachHealth(const Health& health) : Health&
+		+attachId(const Id& id) : Id&
+		+attachPosition(const Position& pos) : Position&
+		+attachCollision(const SCollisionBox& collision) : SCollisionBox&
+		+attachSprite(const std::string& path) : Sprite&
+		+attachVelocity(const Velocity& vel) : Velocity&
+		+hasComponent() : bool {query}
+		+isAlive() : bool {query}
+		+getId() : entity_id_t {query}
+		+getEntity() : entity_t& {query}
+		-_entity : hl::silva::Entity
+		-_registry : hl::silva::registry&
+		+emplaceComponent(Params&& ... p) : void
+		+insertComponent(Component&& c) : void
+		+kill() : void
+		+removeComponent() : void
+		+setEntity(Entity entity) : void
+	}
+
+	class FrameBuffer {
+		+FrameBuffer(const unsigned int& width, const unsigned int& height)
+		+~FrameBuffer()
+		+{static} generateDefaultImage(const unsigned int& width, const unsigned int& height) : Image
+		+toImage() : Image {query}
+		+{static} generateDefaultTexture(const unsigned int& width, const unsigned int& height) : Texture
+		+toTexture() : Texture {query}
+		-_data : paa::u8*
+		+pixels() : paa::u8* {query}
+		-_height : paa::usize
+		-_width : paa::usize
+		-get_position(paa::usize x, paa::usize y) : paa::usize {query}
+		+circle(const unsigned int& x, const unsigned int& y, const unsigned int& radius, const Color& color) : void
+		+clear(const Color& color) : void
+		+put(const unsigned int& x, const unsigned int& y, const Color& color) : void
+		+rect(const unsigned int& x, const unsigned int& y, const unsigned int& w, const unsigned int& h, const Color& color) : void
+		+square(const unsigned int& x, const unsigned int& y, const unsigned int& size, const Color& color) : void
+	}
+
+	class GMusicPlayer {
+		+GMusicPlayer()
+		+~GMusicPlayer()
+		+{static} get() : MusicPlayer&
+		-{static} _musicPlayer : static inline MusicPlayer*
+		-{static} playedMusic : static inline std::string
+		+{static} getPlayedMusic() : std::string
+		+{static} pause() : void
+		+{static} play(const std::string& path, bool loop) : void
+		+{static} playIfNotPlayed(const std::string& path, bool loop) : void
+		+{static} release() : void
+		+{static} setLoop(bool loop) : void
+		+{static} setLoopPoints(double start_sec, double length_sec) : void
+		+{static} stop() : void
+	}
+
+	class GameState {
+		+GameState()
+		+~GameState()
+		#scene_manager : hl::silva::StateManager&
+		#ecs : hl::silva::registry&
+		#input : obscur::InputHandler&
+		#animation_register : paa::AnimationRegister&
+		#app : paa::App&
+		#batch_renderer : paa::BatchRenderer&
+		#delta : paa::DeltaTimer&
+		#resource_manager : paa::ResourceManager&
+		#window : paa::Window&
+		+end() : void
+		+handleEvent() : void
+		+start() : void
+		+update() : void
+	}
+
+	class Gui {
+		+Gui()
+		+~Gui()
+		-_objects : std::vector<shared_gui<GuiObject>>
+		+addObject(const shared_gui<GuiObject>& object) : void
+		+addObject(GuiObject* object) : void
+		+clear() : void
+		+update() : void
+	}
+
+	class GuiFactory {
+		+{static} new_button(Args&& ... args) : shared_button
+		+{static} new_gui_object(Args&& ... args) : shared_gui<T>
+		+{static} new_gui_text(Args&& ... args) : shared_gui_text
+		+{static} new_input_text(Args&& ... args) : shared_input_text
+		+{static} new_menu_bar(Args&& ... args) : shared_menu_bar
+	}
+
+	abstract class GuiObject {
+		+GuiObject()
+		+~GuiObject()
+		+{abstract} type() : int {query}
+		+{abstract} update() : void
+	}
+
+	class GuiText {
+		+GuiText(const std::string& text)
+		+GuiText()
+		+~GuiText()
+		+type() : int {query}
+		-_text : std::string
+		+setText(const std::string& text) : void
+		+update() : void
+	}
+
+	class InputBox {
+		+InputBox()
+		+~InputBox()
+		+isKeyPressed(int key) : bool
+		+isKeyPressed(paa::Keyboard::Key key) : bool
+		+isValidated() : bool
+		-validated : bool
+		-cursorPos : int
+		+getCursorPos() : int
+		-maxLen : int
+		-lastInput : paa::Keyboard::Key
+		-repeatTimer : paa::Timer
+		+getValue() : std::string
+		-input : std::string
+		+appendToInput(char c) : void
+		+deleteBackInput() : void
+		+deleteFrontInput() : void
+		+setCursorPos(int pos) : void
+		+setMaxLength(int maxLength) : void
+		+setValidated(bool value) : void
+		+setValue(const std::string& value) : void
+		+update() : void
+	}
+
+	class InputManagement {
+		+InputManagement()
+		+~InputManagement()
+		+setAxisCallback(function<void ( PAA_ENTITY, IController& )> callback) : InputManagement&
+		+setButtonDownCallback(const unsigned int& button, function<void ( PAA_ENTITY )> callback) : InputManagement&
+		+setButtonPressedCallback(const unsigned int& button, function<void ( PAA_ENTITY )> callback) : InputManagement&
+		+setButtonReleasedCallback(const unsigned int& button, function<void ( PAA_ENTITY )> callback) : InputManagement&
+		-_callback_axis : function<void ( PAA_ENTITY, IController& )>
+		-_isButtonDownCallbacks : std::unordered_map<unsigned int, callback_button_t>
+		-_isButtonPressedCallbacks : std::unordered_map<unsigned int, callback_button_t>
+		-_isbButtonReleasedCallbacks : std::unordered_map<unsigned int, callback_button_t>
+		+update(PAA_ENTITY entity, IController& controller) : void
+	}
+
+	class InputText {
+		+InputText(const std::string& text, const std::string& label, const size_t maxSize)
+		+~InputText()
+		+type() : int {query}
+		-_label : std::string
+		+getText() : std::string {query}
+		-_buffer : std::vector<char>
+		+update() : void
+	}
+
+	class LuaApi {
+		+{static} load_api(sol::state& lua) : void
+	}
+
+	class MenuBar {
+		+MenuBar()
+		+~MenuBar()
+		+type() : int {query}
+		-_items : std::vector<MenuItem>
+		+addItem(const MenuItem& item) : void
+		+update() : void
+	}
+
+	class MenuItem {
+		+MenuItem(const std::string& sectionName)
+		+~MenuItem()
+		+type() : int {query}
+		-_sectionName : std::string
+		-_items : std::vector<MenuItemData>
+		+addItem(const std::string& name, const std::string& shortcut, std::function<void ( )> callback) : void
+		+update() : void
+	}
+
+	class MusicPlayer {
+		+MusicPlayer()
+		+~MusicPlayer()
+		+play(const std::string& path, bool vloop) : bool
+		-_music : paa::Music
+		+loop(bool vloop) : void
+		+pause() : void
+		+setLoopPoints(double start_sec, double length_sec) : void
+		+stop() : void
+	}
+
+	class Parallax {
+		+Parallax(const paa::Vector2f& speed, const paa::Vector2f& offsets, const std::vector<std::string>& textures, const paa::Vector2f& scale, bool noDestroy)
+		+~Parallax()
+		-_noDestroy : bool
+		-_offset : paa::Vector2f
+		-_speed : paa::Vector2f
+		-_layers : std::vector<paa::DynamicEntity>
+		+destroy() : void
+		+update() : void
+	}
+
+	class Quadtree {
+		+Quadtree(const paa::IntRect& rect, int level)
+		+Quadtree(const int& x, const int& y, const int& w, const int& h, int level)
+		+~Quadtree()
+		-_northEast : Quadtree*
+		-_northWest : Quadtree*
+		-_southEast : Quadtree*
+		-_southWest : Quadtree*
+		+get_north_east() : Quadtree* {query}
+		+get_north_west() : Quadtree* {query}
+		+get_south_east() : Quadtree* {query}
+		+get_south_west() : Quadtree* {query}
+		-_is_root : bool
+		+contains(CollisionBox* box) : bool {query}
+		+insert_collision(CollisionBox* collision) : bool
+		+get_collision() : collision_t {query}
+		-_level : int
+		+get_size() : int {query}
+		-_rect : paa::IntRect
+		+get_rect() : paa::IntRect {query}
+		+{static} kQuadtreeMaxDepth : static constexpr int
+		+{static} kQuadtreeNodeCapacity : static constexpr int
+		-_collisions : vector<CollisionBox*>
+		+check_collision() : void
+		+free_memory(bool delete_this) : void
+		+subdivide(Quadtree* root) : void
+	}
+
+	class Random {
+		+{static} rand() : int
+		-{static} _seed : static inline int
+		+{static} srand(const int& seed) : void
+	}
+
+	class ResourceManager {
+		+ResourceManager()
+		+~ResourceManager()
+		+getDefaultImage() : Image&
+		+get(const std::string& name) : T&
+		+getDefaultTexture() : Texture&
+		-{static} DEFAULT_IMAGE : static inline const char*
+		-{static} DEFAULT_TEXTURE : static inline const char*
+		-_resourceMap : unordered_map<std::string, std::unique_ptr<LoadableResource>>
+		+clear() : void
+		+copyAs(const std::string& name, const T& resource) : void
+		+load(const std::string& filename, const std::string& name, LoadArgs&& ... loadArgs) : void
+		+remove(const std::string& name) : void
+	}
+
+	class TilesetManager {
+		+TilesetManager(const std::string& filename)
+		+~TilesetManager()
+		+layerCount() : size_t {query}
+		+{static} FLIP_D_FLAG : static constexpr uint64_t
+		+{static} FLIP_H_FLAG : static constexpr uint64_t
+		+{static} FLIP_V_FLAG : static constexpr uint64_t
+		-_tilesets : std::vector<std::unique_ptr<Tileset>>
+		-_layers : std::vector<std::unique_ptr<std::pair<Texture&, VertexArray>>>
+		+draw(RenderTarget& target, RenderStates states) : void {query}
+		+drawLayer(RenderWindow& window, size_t layerIndex) : void {query}
+	}
+
+	class Timer {
+		+Timer()
+		+~Timer()
+		+setTarget(f64 target) : Timer&
+		+isFinished() : bool {query}
+		+getPercentage(bool capped) : double {query}
+		#_targetTime : f64
+	}
+
+	enum GuiObjectType {
+		BUTTON
+		INPUT_TEXT
+		MENU_BAR
+		MENU_ITEM
+		TEXT
+	}
+
+	class Animation {
+		+speed : double
+		+rects : std::vector<IntRect>
+	}
+
+	class AnimationRegister::Frames {
+		+duration : float
+		+frames : std::vector<IntRect>
+	}
+
+	class Math {
+		+{static} direction_to_angle(V const& pos) : float
+		+{static} direction_to_angle(V1 const& origin, V2 const& direction) : float
+		+{static} distance_between(V1 const& origin, V2 const& direction) : float
+		+{static} distance_between_squared(V1 const& origin, V2 const& direction) : float
+		+{static} magnitude(V1 const& vec) : float
+		+{static} toDegrees(float radians) : float
+		+{static} toRadians(float degrees) : float
+		+{static} angle_to_direction(float angle, const double scale) : paa::Vector2f
+		+{static} cosine(const float x) : paa::Vector2f
+		+{static} distance(V1 const& origin, V2 const& direction) : paa::Vector2f
+		+{static} easeInBack(const float x) : paa::Vector2f
+		+{static} easeInBounce(const float x) : paa::Vector2f
+		+{static} easeInCirc(const float x) : paa::Vector2f
+		+{static} easeInCubic(const float x) : paa::Vector2f
+		+{static} easeInElastic(const float x) : paa::Vector2f
+		+{static} easeInOutBack(const float x) : paa::Vector2f
+		+{static} easeInOutBounce(const float x) : paa::Vector2f
+		+{static} easeInOutCirc(const float x) : paa::Vector2f
+		+{static} easeInOutCubic(const float x) : paa::Vector2f
+		+{static} easeInOutElastic(const float x) : paa::Vector2f
+		+{static} easeInOutExpotential(const float x) : paa::Vector2f
+		+{static} easeInOutQuad(const float x) : paa::Vector2f
+		+{static} easeInOutQuart(const float x) : paa::Vector2f
+		+{static} easeInOutQuint(const float x) : paa::Vector2f
+		+{static} easeInOutSine(const float x) : paa::Vector2f
+		+{static} easeInQuad(const float x) : paa::Vector2f
+		+{static} easeInQuart(const float x) : paa::Vector2f
+		+{static} easeInQuint(const float x) : paa::Vector2f
+		+{static} easeInSine(const float x) : paa::Vector2f
+		+{static} easeOutBack(const float x) : paa::Vector2f
+		+{static} easeOutBounce(float x) : paa::Vector2f
+		+{static} easeOutCirc(const float x) : paa::Vector2f
+		+{static} easeOutCubic(const float x) : paa::Vector2f
+		+{static} easeOutElastic(const float x) : paa::Vector2f
+		+{static} easeOutQuad(const float x) : paa::Vector2f
+		+{static} easeOutQuart(const float x) : paa::Vector2f
+		+{static} easeOutQuint(const float x) : paa::Vector2f
+		+{static} easeOutSine(const float x) : paa::Vector2f
+		+{static} exponential(const float x) : paa::Vector2f
+		+{static} hyperbolic(const float x) : paa::Vector2f
+		+{static} linear(const float x) : paa::Vector2f
+		+{static} linear_interpolation(V1 const& origin, V2 const& direction, float t, float scale) : paa::Vector2f
+		+{static} logarithmic(const float x) : paa::Vector2f
+		+{static} normalize(V1 const& vec) : paa::Vector2f
+		+{static} reciprocal(const float x) : paa::Vector2f
+		+{static} sine(const float x) : paa::Vector2f
+		+{static} tangent(const float x) : paa::Vector2f
+		+{static} trigonometric(const float x) : paa::Vector2f
+	}
+
+	class MenuItem::MenuItemData {
+		+function<void()
+		+name : std::string
+		+shortcut : std::string
+	}
+
+	class Position {
+		+HL_AUTO_COMPLETE_CANONICAL_FORM(Position)
+		+Position(const double& x, const double& y)
+	}
+
+	class Tileset {
+		+texture : Texture
+		+firstGid : int
+		+tileCount : int
+		+tileHeight : int
+		+tileWidth : int
+	}
+
+	class Vec2 {
+		+Vec2(const double& x, const double& y)
+		+Vec2(const Vec2& other)
+		+~Vec2()
+		+operator*(const Vec2& other) : Vec2
+		+operator*(const double& f) : Vec2
+		+operator+(const Vec2& other) : Vec2
+		+operator-(const Vec2& other) : Vec2
+		+operator/(const Vec2& other) : Vec2
+		+operator/(const double& f) : Vec2
+		+operator*=(const Vec2& other) : Vec2&
+		+operator*=(const double& f) : Vec2&
+		+operator+=(const Vec2& other) : Vec2&
+		+operator-=(const Vec2& other) : Vec2&
+		+operator/=(const Vec2& other) : Vec2&
+		+operator/=(const double& f) : Vec2&
+		+x : double
+		+y : double
+		+move(const Vec2& offset) : void
+		+setPosition(const Vec2& other) : void
+	}
+
+	class Velocity {
+		+HL_AUTO_COMPLETE_CANONICAL_FORM(Velocity)
+		+Velocity(const double& x, const double& y)
+	}
+}
+
+
+namespace obscur {
+	abstract class AController {
+		+AController(const ControllerType& type)
+		+~AController()
+		+resetSimulatedInputs() : IController&
+		+simulateAxisMovement(size_t axis, float value) : IController&
+		+simulateButtonHeld(size_t button) : IController&
+		+simulateButtonIdle(size_t button) : IController&
+		+simulateButtonPress(size_t button) : IController&
+		+simulateButtonRelease(size_t button) : IController&
+		+isConnected() : bool {query}
+		-_type : const ControllerType
+		+getType() : int& {query}
+	}
+
+	class CallbackInputHandler <template<typename ... Args>> {
+		+CallbackInputHandler()
+		+~CallbackInputHandler()
+		-_handler : InputHandler&
+		-function<void(Args ...) : std::unordered_map<JoystickButton , std::pair<JoystickIndex , std::pair<InputHandler::KeyState ,
+		-function<void(Args ...) : std::unordered_map<sf::Keyboard::Key , std::pair<InputHandler::KeyState ,
+		+addButtonCallback(size_t joystick_id, size_t button, const InputHandler::KeyState& state, std::function<void ( Args ... )>&& callback) : void
+		+addKeyCallback(const sf::Keyboard::Key& key, const InputHandler::KeyState& state, std::function<void ( Args ... )>&& callback) : void
+		+update(const Args& ... args) : void
+	}
+
+	abstract class IController {
+		+IController()
+		+~IController()
+		+{abstract} resetSimulatedInputs() : IController&
+		+{abstract} simulateAxisMovement(size_t axis, float value) : IController&
+		+{abstract} simulateButtonHeld(size_t button) : IController&
+		+{abstract} simulateButtonIdle(size_t button) : IController&
+		+{abstract} simulateButtonPress(size_t button) : IController&
+		+{abstract} simulateButtonRelease(size_t button) : IController&
+		+{abstract} getAxisPosition(size_t axis) : JoystickAxis {query}
+		+{abstract} getAxisPOV() : Vector2<float> {query}
+		+{abstract} getAxisUV() : Vector2<float> {query}
+		+{abstract} getAxisUVGlobal() : Vector2<float> {query}
+		+{abstract} getAxisXY() : Vector2<float> {query}
+		+{abstract} getAxisXYGlobal() : Vector2<float> {query}
+		+{abstract} getAxisZR() : Vector2<float> {query}
+		+{abstract} getAxisZRGlobal() : Vector2<float> {query}
+		+{abstract} isButtonCombinationInput(const std::vector<JoystickButton>& buttons) : bool {query}
+		+{abstract} isButtonHeld(size_t button) : bool {query}
+		+{abstract} isButtonPressed(size_t button) : bool {query}
+		+{abstract} isButtonPressedOrHeld(size_t button) : bool {query}
+		+{abstract} isButtonReleased(size_t button) : bool {query}
+		+{abstract} isConnected() : bool {query}
+		+{abstract} getType() : int& {query}
+		+{abstract} setAxisDeadZone(const float& radius) : void
+	}
+
+	class InputHandler {
+		-InputHandler()
+		+~InputHandler()
+		-_joystickPrivateEvent : EventFrameInfoList<JoystickPrivateKeyInfo>
+		-_keysPrivateEvent : EventFrameInfoList<sf::Keyboard::Key>
+		+{static} getInstance() : InputHandler&
+		+getAxisPosition(size_t joystick_id, size_t axis) : JoystickAxis {query}
+		+getAxisPOV(size_t joystick_id) : Vector2<float> {query}
+		+getAxisUV(size_t joystick_id) : Vector2<float> {query}
+		+getAxisUVGlobal(size_t joystick_id) : Vector2<float> {query}
+		+getAxisXY(size_t joystick_id) : Vector2<float> {query}
+		+getAxisXYGlobal(size_t joystick_id) : Vector2<float> {query}
+		+getAxisZR(size_t joystick_id) : Vector2<float> {query}
+		+getAxisZRGlobal(size_t joystick_id) : Vector2<float> {query}
+		+isButtonCombinationInput(size_t joystick_id, const std::vector<JoystickButton>& buttons) : bool {query}
+		+isButtonHeld(size_t joystick_id, size_t button) : bool {query}
+		+isButtonPressed(size_t joystick_id, size_t button) : bool {query}
+		+isButtonPressedOrHeld(size_t joystick_id, size_t button) : bool {query}
+		+isButtonReleased(size_t joystick_id, size_t button) : bool {query}
+		+isJoystickConnected(size_t joystick_id) : bool {query}
+		+isKeyCombinationInput(const std::vector<sf::Keyboard::Key>& keys) : bool {query}
+		+isKeyHeld(const sf::Keyboard::Key& key) : bool {query}
+		+isKeyPressed(const sf::Keyboard::Key& key) : bool {query}
+		+isKeyPressedOrHeld(const sf::Keyboard::Key& key) : bool {query}
+		+isKeyReleased(const sf::Keyboard::Key& key) : bool {query}
+		+getJoystickButtonState(size_t joystick, size_t button) : int {query}
+		+getKeyState(const sf::Keyboard::Key& key) : int {query}
+		-_joystickTrace : mutable std::array<std::optional<InputTrace<JoystickButton>>, sf::Joystick::Count>
+		-_joystickTraces : mutable std::array<std::vector<InputTrace<JoystickButton>>, sf::Joystick::Count>
+		-_keyTrace : mutable std::optional<InputTrace<sf::Keyboard::Key>>
+		-_keyTraces : mutable std::vector<InputTrace<sf::Keyboard::Key>>
+		+{static} CENTER : static const Vector2<float>
+		+{static} DOWN : static const Vector2<float>
+		+{static} DOWN_LEFT : static const Vector2<float>
+		+{static} DOWN_RIGHT : static const Vector2<float>
+		+{static} LEFT : static const Vector2<float>
+		+{static} RIGHT : static const Vector2<float>
+		+{static} UP : static const Vector2<float>
+		+{static} UP_LEFT : static const Vector2<float>
+		+{static} UP_RIGHT : static const Vector2<float>
+		-{static} _instance : static inline InputHandler*
+		-_joysticks : std::array<JoystickState, sf::Joystick::Count>
+		+{static} destroyInstance() : void
+		-eventJoystickButtonPressed(const sf::Event& event) : void
+		-eventJoystickButtonReleased(const sf::Event& event) : void
+		-eventJoystickConnected(const sf::Event& event) : void
+		-eventJoystickDisconnected(const sf::Event& event) : void
+		-eventJoystickMoved(const sf::Event& event) : void
+		-eventKeyPressed(const sf::Event& event) : void
+		-eventKeyReleased(const sf::Event& event) : void
+		+eventUpdate(const sf::Event& event) : void
+		+setAxisDeadZone(size_t joystick_id, const float& radius) : void
+		+update() : void
+		-updateJoystickToNextState() : void
+		-updateKeysToNextState() : void
+	}
+
+	class InputTrace <template<typename T>> {
+		+InputTrace(const T& key)
+		+~InputTrace()
+		-_origin : T
+		+getOrigin() : T {query}
+		+checkCombination(const std::vector<T>& keys) : bool {query}
+		-_followers : std::vector<T>
+		+addFollower(const T& key) : void
+		+removeFollower(const T& key) : void
+	}
+
+	class Joystick {
+		+Joystick(size_t joystick_id)
+		+~Joystick()
+		+getAxisPosition(size_t axis) : JoystickAxis {query}
+		+getJoystickIndex() : JoystickIndex& {query}
+		+getAxisPOV() : Vector2<float> {query}
+		+getAxisUV() : Vector2<float> {query}
+		+getAxisUVGlobal() : Vector2<float> {query}
+		+getAxisXY() : Vector2<float> {query}
+		+getAxisXYGlobal() : Vector2<float> {query}
+		+getAxisZR() : Vector2<float> {query}
+		+getAxisZRGlobal() : Vector2<float> {query}
+		+isButtonCombinationInput(const std::vector<JoystickButton>& buttons) : bool {query}
+		+isButtonHeld(size_t button) : bool {query}
+		+isButtonPressed(size_t button) : bool {query}
+		+isButtonPressedOrHeld(size_t button) : bool {query}
+		+isButtonReleased(size_t button) : bool {query}
+		+isConnected() : bool {query}
+		-_joystick_id : size_t
+		+setAxisDeadZone(const float& radius) : void
+	}
+
+	class Keyboard {
+		+Keyboard()
+		+~Keyboard()
+		+getAxisPosition(size_t axis) : JoystickAxis {query}
+		+setAxis(size_t axis, const sf::Keyboard::Key& positiveAxis, const sf::Keyboard::Key& negativeAxis) : Keyboard&
+		+setKey(size_t button, const sf::Keyboard::Key& key) : Keyboard&
+		+getAxisPOV() : Vector2<float> {query}
+		+getAxisUV() : Vector2<float> {query}
+		+getAxisUVGlobal() : Vector2<float> {query}
+		+getAxisXY() : Vector2<float> {query}
+		+getAxisXYGlobal() : Vector2<float> {query}
+		+getAxisZR() : Vector2<float> {query}
+		+getAxisZRGlobal() : Vector2<float> {query}
+		+isButtonCombinationInput(const std::vector<JoystickButton>& buttons) : bool {query}
+		+isButtonHeld(size_t button) : bool {query}
+		+isButtonPressed(size_t button) : bool {query}
+		+isButtonPressedOrHeld(size_t button) : bool {query}
+		+isButtonReleased(size_t button) : bool {query}
+		+isConnected() : bool {query}
+		-_deadZone : float
+		+setAxisDeadZone(const float& radius) : void
+	}
+
+	class ManualController {
+		+ManualController(const ControllerType& type)
+		+~ManualController()
+		#_input_handler : InputHandler&
+	}
+
+	class SimulatedController {
+		+SimulatedController()
+		+~SimulatedController()
+		+resetSimulatedInputs() : IController&
+		+simulateAxisMovement(size_t axis, float value) : IController&
+		+simulateButtonHeld(size_t button) : IController&
+		+simulateButtonIdle(size_t button) : IController&
+		+simulateButtonPress(size_t button) : IController&
+		+simulateButtonRelease(size_t button) : IController&
+		+getAxisPosition(size_t axis) : JoystickAxis {query}
+		+getAxisPOV() : Vector2<float> {query}
+		+getAxisUV() : Vector2<float> {query}
+		+getAxisUVGlobal() : Vector2<float> {query}
+		+getAxisXY() : Vector2<float> {query}
+		+getAxisXYGlobal() : Vector2<float> {query}
+		+getAxisZR() : Vector2<float> {query}
+		+getAxisZRGlobal() : Vector2<float> {query}
+		+isButtonCombinationInput(const std::vector<JoystickButton>& buttons) : bool {query}
+		+isButtonHeld(size_t button) : bool {query}
+		+isButtonPressed(size_t button) : bool {query}
+		+isButtonPressedOrHeld(size_t button) : bool {query}
+		+isButtonReleased(size_t button) : bool {query}
+		-_deadZone : float
+		-_joystickTrace : mutable std::optional<InputTrace<JoystickButton>>
+		-_joystickTraces : mutable std::vector<InputTrace<JoystickButton>>
+		+setAxisDeadZone(const float& radius) : void
+	}
+
+	class Vector <template<Number T, size_t N>> {
+		+Vector()
+		+Vector(const Args& ... value)
+		+operatorVector2<T>()
+		+~Vector()
+		+get(const size_t position) : T& {query}
+		+operator[](const size_t& position) : T& {query}
+		+operator==(const Vector<T2, N>& other) : bool {query}
+		+unwrap() : std::array<T , N>& {query}
+		-_values : std::array<T, N>
+		+operator+=(const Vector<T2, N>& other) : void
+		+set(const size_t position, const T& value) : void
+	}
+
+	class Vector2 <template<Number T>> {
+		+Vector2()
+		+Vector2(const T& x, const T& y)
+		+Vector2f() {query}
+		+Vector2i() {query}
+		+Vector2u() {query}
+		+operatorVector2<T2>() {query}
+		+~Vector2()
+		+x() : T& {query}
+		+y() : T& {query}
+		+x(const T& x) : void
+		+y(const T& y) : void
+	}
+
+	class Vector3 <template<Number T>> {
+		+Vector3()
+		+Vector3(const T& x, const T& y, const T& z)
+		+Vector3f() {query}
+		+Vector3i() {query}
+		+~Vector3()
+		+x() : T& {query}
+		+y() : T& {query}
+		+z() : T& {query}
+		+x(const T& x) : void
+		+y(const T& y) : void
+		+z(const T& z) : void
+	}
+
+	enum ControllerType {
+		JOYSTICK
+		KEYBOARD
+		SIMULATED
+	}
+
+	enum InputHandler::KeyState {
+		Held
+		Idle
+		Pressed
+		Released
+	}
+
+	enum Joystick::NintendoButton {
+	}
+
+	enum Joystick::PS3Button {
+		PS3_Circle
+		PS3_Cross
+		PS3_L1
+		PS3_L2
+		PS3_LeftStick
+		PS3_R1
+		PS3_R2
+		PS3_RightStick
+		PS3_Select
+		PS3_Square
+		PS3_Start
+		PS3_Triangle
+	}
+
+	enum Joystick::PS4Button {
+		PS4_Circle
+		PS4_Cross
+		PS4_L1
+		PS4_L2
+		PS4_LeftStick
+		PS4_PS
+		PS4_Pad
+		PS4_R1
+		PS4_R2
+		PS4_RightStick
+		PS4_Select
+		PS4_Square
+		PS4_Start
+		PS4_Triangle
+	}
+
+	enum Joystick::XboxButton {
+		Xbox_A
+		Xbox_B
+		Xbox_LB
+		Xbox_LeftStick
+		Xbox_RB
+		Xbox_RightStick
+		Xbox_Select
+		Xbox_Start
+		Xbox_X
+		Xbox_Y
+	}
+
+	class InputHandler::EventFrameInfo <template<typename T>> {
+		+value : T
+		+event_type : sf::Event::EventType
+	}
+
+	class InputHandler::JoystickPrivateKeyInfo {
+		+button : size_t
+		+id : size_t
+	}
+
+	class InputHandler::JoystickState {
+		+is_connected : bool
+	}
+}
+
+
+
+
+
+/' Inheritance relationships '/
+
+rtype.game.ABullet <|-- rtype.game.BasicBullet
+
+
+rtype.game.ABullet <|-- rtype.game.LaserBeam
+
+
+rtype.game.ABullet <|-- rtype.game.MattisBullet
+
+
+rtype.game.ABullet <|-- rtype.game.MissileBullet
+
+
+rtype.game.ABullet <|-- rtype.game.SkeletonBullet
+
+
+rtype.net.AClient <|-- rtype.net.TCPClient
+
+
+rtype.net.AClient <|-- rtype.net.UDPClient
+
+
+obscur.AController <|-- obscur.ManualController
+
+
+obscur.AController <|-- obscur.SimulatedController
+
+
+rtype.game.AEnemy <|-- rtype.game.BasicEnemy
+
+
+rtype.game.AEnemy <|-- rtype.game.Centipede
+
+
+rtype.game.AEnemy <|-- rtype.game.CentipedeBody
+
+
+rtype.game.AEnemy <|-- rtype.game.DumbyBoy
+
+
+rtype.game.AEnemy <|-- rtype.game.KeyEnemy
+
+
+rtype.game.AEnemy <|-- rtype.game.MastodonteEnemy
+
+
+rtype.game.AEnemy <|-- rtype.game.Mattis
+
+
+rtype.game.AEnemy <|-- rtype.game.MattisMouth
+
+
+rtype.game.AEnemy <|-- rtype.game.RobotBossEye
+
+
+rtype.game.AEnemy <|-- rtype.game.SkeletonBoss
+
+
+rtype.game.AEnemy <|-- rtype.game.SkeletonBossHead
+
+
+rtype.game.AShooter <|-- rtype.game.BasicShooter
+
+
+rtype.game.AShooter <|-- rtype.game.ConeShooter
+
+
+.DestroyableElementSerializer <|-- .SerializedEnemyDeath
+
+
+.DestroyableElementSerializer <|-- .SerializedPlayerDeath
+
+
+.DestroyableElementSerializer <|-- .SerializedScroll
+
+
+paa.GuiObject <|-- paa.Button
+
+
+paa.GuiObject <|-- paa.GuiText
+
+
+paa.GuiObject <|-- paa.InputText
+
+
+paa.GuiObject <|-- paa.MenuBar
+
+
+paa.GuiObject <|-- paa.MenuItem
+
+
+obscur.IController <|-- obscur.AController
+
+
+rtype.net.IMessage <|-- rtype.net.Message
+
+
+obscur.ManualController <|-- obscur.Joystick
+
+
+obscur.ManualController <|-- obscur.Keyboard
+
+
+rtype.net.Message <|-- rtype.net.ConnectionInitReply
+
+
+rtype.net.Message <|-- rtype.net.CreateRoomReply
+
+
+rtype.net.Message <|-- rtype.net.FeedInitReply
+
+
+rtype.net.Message <|-- rtype.net.FeedInitRequest
+
+
+rtype.net.Message <|-- rtype.net.GameLauncher
+
+
+rtype.net.Message <|-- rtype.net.RequestConnectRoom
+
+
+rtype.net.Message <|-- rtype.net.RequestConnectRoomReply
+
+
+rtype.net.Message <|-- rtype.net.SignalMarker
+
+
+rtype.net.Message <|-- rtype.net.SyncMessage
+
+
+rtype.net.Message <|-- rtype.net.TextMessage
+
+
+rtype.net.Message <|-- rtype.net.UpdateMessage
+
+
+rtype.net.Message <|-- rtype.net.UserConnectRoom
+
+
+rtype.net.Message <|-- rtype.net.UserDisconnectFromRoom
+
+
+rtype.net.Message <|-- rtype.net.YesNoMarker
+
+
+rtype.net.Serializable <|-- .DestroyableElementSerializer
+
+
+rtype.net.Serializable <|-- rtype.net.srand_sync
+
+
+rtype.net.Serializable <|-- rtype.net.vector2i
+
+
+paa.Vec2 <|-- paa.Position
+
+
+paa.Vec2 <|-- paa.Velocity
+
+
+obscur.Vector <|-- obscur.Vector2
+
+
+obscur.Vector <|-- obscur.Vector3
+
+
+rtype.net.base_message_info <|-- rtype.net.tcp_connection::message_info
+
+
+rtype.net.base_message_info <|-- rtype.net.udp_server::message_info
+
+
+
+
+
+/' Aggregation relationships '/
+
+rtype.game.ABullet *-- rtype.game.BulletType
+
+
+rtype.game.ABullet *-- paa.Timer
+
+
+rtype.net.AClient *-- rtype.net.async_queue
+
+
+obscur.AController *-- obscur.ControllerType
+
+
+rtype.game.AEnemy *-- rtype.game.EnemyType
+
+
+rtype.game.APlayer *-- paa.DynamicEntity
+
+
+rtype.game.APlayer *-- rtype.game.SerializablePlayer
+
+
+rtype.game.APlayer "6" *-- paa.Timer
+
+
+rtype.game.APlayer *-- paa.Vec2
+
+
+rtype.game.APlayer "2" *-- obscur.Vector2
+
+
+rtype.game.AShooter *-- paa.DynamicEntity
+
+
+rtype.game.AShooter *-- paa.Timer
+
+
+paa.AnimatedSprite o-- paa.Animation
+
+
+paa.AnimatedSprite *-- paa.Animation
+
+
+paa.AnimatedSprite *-- paa.Timer
+
+
+paa.App o-- paa.App
+
+
+.BlackScreenTransition *-- paa.Timer
+
+
+obscur.CallbackInputHandler *-- obscur.InputHandler
+
+
+rtype.game.Centipede *-- paa.Position
+
+
+rtype.game.Centipede *-- paa.Timer
+
+
+rtype.game.CentipedeBody "2" *-- paa.Position
+
+
+rtype.game.CentipedeBody *-- paa.Timer
+
+
+rtype.game.ClientWrapper *-- rtype.net.UDP_TCP_Client
+
+
+paa.CollisionBox *-- paa.CollisionBox
+
+
+rtype.game.DumbyBoy *-- paa.DynamicEntity
+
+
+paa.GMusicPlayer o-- paa.MusicPlayer
+
+
+.Game *-- .BlackScreenTransition
+
+
+paa.GameState *-- paa.AnimationRegister
+
+
+paa.GameState *-- paa.App
+
+
+paa.GameState *-- paa.BatchRenderer
+
+
+paa.GameState *-- paa.DeltaTimer
+
+
+paa.GameState *-- obscur.InputHandler
+
+
+paa.GameState *-- paa.ResourceManager
+
+
+paa.Gui *-- paa.GuiObject
+
+
+paa.InputBox *-- obscur.Keyboard
+
+
+paa.InputBox *-- paa.Timer
+
+
+obscur.InputHandler o-- obscur.InputHandler
+
+
+obscur.InputHandler "4" *-- obscur.InputTrace
+
+
+obscur.InputHandler "3" *-- obscur.Joystick
+
+
+obscur.InputHandler "3" *-- obscur.Keyboard
+
+
+obscur.InputHandler "9" *-- obscur.Vector2
+
+
+paa.InputManagement *-- obscur.IController
+
+
+obscur.ManualController *-- obscur.InputHandler
+
+
+rtype.game.Map *-- rtype.game.EffectZones
+
+
+rtype.game.Map *-- rtype.game.WaveManager
+
+
+rtype.game.MattisMouth *-- paa.DynamicEntity
+
+
+rtype.game.MattisMouth *-- paa.Position
+
+
+paa.MenuBar *-- paa.MenuItem
+
+
+rtype.MenuParallax *-- paa.Parallax
+
+
+rtype.net.Message *-- rtype.net.message_code
+
+
+paa.Parallax *-- paa.DynamicEntity
+
+
+paa.Quadtree o-- paa.CollisionBox
+
+
+paa.Quadtree "4" o-- paa.Quadtree
+
+
+rtype.game.RobotBossEye *-- paa.DynamicEntity
+
+
+rtype.game.RobotBossEye *-- paa.Timer
+
+
+.Room *-- rtype.net.server
+
+
+.RoomManager *-- .Room
+
+
+.RoomManager *-- rtype.net.server
+
+
+rtype.game.SerializablePlayer *-- rtype.net.vector2i
+
+
+obscur.SimulatedController "2" *-- obscur.InputTrace
+
+
+paa.TilesetManager *-- paa.Tileset
+
+
+rtype.net.UDP_TCP_Client *-- rtype.net.TCPClient
+
+
+rtype.net.UDP_TCP_Client *-- rtype.net.UDPClient
+
+
+rtype.game.WaveManager *-- rtype.game.Wave
+
+
+rtype.net.async_automated_sparse_array *-- rtype.net.async_queue
+
+
+rtype.net.remote_client o-- rtype.net.tcp_server
+
+
+rtype.net.remote_client o-- rtype.net.udp_server
+
+
+rtype.net.server *-- rtype.net.remote_client
+
+
+rtype.net.server *-- rtype.net.tcp_server
+
+
+rtype.net.server *-- rtype.net.udp_server
+
+
+rtype.net.server::event *-- rtype.net.remote_client
+
+
+rtype.net.server::event *-- rtype.net.server
+
+
+rtype.net.server::event *-- rtype.net.server::base_message
+
+
+rtype.net.server::feed_message *-- rtype.net.remote_client
+
+
+rtype.net.server::feed_message *-- rtype.net.udp_server
+
+
+rtype.net.server::main_message *-- rtype.net.remote_client
+
+
+rtype.net.server::main_message *-- rtype.net.tcp_connection
+
+
+rtype.net.tcp_connection *-- rtype.net.async_automated_sparse_array
+
+
+rtype.net.tcp_connection *-- rtype.net.async_queue
+
+
+rtype.net.tcp_event *-- rtype.net.tcp_event_connexion
+
+
+rtype.net.tcp_event *-- rtype.net.tcp_event_disconnexion
+
+
+rtype.net.tcp_event *-- rtype.net.tcp_event_message
+
+
+rtype.net.tcp_event_message *-- rtype.net.tcp_connection
+
+
+rtype.net.tcp_server *-- rtype.net.async_automated_sparse_array
+
+
+rtype.net.tcp_server *-- rtype.net.async_queue
+
+
+rtype.net.tcp_server *-- rtype.net.tcp_connection
+
+
+rtype.net.tcp_server *-- rtype.net.tcp_event
+
+
+rtype.net.udp_server *-- rtype.net.async_automated_sparse_array
+
+
+rtype.net.udp_server *-- rtype.net.async_queue
+
+
+
+
+
+
+/' Nested objects '/
+
+paa.AnimationRegister +-- paa.AnimationRegister::Frames
+
+
+rtype.game.EffectZones +-- rtype.game.EffectZones::EffectZoneData
+
+
+obscur.InputHandler +-- obscur.InputHandler::EventFrameInfo
+
+
+obscur.InputHandler +-- obscur.InputHandler::JoystickPrivateKeyInfo
+
+
+obscur.InputHandler +-- obscur.InputHandler::JoystickState
+
+
+obscur.InputHandler +-- obscur.InputHandler::KeyState
+
+
+obscur.Joystick +-- obscur.Joystick::NintendoButton
+
+
+obscur.Joystick +-- obscur.Joystick::PS3Button
+
+
+obscur.Joystick +-- obscur.Joystick::PS4Button
+
+
+obscur.Joystick +-- obscur.Joystick::XboxButton
+
+
+paa.MenuItem +-- paa.MenuItem::MenuItemData
+
+
+rtype.game.RobotBossEye +-- rtype.game.RobotBossEye::State
+
+
+rtype.net.UDPClient +-- rtype.net.UDPClient::HeaderMessage
+
+
+rtype.game.Wave +-- rtype.game.Wave::WaveData
+
+
+rtype.net.server +-- rtype.net.server::base_message
+
+
+rtype.net.server +-- rtype.net.server::event
+
+
+rtype.net.server +-- rtype.net.server::event_type
+
+
+rtype.net.server +-- rtype.net.server::feed_message
+
+
+rtype.net.server +-- rtype.net.server::main_message
+
+
+rtype.net.tcp_connection +-- rtype.net.tcp_connection::message_info
+
+
+rtype.net.udp_server +-- rtype.net.udp_server::message_info
+
+
+
+
+@enduml

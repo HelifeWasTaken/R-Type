@@ -1,5 +1,8 @@
-R-TYPE
+# R-TYPE
 ==========
+## Game Video Example:
+[![IMAGE ALT TEXT HERE](https://img.youtube.com/vi/t6Xz1h8TDG8/0.jpg)](https://www.youtube.com/watch?v=t6Xz1h8TDG8)
+
 ## Contributing Guidelines
 
     - Documentation is mandatory for all new features and bug fixes.
